@@ -15,7 +15,14 @@ static void StringAppendV(string* dst, const char* format, va_list ap) {
   // of the structure before using it and use that copy instead.
   va_list backup_ap;
   va_copy(backup_ap, ap);
+
+  // FIXME: will be remove in future Rtools
+  #if GCC_VERSION <= 48100 && ( defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__) )
+  int result = vsnprintf(space, sizeof(space), _TRUNCATE, format, backup_ap);
+  #else
   int result = vsnprintf(space, sizeof(space), format, backup_ap);
+  #endif
+
   va_end(backup_ap);
 
   if ((result >= 0) && (static_cast<unsigned long>(result) < sizeof(space))) {
