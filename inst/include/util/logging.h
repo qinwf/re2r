@@ -86,8 +86,9 @@ class LogMessage {
 };
 
 #ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable: 4722) // destructor never returns
+// REMOVED: Rtools Windows
+// #pragma warning(push)
+// #pragma warning(disable: 4722) // destructor never returns
 #endif
 
 class LogMessageFatal : public LogMessage {
@@ -103,7 +104,8 @@ class LogMessageFatal : public LogMessage {
 };
 
 #ifdef _WIN32
-#pragma warning(pop)
+// REMOVED: Rtools Windows
+// #pragma warning(pop)
 #endif
 
 #endif  // RE2_UTIL_LOGGING_H__
