@@ -11,3 +11,9 @@ Imports:
     Rcpp (>= 0.12.2)
 LinkingTo:
     Rcpp
+Suggests:
+    knitr,testthat
+URL: https://github.com/qinwf/re2r/
+BugReports: https://github.com/qinwf/re2r/issues
+VignetteBuilder: knitr
+NeedsCompilation: yes

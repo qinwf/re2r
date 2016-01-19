@@ -1,0 +1,70 @@
+The files in inst/include and inst/include/re2, inst/include/util, and src/ subdirectory,
+
+    inst/include/re2:
+
+    filtered_re2.h
+    prog.h
+    set.h
+    unicode_groups.h
+    prefilter.h
+    re2.h
+    stringpiece.h
+    variadic_function.h
+    prefilter_tree.h
+    regexp.h
+    unicode_casefold.h
+    walker-inl.h
+
+    inst/include/util:
+
+    atomicops.h
+    logging.h
+    random.h
+    test.h
+    util.h
+    benchmark.h
+    mutex.h
+    sparse_array.h
+    thread.h
+    valgrind.h
+    flags.h
+    pcre.h
+    sparse_set.h
+    utf.h
+
+    src/:
+
+    bitstate.cc
+    nfa.cc
+    stringpiece.cc
+    compile.cc
+    onepass.cc
+    stringprintf.cc
+    dfa.cc
+    re2.cc
+    parse.cc
+    strutil.cc
+    filtered_re2.cc
+    perl_groups.cc
+    tostring.cc
+    hash.cc
+    regexp.cc
+    prefilter.cc
+    unicode_casefold.cc
+    logging.cc
+    rune.cc
+    prefilter_tree.cc
+    unicode_groups.cc
+    set.cc
+    prog.cc
+    valgrind.cc
+    mimics_pcre.cc
+    simplify.cc
+
+were originally written by:
+
+    RE2 developers
+
+and modified by Qin Wenfeng.
+
+Other part of this package is written by Qin Wenfeng.
