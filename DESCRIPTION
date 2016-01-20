@@ -5,13 +5,13 @@ Version: 0.1.0
 Author: Who wrote it
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
-License: BSD + file LICENSE
+License: BSD_3_clause + file LICENSE
 LazyData: TRUE
-Imports: 
+Imports:
     Rcpp (>= 0.12.2)
-LinkingTo: 
+LinkingTo:
     Rcpp
-Suggests: 
+Suggests:
     knitr,testthat,
     rmarkdown
 URL: https://github.com/qinwf/re2r/
