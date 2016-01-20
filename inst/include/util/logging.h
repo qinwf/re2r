@@ -12,6 +12,7 @@
 
 #include "util/util.h"
 #include "util/flags.h"
+#include "Rcpp.h"
 
 DECLARE_int32(minloglevel);
 
@@ -109,7 +110,7 @@ class LogMessageFatal : public LogMessage {
 
 // #ifndef RE2R_LOG
 #else
-#include "Rcpp.h"
+
 class LogMessage {
 public:
     LogMessage(const char* file, int line, int severity)

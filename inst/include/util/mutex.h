@@ -11,6 +11,7 @@
 #define RE2_UTIL_MUTEX_H_
 
 #include <stdlib.h>
+#include "Rcpp.h"
 
 #if !defined(_WIN32)
 #include <unistd.h>  // For POSIX options
@@ -126,7 +127,6 @@ void Mutex::ReaderLock()   { assert(++mutex_ > 0); }
 void Mutex::ReaderUnlock() { assert(mutex_-- > 0); }
 
 #elif HAVE_PTHREAD && HAVE_RWLOCK
-#include "Rcpp.h"
 
 #define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) Rcpp::stop("Unknown fatal mutex error"); } while (0)
 
@@ -141,7 +141,7 @@ void Mutex::ReaderUnlock() { SAFE_PTHREAD(pthread_rwlock_unlock(&mutex_)); }
 #undef SAFE_PTHREAD
 
 #elif HAVE_PTHREAD
-#include "Rcpp.h"
+
 #define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) Rcpp::stop("Unknown fatal mutex error"); } while (0)
 
 Mutex::Mutex()             { SAFE_PTHREAD(pthread_mutex_init(&mutex_, NULL)); }
