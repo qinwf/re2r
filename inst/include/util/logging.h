@@ -9,7 +9,7 @@
 
 #include <stdio.h>  /* for fwrite */
 #include <sstream>
-
+#include "Rcpp.h"
 #include "util/util.h"
 #include "util/flags.h"
 
@@ -110,7 +110,7 @@ class LogMessageFatal : public LogMessage {
 
 // #ifndef RE2R_LOG
 #else
-#include "Rcpp.h"
+
 class LogMessage {
 public:
     LogMessage(const char* file, int line, int severity)
