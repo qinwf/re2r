@@ -5,3 +5,7 @@ rcpp_hello <- function() {
     .Call('re2r_rcpp_hello', PACKAGE = 're2r')
 }
 
+re2_cpp_compile <- function(pattern, log_errors_value) {
+    .Call('re2r_re2_cpp_compile', PACKAGE = 're2r', pattern, log_errors_value)
+}
+
