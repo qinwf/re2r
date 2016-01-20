@@ -6,16 +6,6 @@
 
 using namespace Rcpp;
 
-// rcpp_hello
-List rcpp_hello();
-RcppExport SEXP re2r_rcpp_hello() {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    __result = Rcpp::wrap(rcpp_hello());
-    return __result;
-END_RCPP
-}
 // re2_cpp_compile
 XPtr<RE2> re2_cpp_compile(const char* pattern, bool log_errors_value);
 RcppExport SEXP re2r_re2_cpp_compile(SEXP patternSEXP, SEXP log_errors_valueSEXP) {

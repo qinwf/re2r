@@ -9,8 +9,7 @@ License: BSD_3_clause + file LICENSE
 LazyData: TRUE
 Imports:
     Rcpp (>= 0.12.2)
-LinkingTo:
-    Rcpp
+LinkingTo: Rcpp
 Suggests:
     knitr,testthat,
     rmarkdown
@@ -18,3 +17,4 @@ URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr
 NeedsCompilation: yes
+RoxygenNote: 5.0.1
