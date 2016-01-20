@@ -9,3 +9,6 @@
 CMakeLists.txt
 .idea/
 cmakebuild/
+GPATH
+GRTAGS
+GTAGS

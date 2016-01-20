@@ -7,3 +7,6 @@ src/*.dll
 inst/doc
 .idea/
 cmakebuild/
+GPATH
+GRTAGS
+GTAGS
