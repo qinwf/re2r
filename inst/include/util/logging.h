@@ -56,6 +56,10 @@ DECLARE_int32(minloglevel);
 
 #define VLOG(x) if((x)>0){}else LOG_INFO.stream()
 
+// ADD by RE2R for Rprintf
+#define RE2R_LOG
+
+#ifndef RE2R_LOG
 class LogMessage {
  public:
   LogMessage(const char* file, int line, int severity)
@@ -102,6 +106,55 @@ class LogMessageFatal : public LogMessage {
  private:
   DISALLOW_COPY_AND_ASSIGN(LogMessageFatal);
 };
+
+// #ifndef RE2R_LOG
+#else
+#include "Rcpp.h"
+class LogMessage {
+public:
+    LogMessage(const char* file, int line, int severity)
+        : severity_(severity), flushed_(false) {
+        stream() << file << ":" << line << ": ";
+    }
+    void Flush() {
+        stream() << "\n";
+        if (severity_ >= re2::FLAGS_minloglevel) {
+            // string s = str_.str();
+            // size_t n = s.size();
+            // if (fwrite(s.data(), 1, n, stderr) < n) {}  // shut up gcc
+            Rcpp::Rcerr << str_;
+        }
+        flushed_ = true;
+    }
+    ~LogMessage() {
+        if (!flushed_) {
+            Flush();
+        }
+    }
+    ostream& stream() { return str_; }
+
+private:
+    const int severity_;
+    bool flushed_;
+    std::ostringstream str_;
+    DISALLOW_COPY_AND_ASSIGN(LogMessage);
+};
+
+
+class LogMessageFatal : public LogMessage {
+public:
+    LogMessageFatal(const char* file, int line)
+        : LogMessage(file, line, 3) {}
+    ~LogMessageFatal() {
+        Flush();
+        Rcpp::stop("RE2: A unknown fatal error.");
+    }
+private:
+    DISALLOW_COPY_AND_ASSIGN(LogMessageFatal);
+};
+
+// #ifndef RE2R_LOG
+#endif
 
 #ifdef _WIN32
 // REMOVED: Rtools Windows

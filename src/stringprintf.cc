@@ -17,7 +17,7 @@ static void StringAppendV(string* dst, const char* format, va_list ap) {
   va_copy(backup_ap, ap);
 
   // FIXME: will be remove in future Rtools
-  #if GCC_VERSION <= 48100 && ( defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__) )
+  #if GCC_VERSION <= 40800 && ( defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__) )
   int result = vsnprintf(space, sizeof(space), _TRUNCATE, format, backup_ap);
   #else
   int result = vsnprintf(space, sizeof(space), format, backup_ap);
@@ -45,7 +45,7 @@ static void StringAppendV(string* dst, const char* format, va_list ap) {
 
     // Restore the va_list before we use it again
     va_copy(backup_ap, ap);
-#if !defined(_WIN32)
+#if !defined(_WIN32) || !(GCC_VERSION <= 40800 && ( defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__) ))
     result = vsnprintf(buf, length, format, backup_ap);
 #else
     // On Windows, the function takes five arguments, not four. With an array,

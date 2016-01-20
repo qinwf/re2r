@@ -11,3 +11,4 @@ XPtr<RE2> re2_cpp_compile(const char* pattern,bool log_errors_value){
             )
         );
 }
+
