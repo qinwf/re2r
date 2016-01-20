@@ -11,6 +11,9 @@ XPtr<RE2> re2_cpp_compile(const char* pattern,
                           bool longest_match_value,
                           bool never_nl_value,
                           bool never_capture_value,
+                          bool one_line_value,
+                          bool perl_classes_value,
+                          bool word_boundary_value,
                           int64_t max_mem_value){
     RE2::Options options;
 
@@ -27,6 +30,9 @@ XPtr<RE2> re2_cpp_compile(const char* pattern,
     options.set_max_mem(max_mem_value);
     options.set_never_nl(never_nl_value);
     options.set_never_capture(never_capture_value);
+    options.set_one_line(one_line_value);
+    options.set_perl_classes(perl_classes_value);
+    options.set_word_boundary(word_boundary_value);
 
     return XPtr<RE2>(
         new RE2(
