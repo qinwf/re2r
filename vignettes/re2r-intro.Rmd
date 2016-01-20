@@ -1,0 +1,12 @@
+---
+title: "Introduction to re2r"
+author: "Qin Wenfeng"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to re2r}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Vignettes are long form documentation commonly included in packages. 
