@@ -15,15 +15,12 @@ static void StringAppendV(string* dst, const char* format, va_list ap) {
   // of the structure before using it and use that copy instead.
   va_list backup_ap;
   va_copy(backup_ap, ap);
-
-  // FIXME: will be remove in future Rtools
-  #ifdef IS_MS_SNPRINTF
-  int result = vsnprintf(space, sizeof(space), _TRUNCATE, format, backup_ap);
-  #else
+#if !defined(_WIN32) || defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__)
   int result = vsnprintf(space, sizeof(space), format, backup_ap);
-  #endif
-
-  va_end(backup_ap);
+#else
+  int result = vsnprintf(space, sizeof(space), _TRUNCATE, format, backup_ap);
+#endif
+    va_end(backup_ap);
 
   if ((result >= 0) && (static_cast<unsigned long>(result) < sizeof(space))) {
     // It fit
@@ -45,14 +42,15 @@ static void StringAppendV(string* dst, const char* format, va_list ap) {
 
     // Restore the va_list before we use it again
     va_copy(backup_ap, ap);
-    #ifndef IS_MS_SNPRINTF
+// FIXME: on windows
+#if !defined(_WIN32) || defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__)
     result = vsnprintf(buf, length, format, backup_ap);
-    #else
+#else
     // On Windows, the function takes five arguments, not four. With an array,
     // the buffer size will be inferred, but not with a pointer. C'est la vie.
     // (See https://github.com/google/re2/issues/40 for more details.)
     result = vsnprintf(buf, length, _TRUNCATE, format, backup_ap);
-    #endif
+#endif
     va_end(backup_ap);
 
     if ((result >= 0) && (result < length)) {

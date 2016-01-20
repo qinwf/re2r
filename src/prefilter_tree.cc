@@ -138,14 +138,7 @@ Prefilter* PrefilterTree::CanonicalNode(Prefilter* node) {
 
 static string Itoa(int n) {
   char buf[100];
-
-  // FIXME: will be remove in future Rtools
-  #ifdef IS_MS_SNPRINTF
-  _snprintf_s(buf, sizeof buf, _TRUNCATE, "%d",n);
-  #else
   snprintf(buf, sizeof buf, "%d", n);
-  #endif
-
   return string(buf);
 }
 
