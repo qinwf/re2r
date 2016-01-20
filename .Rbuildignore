@@ -6,4 +6,6 @@
 ^.*\.txt$
 ^.*\.dat$
 ^appveyor\.yml$
-
+CMakeLists.txt
+.idea/
+cmakebuild/
