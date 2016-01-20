@@ -7,12 +7,12 @@
 using namespace Rcpp;
 
 // re2_cpp_compile
-XPtr<RE2> re2_cpp_compile(const char* pattern, bool log_errors_value, bool utf_8_value, bool posix_syntax_value, bool case_sensitive_value, bool dot_nl_value, bool literal_value, bool longest_match_value, bool never_nl_value, bool never_capture_value, bool one_line_value, bool perl_classes_value, bool word_boundary_value, int64_t max_mem_value);
+XPtr<RE2> re2_cpp_compile(const char * pattern, bool log_errors_value, bool utf_8_value, bool posix_syntax_value, bool case_sensitive_value, bool dot_nl_value, bool literal_value, bool longest_match_value, bool never_nl_value, bool never_capture_value, bool one_line_value, bool perl_classes_value, bool word_boundary_value, int64_t max_mem_value);
 RcppExport SEXP re2r_re2_cpp_compile(SEXP patternSEXP, SEXP log_errors_valueSEXP, SEXP utf_8_valueSEXP, SEXP posix_syntax_valueSEXP, SEXP case_sensitive_valueSEXP, SEXP dot_nl_valueSEXP, SEXP literal_valueSEXP, SEXP longest_match_valueSEXP, SEXP never_nl_valueSEXP, SEXP never_capture_valueSEXP, SEXP one_line_valueSEXP, SEXP perl_classes_valueSEXP, SEXP word_boundary_valueSEXP, SEXP max_mem_valueSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const char* >::type pattern(patternSEXP);
+    Rcpp::traits::input_parameter< const char * >::type pattern(patternSEXP);
     Rcpp::traits::input_parameter< bool >::type log_errors_value(log_errors_valueSEXP);
     Rcpp::traits::input_parameter< bool >::type utf_8_value(utf_8_valueSEXP);
     Rcpp::traits::input_parameter< bool >::type posix_syntax_value(posix_syntax_valueSEXP);

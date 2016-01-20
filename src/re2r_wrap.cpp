@@ -1,7 +1,7 @@
 #include <re2r.h>
 
 // [[Rcpp::export]]
-XPtr<RE2> re2_cpp_compile(const char* pattern,
+XPtr<RE2> re2_cpp_compile(const char * pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,
@@ -14,11 +14,12 @@ XPtr<RE2> re2_cpp_compile(const char* pattern,
                           bool one_line_value,
                           bool perl_classes_value,
                           bool word_boundary_value,
-                          int64_t max_mem_value){
+                          int64_t max_mem_value)
+{
     RE2::Options options;
 
     RE2::Options::Encoding enc_value;
-    enc_value = (utf_8_value =true) ? RE2::Options::EncodingUTF8 : RE2::Options::EncodingLatin1;
+    enc_value = (utf_8_value = true) ? RE2::Options::EncodingUTF8 : RE2::Options::EncodingLatin1;
     options.set_encoding(enc_value);
 
     options.set_log_errors(log_errors_value);
@@ -33,12 +34,19 @@ XPtr<RE2> re2_cpp_compile(const char* pattern,
     options.set_one_line(one_line_value);
     options.set_perl_classes(perl_classes_value);
     options.set_word_boundary(word_boundary_value);
-
-    return XPtr<RE2>(
-        new RE2(
-                StringPiece(pattern, (int) strlen(pattern)),
-                options
+    XPtr<RE2> regexp =
+        XPtr<RE2>(
+            new RE2(StringPiece(pattern,
+                                (int) strlen(pattern)),
+                    options
             )
         );
+    if (!regexp->ok()) {
+        // long code = (long) regexp->error_code();
+        const std::string &msg = regexp->error();
+        stop(msg);
+    }
+
+    return regexp;
 }
 
