@@ -9,10 +9,10 @@
 
 #include <stdio.h>  /* for fwrite */
 #include <sstream>
-#include "Rcpp.h"
+
 #include "util/util.h"
 #include "util/flags.h"
-
+#include "Rcpp.h"
 
 DECLARE_int32(minloglevel);
 
