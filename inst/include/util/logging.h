@@ -109,7 +109,7 @@ class LogMessageFatal : public LogMessage {
 
 // #ifndef RE2R_LOG
 #else
-#include "RcppCommon.h"
+#include "Rcpp.h"
 class LogMessage {
 public:
     LogMessage(const char* file, int line, int severity)

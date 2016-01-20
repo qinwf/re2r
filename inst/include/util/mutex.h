@@ -126,7 +126,7 @@ void Mutex::ReaderLock()   { assert(++mutex_ > 0); }
 void Mutex::ReaderUnlock() { assert(mutex_-- > 0); }
 
 #elif HAVE_PTHREAD && HAVE_RWLOCK
-#include "RcppCommon.h"
+#include "Rcpp.h"
 
 #define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) Rcpp::stop("Unknown fatal mutex error"); } while (0)
 
@@ -141,8 +141,8 @@ void Mutex::ReaderUnlock() { SAFE_PTHREAD(pthread_rwlock_unlock(&mutex_)); }
 #undef SAFE_PTHREAD
 
 #elif HAVE_PTHREAD
-
-#define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) abort(); } while (0)
+#include "Rcpp.h"
+#define SAFE_PTHREAD(fncall)  do { if ((fncall) != 0) Rcpp::stop("Unknown fatal mutex error"); } while (0)
 
 Mutex::Mutex()             { SAFE_PTHREAD(pthread_mutex_init(&mutex_, NULL)); }
 Mutex::~Mutex()            { SAFE_PTHREAD(pthread_mutex_destroy(&mutex_)); }
