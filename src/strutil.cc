@@ -38,13 +38,16 @@ int CEscapeString(const char* src, int src_len, char* dest,
         if (c < ' ' || c > '~') {
           if (dest_len - used < 5)   // space for four-character escape + \0
             return -1;
-#if !defined(_WIN32) || !(GCC_VERSION <= 40800 && ( defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__) ))
+
+    // FIXME: remove in future Rtools
+    // #if !defined(_WIN32)
+    #ifndef IS_MS_SNPRINTF
           snprintf(dest + used, 5, "\\%03o", c);
-#else
+    #else
           // On Windows, the function takes 4+VA arguments, not 3+VA. With an
           // array, the buffer size will be inferred, but not with a pointer.
-          snprintf(dest + used, 5, _TRUNCATE, "\\%03o", c);
-#endif
+          _snprintf_s(dest + used, 5, _TRUNCATE, "\\%03o", c);
+    #endif
           used += 4;
         } else {
           dest[used++] = c; break;

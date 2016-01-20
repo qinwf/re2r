@@ -63,6 +63,6 @@ link_directories(C:/PROGRA~1/R/R-EXPE~1/bin/x64)
 link_directories(C:/Rbuild/R-devel-win64/extsoft/lib/x64)
 
 target_link_libraries(re2r R)
-
+set_property(TARGET re2r PROPERTY CXX_STANDARD 11)
 
 

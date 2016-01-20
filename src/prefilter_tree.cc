@@ -140,8 +140,8 @@ static string Itoa(int n) {
   char buf[100];
 
   // FIXME: will be remove in future Rtools
-  #if GCC_VERSION <= 40800 && ( defined(MINGW) || defined(__MINGW32__) || defined(__MINGW64__) )
-  snprintf(buf, sizeof buf, n,"%d");
+  #ifdef IS_MS_SNPRINTF
+  _snprintf_s(buf, sizeof buf, _TRUNCATE, "%d",n);
   #else
   snprintf(buf, sizeof buf, "%d", n);
   #endif
