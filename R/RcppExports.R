@@ -48,3 +48,7 @@ cpp_quote_meta <- function(input) {
     .Call('re2r_cpp_quote_meta', PACKAGE = 're2r', input)
 }
 
+cpp_replace <- function(regexp, rewrite, input, global_) {
+    .Call('re2r_cpp_replace', PACKAGE = 're2r', regexp, rewrite, input, global_)
+}
+

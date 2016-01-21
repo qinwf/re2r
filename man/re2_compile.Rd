@@ -2,9 +2,16 @@
 % Please edit documentation in R/compile.R
 \name{re2_compile}
 \alias{re2_compile}
+\alias{re2_create}
 \title{Create a pre-compiled regular expression}
 \usage{
 re2_compile(pattern, utf_8 = TRUE, case_sensitive = TRUE,
+  posix_syntax = FALSE, dot_nl = FALSE, literal = FALSE,
+  longest_match = FALSE, never_nl = FALSE, never_capture = FALSE,
+  one_line = FALSE, perl_classes = FALSE, word_boundary = FALSE,
+  max_mem = 8388608)
+
+re2_create(pattern, utf_8 = TRUE, case_sensitive = TRUE,
   posix_syntax = FALSE, dot_nl = FALSE, literal = FALSE,
   longest_match = FALSE, never_nl = FALSE, never_capture = FALSE,
   one_line = FALSE, perl_classes = FALSE, word_boundary = FALSE,

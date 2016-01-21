@@ -1,4 +1,4 @@
-#include <re2r.h>
+#include "../inst/include/re2r.h"
 
 #define thr(code) case RE2::ErrorCode::code: throw code(msg); break;
 
@@ -129,4 +129,17 @@ CharacterVector cpp_quote_meta(vector<string> input){
     res.reserve(input.size());
     for(auto ind : input) res.push_back(tt.QuoteMeta(ind));
     return wrap(res);
+}
+
+// [[Rcpp::export]]
+CharacterVector cpp_replace(XPtr<RE2> regexp, string rewrite, vector<string> input, bool global_){
+    string errmsg;
+
+    if(!regexp->CheckRewriteString(rewrite, &errmsg)){
+        throw ErrorRewriteString(errmsg);
+    }
+
+    if(!global_) for(string& ind : input) regexp->Replace(&ind,*regexp,rewrite);
+    else         for(string& ind : input) regexp->GlobalReplace(&ind,*regexp,rewrite);
+    return wrap(input);
 }

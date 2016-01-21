@@ -88,9 +88,13 @@ re2_compile = function(pattern,
                     word_boundary_value = word_boundary,
                     max_mem_value = max_mem)
 
-    class(regexp) = "re2_regexp"
+    class(regexp) = "re2exp"
     regexp
 }
+
+#' @rdname re2_compile
+#' @export
+re2_create = re2_compile
 
 #' The string specification for this RE2.
 #'

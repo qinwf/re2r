@@ -85,3 +85,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_replace
+CharacterVector cpp_replace(XPtr<RE2> regexp, string rewrite, vector<string> input, bool global_);
+RcppExport SEXP re2r_cpp_replace(SEXP regexpSEXP, SEXP rewriteSEXP, SEXP inputSEXP, SEXP global_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< string >::type rewrite(rewriteSEXP);
+    Rcpp::traits::input_parameter< vector<string> >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);
+    __result = Rcpp::wrap(cpp_replace(regexp, rewrite, input, global_));
+    return __result;
+END_RCPP
+}
