@@ -10,3 +10,4 @@ cmakebuild/
 GPATH
 GRTAGS
 GTAGS
+.vscode/

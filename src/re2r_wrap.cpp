@@ -78,7 +78,17 @@ XPtr<RE2> re2_cpp_compile(const char * pattern,
     return regexp;
 }
 
+
+//' Get pre-compiled regular expression program size
+//'
+//' Returns the program size, a very approximate measure of a regexp's "cost".
+//' Larger numbers are more expensive than smaller numbers.
+//'
+//' @param a pre-compiled regular expression
+//' @return a integer
+//' @export
 // [[Rcpp::export]]
-int get_compile_ProgramSize(XPtr<RE2> regexp){
+int get_programsize(XPtr<RE2> regexp){
     return regexp->ProgramSize();
 }
+

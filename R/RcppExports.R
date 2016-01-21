@@ -5,7 +5,15 @@ re2_cpp_compile <- function(pattern, log_errors_value, utf_8_value, posix_syntax
     .Call('re2r_re2_cpp_compile', PACKAGE = 're2r', pattern, log_errors_value, utf_8_value, posix_syntax_value, case_sensitive_value, dot_nl_value, literal_value, longest_match_value, never_nl_value, never_capture_value, one_line_value, perl_classes_value, word_boundary_value, max_mem_value)
 }
 
-get_compile_ProgramSize <- function(regexp) {
-    .Call('re2r_get_compile_ProgramSize', PACKAGE = 're2r', regexp)
+#' Get pre-compiled regular expression program size
+#'
+#' Returns the program size, a very approximate measure of a regexp's "cost".
+#' Larger numbers are more expensive than smaller numbers.
+#'
+#' @param a pre-compiled regular expression
+#' @return a integer
+#' @export
+get_programsize <- function(regexp) {
+    .Call('re2r_get_programsize', PACKAGE = 're2r', regexp)
 }
 

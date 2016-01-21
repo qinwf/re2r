@@ -30,14 +30,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// get_compile_ProgramSize
-int get_compile_ProgramSize(XPtr<RE2> regexp);
-RcppExport SEXP re2r_get_compile_ProgramSize(SEXP regexpSEXP) {
+// get_programsize
+int get_programsize(XPtr<RE2> regexp);
+RcppExport SEXP re2r_get_programsize(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(get_compile_ProgramSize(regexp));
+    __result = Rcpp::wrap(get_programsize(regexp));
     return __result;
 END_RCPP
 }
