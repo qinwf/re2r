@@ -30,14 +30,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// get_programsize
-int get_programsize(XPtr<RE2> regexp);
-RcppExport SEXP re2r_get_programsize(SEXP regexpSEXP) {
+// get_program_size
+int get_program_size(XPtr<RE2> regexp);
+RcppExport SEXP re2r_get_program_size(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(get_programsize(regexp));
+    __result = Rcpp::wrap(get_program_size(regexp));
     return __result;
 END_RCPP
 }
@@ -52,25 +52,36 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// get_numberofcapturinggroups
-int get_numberofcapturinggroups(XPtr<RE2> regexp);
-RcppExport SEXP re2r_get_numberofcapturinggroups(SEXP regexpSEXP) {
+// get_number_of_groups
+int get_number_of_groups(XPtr<RE2> regexp);
+RcppExport SEXP re2r_get_number_of_groups(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(get_numberofcapturinggroups(regexp));
+    __result = Rcpp::wrap(get_number_of_groups(regexp));
     return __result;
 END_RCPP
 }
-// cpp_get_namedcapturinggroups
-IntegerVector cpp_get_namedcapturinggroups(XPtr<RE2> regexp);
-RcppExport SEXP re2r_cpp_get_namedcapturinggroups(SEXP regexpSEXP) {
+// cpp_get_named_groups
+IntegerVector cpp_get_named_groups(XPtr<RE2> regexp);
+RcppExport SEXP re2r_cpp_get_named_groups(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(cpp_get_namedcapturinggroups(regexp));
+    __result = Rcpp::wrap(cpp_get_named_groups(regexp));
+    return __result;
+END_RCPP
+}
+// cpp_quote_meta
+CharacterVector cpp_quote_meta(vector<string> input);
+RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< vector<string> >::type input(inputSEXP);
+    __result = Rcpp::wrap(cpp_quote_meta(input));
     return __result;
 END_RCPP
 }

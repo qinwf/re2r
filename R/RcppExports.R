@@ -14,14 +14,12 @@ cpp_re2_compile <- function(pattern, log_errors_value, utf_8_value, posix_syntax
 #' @return a integer
 #' @examples
 #' regexp = re2_compile("1")
-#' get_programsize(regexp)
+#' get_program_size(regexp)
 #' @export
-get_programsize <- function(regexp) {
-    .Call('re2r_get_programsize', PACKAGE = 're2r', regexp)
+get_program_size <- function(regexp) {
+    .Call('re2r_get_program_size', PACKAGE = 're2r', regexp)
 }
 
-#' @rdname get_pattern
-#' @export
 cpp_get_pattern <- function(regexp) {
     .Call('re2r_cpp_get_pattern', PACKAGE = 're2r', regexp)
 }
@@ -36,13 +34,17 @@ cpp_get_pattern <- function(regexp) {
 #' @return a integer
 #' @examples
 #' regexp = re2_compile("1")
-#' get_numberofcapturinggroups(regexp)
+#' get_number_of_groups(regexp)
 #' @export
-get_numberofcapturinggroups <- function(regexp) {
-    .Call('re2r_get_numberofcapturinggroups', PACKAGE = 're2r', regexp)
+get_number_of_groups <- function(regexp) {
+    .Call('re2r_get_number_of_groups', PACKAGE = 're2r', regexp)
 }
 
-cpp_get_namedcapturinggroups <- function(regexp) {
-    .Call('re2r_cpp_get_namedcapturinggroups', PACKAGE = 're2r', regexp)
+cpp_get_named_groups <- function(regexp) {
+    .Call('re2r_cpp_get_named_groups', PACKAGE = 're2r', regexp)
+}
+
+cpp_quote_meta <- function(input) {
+    .Call('re2r_cpp_quote_meta', PACKAGE = 're2r', input)
 }
 

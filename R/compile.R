@@ -110,20 +110,44 @@ get_pattern = function(regexp){
 
 #' Return capturing names with indices.
 #'
+#' The map records the index of the leftmost group with the given name.
 #' @param regexp a pre-compiled regular expression
-#' @examples
-#' regexp = re2_compile("1")
-#' get_pattern(regexp)
 #' @return capturing names with indices.
 #' @examples
 #' regexp = re2_compile("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
 #' (res = get_namedcapturinggroups(regexp))
 #' names(res)
 #' @export
-get_namedcapturinggroups = function(regexp){
-    res = cpp_get_namedcapturinggroups(regexp)
+get_named_group= function(regexp){
+    res = cpp_get_named_group(regexp)
     if (.Platform$OS.type %==% "windows") {
         Encoding(names(res)) = "UTF-8"
+    }
+    res
+}
+
+#' Escapes all potentially meaningful regexp characters in  'unquoted'.
+#'
+#' The returned string, used as a regular expression, will exactly match the original string.  For example,
+#'
+#'           1.5-2.0
+#'
+#' may become:
+#'
+#'           1\\.5\-2\\.0
+#'
+#' @param unquoted unquoted string
+#' @examples
+#' quote_meta(c("1.2","abc"))
+#' @return quoted string
+#' @export
+quote_meta = function(unquoted){
+    if (check_windows_strings(unquoted)) {
+        unquoted = enc2utf8(unquoted)
+    }
+    res = cpp_quote_meta(unquoted)
+    if (update_windows_strings()) {
+        Encoding(res) = "UTF-8"
     }
     res
 }

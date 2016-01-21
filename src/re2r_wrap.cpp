@@ -88,16 +88,13 @@ XPtr<RE2> cpp_re2_compile(const char * pattern,
 //' @return a integer
 //' @examples
 //' regexp = re2_compile("1")
-//' get_programsize(regexp)
+//' get_program_size(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_programsize(XPtr<RE2> regexp){
+int get_program_size(XPtr<RE2> regexp){
     return regexp->ProgramSize();
 }
 
-
-//' @rdname get_pattern
-//' @export
 // [[Rcpp::export]]
 string cpp_get_pattern(XPtr<RE2> regexp){
     return regexp->pattern();
@@ -113,14 +110,23 @@ string cpp_get_pattern(XPtr<RE2> regexp){
 //' @return a integer
 //' @examples
 //' regexp = re2_compile("1")
-//' get_numberofcapturinggroups(regexp)
+//' get_number_of_groups(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_numberofcapturinggroups(XPtr<RE2> regexp){
+int get_number_of_groups(XPtr<RE2> regexp){
     return regexp->NumberOfCapturingGroups();
 }
 
 // [[Rcpp::export]]
-IntegerVector cpp_get_namedcapturinggroups(XPtr<RE2> regexp){
+IntegerVector cpp_get_named_groups(XPtr<RE2> regexp){
     return wrap(regexp->NamedCapturingGroups());
+}
+
+// [[Rcpp::export]]
+CharacterVector cpp_quote_meta(vector<string> input){
+    RE2 tt(""); // break on windows without tt
+    vector<string> res;
+    res.reserve(input.size());
+    for(auto ind : input) res.push_back(tt.QuoteMeta(ind));
+    return wrap(res);
 }
