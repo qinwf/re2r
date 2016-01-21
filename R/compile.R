@@ -115,7 +115,7 @@ get_pattern = function(regexp){
 #' @return capturing names with indices.
 #' @examples
 #' regexp = re2_compile("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
-#' (res = get_namedcapturinggroups(regexp))
+#' (res = get_named_groups(regexp))
 #' names(res)
 #' @export
 get_named_group= function(regexp){

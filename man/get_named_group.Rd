@@ -17,7 +17,7 @@ The map records the index of the leftmost group with the given name.
 }
 \examples{
 regexp = re2_compile("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
-(res = get_namedcapturinggroups(regexp))
+(res = get_named_groups(regexp))
 names(res)
 }
 
