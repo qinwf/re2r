@@ -82,6 +82,6 @@ DefaultMaxMem = 8<<20;
 }
 \examples{
 regexp = re2_compile("test")
-regexp = re2_compile("*")
+regexp = re2_compile("(1*)")
 }
 

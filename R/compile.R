@@ -54,7 +54,7 @@
 #'
 #' @examples
 #' regexp = re2_compile("test")
-#' regexp = re2_compile("*")
+#' regexp = re2_compile("(1*)")
 #' @export
 re2_compile = function(pattern,
                        utf_8 = TRUE,
@@ -70,7 +70,7 @@ re2_compile = function(pattern,
                        word_boundary = FALSE,
                        max_mem = 8388608){
 
-    regexp = re2_cpp_compile(pattern,
+    regexp = cpp_re2_compile(pattern,
                     log_errors_value = FALSE,
                     utf_8_value = utf_8,
                     case_sensitive_value = case_sensitive,
@@ -87,4 +87,20 @@ re2_compile = function(pattern,
 
     class(regexp) = "re2_regexp"
     regexp
+}
+
+#' The string specification for this RE2.
+#'
+#' @param regexp a pre-compiled regular expression
+#' @examples
+#' regexp = re2_compile("1")
+#' get_pattern(regexp)
+#' @return a string
+#' @export
+get_pattern = function(x){
+    res = cpp_get_pattern(x)
+    if(identical(.Platform$OS.type,"windows")){
+        Encoding(res) = "UTF-8"
+    }
+    res
 }

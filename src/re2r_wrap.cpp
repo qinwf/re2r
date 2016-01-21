@@ -24,7 +24,7 @@ void check_compile_error(RE2::ErrorCode code_,const string& msg){
 }
 
 // [[Rcpp::export]]
-XPtr<RE2> re2_cpp_compile(const char * pattern,
+XPtr<RE2> cpp_re2_compile(const char * pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,
@@ -84,7 +84,7 @@ XPtr<RE2> re2_cpp_compile(const char * pattern,
 //' Returns the program size, a very approximate measure of a regexp's "cost".
 //' Larger numbers are more expensive than smaller numbers.
 //'
-//' @param a pre-compiled regular expression
+//' @param regexp a pre-compiled regular expression
 //' @return a integer
 //' @export
 // [[Rcpp::export]]
@@ -92,3 +92,10 @@ int get_programsize(XPtr<RE2> regexp){
     return regexp->ProgramSize();
 }
 
+
+//' @rdname get_pattern
+//' @export
+// [[Rcpp::export]]
+string cpp_get_pattern(XPtr<RE2> regexp){
+    return regexp->pattern();
+}

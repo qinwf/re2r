@@ -57,7 +57,7 @@ RCPP_EXCEPTION_CLASS(ErrorBadNamedCapture, std::string("bad named capture group:
 
 RCPP_EXCEPTION_CLASS(ErrorPatternTooLarge, std::string("pattern too large (compile failed): ") + message)
 
-XPtr<RE2> re2_cpp_compile(const char* pattern,
+XPtr<RE2> cpp_re2_compile(const char* pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,

@@ -7,7 +7,7 @@
 get_programsize(regexp)
 }
 \arguments{
-\item{a}{pre-compiled regular expression}
+\item{regexp}{a pre-compiled regular expression}
 }
 \value{
 a integer
