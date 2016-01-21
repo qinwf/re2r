@@ -63,3 +63,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_get_namedcapturinggroups
+IntegerVector cpp_get_namedcapturinggroups(XPtr<RE2> regexp);
+RcppExport SEXP re2r_cpp_get_namedcapturinggroups(SEXP regexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(cpp_get_namedcapturinggroups(regexp));
+    return __result;
+END_RCPP
+}

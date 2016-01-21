@@ -119,3 +119,8 @@ string cpp_get_pattern(XPtr<RE2> regexp){
 int get_numberofcapturinggroups(XPtr<RE2> regexp){
     return regexp->NumberOfCapturingGroups();
 }
+
+// [[Rcpp::export]]
+IntegerVector cpp_get_namedcapturinggroups(XPtr<RE2> regexp){
+    return wrap(regexp->NamedCapturingGroups());
+}

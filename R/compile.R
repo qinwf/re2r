@@ -107,3 +107,23 @@ get_pattern = function(regexp){
     }
     res
 }
+
+#' Return capturing names with indices.
+#'
+#' @param regexp a pre-compiled regular expression
+#' @examples
+#' regexp = re2_compile("1")
+#' get_pattern(regexp)
+#' @return capturing names with indices.
+#' @examples
+#' regexp = re2_compile("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
+#' (res = get_namedcapturinggroups(regexp))
+#' names(res)
+#' @export
+get_namedcapturinggroups = function(regexp){
+    res = cpp_get_namedcapturinggroups(regexp)
+    if (.Platform$OS.type %==% "windows") {
+        Encoding(names(res)) = "UTF-8"
+    }
+    res
+}

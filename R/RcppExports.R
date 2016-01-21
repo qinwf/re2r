@@ -42,3 +42,7 @@ get_numberofcapturinggroups <- function(regexp) {
     .Call('re2r_get_numberofcapturinggroups', PACKAGE = 're2r', regexp)
 }
 
+cpp_get_namedcapturinggroups <- function(regexp) {
+    .Call('re2r_cpp_get_namedcapturinggroups', PACKAGE = 're2r', regexp)
+}
+
