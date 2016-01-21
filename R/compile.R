@@ -118,7 +118,7 @@ get_pattern = function(regexp){
 #' (res = get_named_groups(regexp))
 #' names(res)
 #' @export
-get_named_group = function(regexp){
+get_named_groups = function(regexp){
     res = cpp_get_named_groups(regexp)
     if (.Platform$OS.type %==% "windows") {
         Encoding(names(res)) = "UTF-8"
