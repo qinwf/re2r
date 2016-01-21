@@ -27,4 +27,7 @@ portions of "text" are ignored.
 \details{
 Returns true iff a match occurred and the extraction happened
 }
+\examples{
+re2_extract("b+","d", "yabba dabba doo")
+}
 
