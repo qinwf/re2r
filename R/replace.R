@@ -38,7 +38,7 @@ re2_replace.re2exp = function(pattern, rewrite, input, ...){
 #' @rdname re2_replace
 #' @export
 re2_replace.character = function(pattern, rewrite, input, ...){
-    pattern = re2_compile(pattern)
+    pattern = re2_compile(pattern, ...)
     re2_replace_core(pattern, rewrite, input, FALSE)
 }
 
@@ -72,6 +72,42 @@ re2_replace_all.re2exp = function(pattern, rewrite, input, ...){
 #' @rdname re2_replace_all
 #' @export
 re2_replace_all.character = function(pattern, rewrite, input, ...){
-    pattern = re2_compile(pattern)
+    pattern = re2_compile(pattern, ...)
     re2_replace_core(pattern, rewrite, input, TRUE)
+}
+
+#' Extract matched patterns in a string.
+#'
+#' Like Replace, except that if the pattern matches, "rewrite"
+#' is copied into "out" with substitutions.  The non-matching
+#' portions of "text" are ignored.
+#'
+#' Returns true iff a match occurred and the extraction happened
+#' @param pattern a pre-compiled regular expression or a string
+#' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
+#' @param input a character vector
+#' @examples
+#' re2_extract("b+","d", "yabba dabba doo")
+#' @export
+re2_extract = function(pattern, rewrite, input, ...) UseMethod("re2_extract")
+
+#' @rdname re2_extract
+#' @export
+re2_extract.re2exp = function(pattern, rewrite, input){
+    if (check_windows_strings(input)) input = enc2utf8(input)
+    if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
+
+    res = cpp_extract(pattern, rewrite, input)
+
+    if (update_windows_strings()) {
+        Encoding(res) = "UTF-8"
+    }
+    return(res)
+}
+
+#' @rdname re2_extract
+#' @export
+re2_extract.character = function(pattern, rewrite, input, ...){
+    pattern = re2_compile(pattern, ...)
+    re2_extract.re2exp(pattern, rewrite, input)
 }

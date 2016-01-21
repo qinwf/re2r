@@ -52,3 +52,7 @@ cpp_replace <- function(regexp, rewrite, input, global_) {
     .Call('re2r_cpp_replace', PACKAGE = 're2r', regexp, rewrite, input, global_)
 }
 
+cpp_extract <- function(regexp, rewrite, input) {
+    .Call('re2r_cpp_extract', PACKAGE = 're2r', regexp, rewrite, input)
+}
+

@@ -143,3 +143,20 @@ CharacterVector cpp_replace(XPtr<RE2> regexp, string rewrite, vector<string> inp
     else         for(string& ind : input) regexp->GlobalReplace(&ind,*regexp,rewrite);
     return wrap(input);
 }
+
+// [[Rcpp::export]]
+CharacterVector cpp_extract(XPtr<RE2> regexp, string rewrite, vector<string> input){
+    string errmsg;
+
+    if(!regexp->CheckRewriteString(rewrite, &errmsg)){
+        throw ErrorRewriteString(errmsg);
+    }
+    vector<string> res(input.size());
+    auto res_iter = res.begin();
+    for(const string& ind : input) {
+        regexp->Extract(ind,*regexp,rewrite,&(*res_iter));
+        res_iter+=1;
+    }
+
+    return wrap(res);
+}

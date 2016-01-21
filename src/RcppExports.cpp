@@ -99,3 +99,16 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_extract
+CharacterVector cpp_extract(XPtr<RE2> regexp, string rewrite, vector<string> input);
+RcppExport SEXP re2r_cpp_extract(SEXP regexpSEXP, SEXP rewriteSEXP, SEXP inputSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< string >::type rewrite(rewriteSEXP);
+    Rcpp::traits::input_parameter< vector<string> >::type input(inputSEXP);
+    __result = Rcpp::wrap(cpp_extract(regexp, rewrite, input));
+    return __result;
+END_RCPP
+}
