@@ -86,6 +86,9 @@ XPtr<RE2> cpp_re2_compile(const char * pattern,
 //'
 //' @param regexp a pre-compiled regular expression
 //' @return a integer
+//' @examples
+//' regexp = re2_compile("1")
+//' get_programsize(regexp)
 //' @export
 // [[Rcpp::export]]
 int get_programsize(XPtr<RE2> regexp){
@@ -98,4 +101,21 @@ int get_programsize(XPtr<RE2> regexp){
 // [[Rcpp::export]]
 string cpp_get_pattern(XPtr<RE2> regexp){
     return regexp->pattern();
+}
+
+//' Return the number of capturing subpatterns
+//'
+//' Return the number of capturing subpatterns, or -1 if the
+//' regexp wasn't valid on construction.  The overall match ($0)
+//' does not count: if the regexp is "(a)(b)", returns 2.
+//'
+//' @param regexp a pre-compiled regular expression
+//' @return a integer
+//' @examples
+//' regexp = re2_compile("1")
+//' get_numberofcapturinggroups(regexp)
+//' @export
+// [[Rcpp::export]]
+int get_numberofcapturinggroups(XPtr<RE2> regexp){
+    return regexp->NumberOfCapturingGroups();
 }

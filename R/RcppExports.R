@@ -12,6 +12,9 @@ cpp_re2_compile <- function(pattern, log_errors_value, utf_8_value, posix_syntax
 #'
 #' @param regexp a pre-compiled regular expression
 #' @return a integer
+#' @examples
+#' regexp = re2_compile("1")
+#' get_programsize(regexp)
 #' @export
 get_programsize <- function(regexp) {
     .Call('re2r_get_programsize', PACKAGE = 're2r', regexp)
@@ -21,5 +24,21 @@ get_programsize <- function(regexp) {
 #' @export
 cpp_get_pattern <- function(regexp) {
     .Call('re2r_cpp_get_pattern', PACKAGE = 're2r', regexp)
+}
+
+#' Return the number of capturing subpatterns
+#'
+#' Return the number of capturing subpatterns, or -1 if the
+#' regexp wasn't valid on construction.  The overall match ($0)
+#' does not count: if the regexp is "(a)(b)", returns 2.
+#'
+#' @param regexp a pre-compiled regular expression
+#' @return a integer
+#' @examples
+#' regexp = re2_compile("1")
+#' get_numberofcapturinggroups(regexp)
+#' @export
+get_numberofcapturinggroups <- function(regexp) {
+    .Call('re2r_get_numberofcapturinggroups', PACKAGE = 're2r', regexp)
 }
 

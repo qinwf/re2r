@@ -69,7 +69,10 @@ re2_compile = function(pattern,
                        perl_classes = FALSE,
                        word_boundary = FALSE,
                        max_mem = 8388608){
-
+    if ( .Platform$OS.type %==% "windows" &&
+       Encoding(pattern[1]) %!==% "UTF-8" ) {
+        pattern = enc2utf8(pattern)
+    }
     regexp = cpp_re2_compile(pattern,
                     log_errors_value = FALSE,
                     utf_8_value = utf_8,
@@ -97,9 +100,9 @@ re2_compile = function(pattern,
 #' get_pattern(regexp)
 #' @return a string
 #' @export
-get_pattern = function(x){
-    res = cpp_get_pattern(x)
-    if(identical(.Platform$OS.type,"windows")){
+get_pattern = function(regexp){
+    res = cpp_get_pattern(regexp)
+    if (.Platform$OS.type %==% "windows") {
         Encoding(res) = "UTF-8"
     }
     res

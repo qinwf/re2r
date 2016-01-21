@@ -7,7 +7,7 @@
 \usage{
 cpp_get_pattern(regexp)
 
-get_pattern(x)
+get_pattern(regexp)
 }
 \arguments{
 \item{regexp}{a pre-compiled regular expression}

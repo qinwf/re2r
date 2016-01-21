@@ -52,3 +52,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// get_numberofcapturinggroups
+int get_numberofcapturinggroups(XPtr<RE2> regexp);
+RcppExport SEXP re2r_get_numberofcapturinggroups(SEXP regexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2> >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(get_numberofcapturinggroups(regexp));
+    return __result;
+END_RCPP
+}
