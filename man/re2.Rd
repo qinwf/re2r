@@ -81,6 +81,8 @@ DefaultMaxMem = 8<<20;
 }
 \examples{
 regexp = re2("test")
-regexp = re2("(1*)")
+regexp
+regexp \%<~\% "(?P<first>1*)"
+regexp
 }
 

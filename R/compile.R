@@ -54,7 +54,9 @@
 #'
 #' @examples
 #' regexp = re2("test")
-#' regexp = re2("(1*)")
+#' regexp
+#' regexp %<~% "(?P<first>1*)"
+#' regexp
 #' @export
 re2 = function(pattern,
                        utf_8 = TRUE,

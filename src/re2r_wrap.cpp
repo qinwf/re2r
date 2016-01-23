@@ -88,10 +88,10 @@ XPtr<RE2> cpp_re2_compile(const char * pattern,
 //' @return a integer
 //' @examples
 //' regexp = re2("1")
-//' get_program_size(regexp)
+//' get_expression_size(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_program_size(XPtr<RE2> regexp){
+int get_expression_size(XPtr<RE2> regexp){
     return regexp->ProgramSize();
 }
 

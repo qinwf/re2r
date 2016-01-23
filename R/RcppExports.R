@@ -14,10 +14,10 @@ cpp_re2_compile <- function(pattern, log_errors_value, utf_8_value, posix_syntax
 #' @return a integer
 #' @examples
 #' regexp = re2("1")
-#' get_program_size(regexp)
+#' get_expression_size(regexp)
 #' @export
-get_program_size <- function(regexp) {
-    .Call('re2r_get_program_size', PACKAGE = 're2r', regexp)
+get_expression_size <- function(regexp) {
+    .Call('re2r_get_expression_size', PACKAGE = 're2r', regexp)
 }
 
 cpp_get_pattern <- function(regexp) {
