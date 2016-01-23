@@ -12,20 +12,27 @@ pattern \%=~\% string
 
 pattern \%!~\% string
 
-re2_match(pattern, string, result, anchor, ...)
+re2_match(pattern, string, result = "bool", anchor = "start", all = TRUE,
+  simplify = TRUE, ...)
 
-\method{re2_match}{re2exp}(pattern, string, result, anchor, ...)
+\method{re2_match}{re2exp}(pattern, string, result = "bool",
+  anchor = "start", all = TRUE, simplify = TRUE, ...)
 
-\method{re2_match}{character}(pattern, string, result, anchor, ...)
+\method{re2_match}{character}(pattern, string, result = "bool",
+  anchor = "start", all = TRUE, simplify = TRUE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{string}{a character vector}
 
-\item{result}{bool, value or object}
+\item{result}{"bool", "value", "object"}
 
-\item{anchor}{"match": anchor match at the beginning of the string, "fullmatch": anchor match at the beginning and the end of the string, "search": no anchor.}
+\item{anchor}{"start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.}
+
+\item{all}{find all match instead of first match. When all = FALSE and result = "value", the return type will be character vector when there is no capture group or data.frame.}
+
+\item{simplify}{when result = "value", with only one input string, function will return a data.frame instead of a list of data.frames.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

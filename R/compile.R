@@ -71,10 +71,10 @@ re2 = function(pattern,
                        perl_classes = FALSE,
                        word_boundary = FALSE,
                        max_mem = 8388608){
-    if ( .Platform$OS.type %==% "windows" &&
-       Encoding(pattern[1]) %!==% "UTF-8" ) {
-        pattern = enc2utf8(pattern)
-    }
+    # if ( .Platform$OS.type %==% "windows" &&
+    #    Encoding(pattern[1]) %!==% "UTF-8" ) {
+    #     pattern = enc2utf8(pattern)
+    # }
     regexp = cpp_re2_compile(pattern,
                     log_errors_value = FALSE,
                     utf_8_value = utf_8,
@@ -104,9 +104,9 @@ re2 = function(pattern,
 #' @export
 get_pattern = function(regexp){
     res = cpp_get_pattern(regexp)
-    if (.Platform$OS.type %==% "windows") {
-        Encoding(res) = "UTF-8"
-    }
+    # if (.Platform$OS.type %==% "windows") {
+    #     Encoding(res) = "UTF-8"
+    # }
     res
 }
 
@@ -122,9 +122,9 @@ get_pattern = function(regexp){
 #' @export
 get_named_groups = function(regexp){
     res = cpp_get_named_groups(regexp)
-    if (.Platform$OS.type %==% "windows") {
-        Encoding(names(res)) = "UTF-8"
-    }
+    # if (.Platform$OS.type %==% "windows") {
+    #     Encoding(names(res)) = "UTF-8"
+    # }
     res
 }
 
@@ -144,12 +144,12 @@ get_named_groups = function(regexp){
 #' @return quoted string
 #' @export
 quote_meta = function(unquoted){
-    if (check_windows_strings(unquoted)) {
-        unquoted = enc2utf8(unquoted)
-    }
+    # if (check_windows_strings(unquoted)) {
+    #     unquoted = enc2utf8(unquoted)
+    # }
     res = cpp_quote_meta(unquoted)
-    if (update_windows_strings()) {
-        Encoding(res) = "UTF-8"
-    }
+    # if (update_windows_strings()) {
+    #     Encoding(res) = "UTF-8"
+    # }
     res
 }

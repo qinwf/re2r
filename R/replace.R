@@ -23,14 +23,14 @@ re2_replace = function(pattern, rewrite, input, global = TRUE, ...) UseMethod("r
 #' @rdname re2_replace
 #' @export
 re2_replace.re2exp = function(pattern, rewrite, input, global = TRUE, ...){
-    if (check_windows_strings(input)) input = enc2utf8(input)
-    if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
+    # if (check_windows_strings(input)) input = enc2utf8(input)
+    # if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
 
     res = cpp_replace(pattern, rewrite, input, global)
 
-    if (update_windows_strings()) {
-        Encoding(res) = "UTF-8"
-    }
+    # if (update_windows_strings()) {
+    #     Encoding(res) = "UTF-8"
+    # }
     return(res)
 }
 
