@@ -16,7 +16,7 @@ a string
 The string specification for this RE2.
 }
 \examples{
-regexp = re2_compile("1")
+regexp = re2("1")
 get_pattern(regexp)
 }
 

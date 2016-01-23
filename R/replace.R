@@ -1,4 +1,28 @@
-re2_replace_core = function(pattern, rewrite, input, global){
+
+#' Replace matched patterns in a string.
+#'
+#' Replace the first match of "pattern" in "str" with "rewrite".
+#' Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
+#' used to insert text matching corresponding parenthesized group
+#' from the pattern.  \\0 in "rewrite" refers to the entire matching
+#' text.
+#'
+#' @param pattern a pre-compiled regular expression or a string
+#' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
+#' @param input a character vector
+#' @param global if it is TRUE, it will replaces successive non-overlapping occurrences
+#' @param ... further arguments passed to or from other methods.
+#' @return a character vector
+#' @examples
+#' regexp = re2("b+")
+#' re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
+#' re2_replace("b+","d", "yabba dabba doo", global = FALSE) == "yada dabba doo"
+#' @export
+re2_replace = function(pattern, rewrite, input, global = TRUE, ...) UseMethod("re2_replace")
+
+#' @rdname re2_replace
+#' @export
+re2_replace.re2exp = function(pattern, rewrite, input, global = TRUE, ...){
     if (check_windows_strings(input)) input = enc2utf8(input)
     if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
 
@@ -10,104 +34,9 @@ re2_replace_core = function(pattern, rewrite, input, global){
     return(res)
 }
 
-#' Replace matched patterns in a string.
-#'
-#' Replace the first match of "pattern" in "str" with "rewrite".
-#' Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
-#' used to insert text matching corresponding parenthesized group
-#' from the pattern.  \\0 in "rewrite" refers to the entire matching
-#' text.
-#'
-#' @param pattern a pre-compiled regular expression or a string
-#' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
-#' @param input a character vector
-#' @return a character vector
-#' @examples
-#' regexp = re2_compile("b+")
-#' re2_replace(regexp,"d", "yabba dabba doo") == "yada dabba doo"
-#' re2_replace("b+","d", "yabba dabba doo") == "yada dabba doo"
-#' @export
-re2_replace = function(pattern, rewrite, input, ...) UseMethod("re2_replace")
-
 #' @rdname re2_replace
 #' @export
-re2_replace.re2exp = function(pattern, rewrite, input, ...){
-    re2_replace_core(pattern, rewrite, input, FALSE)
-}
-
-#' @rdname re2_replace
-#' @export
-re2_replace.character = function(pattern, rewrite, input, ...){
-    pattern = re2_compile(pattern, ...)
-    re2_replace_core(pattern, rewrite, input, FALSE)
-}
-
-
-#' Replaces successive non-overlapping occurrences
-#'
-#' Like re2_replace, except replaces successive non-overlapping occurrences
-#' of the pattern in the string with the rewrite.
-#'
-#' Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
-#' used to insert text matching corresponding parenthesized group
-#' from the pattern.  \\0 in "rewrite" refers to the entire matching
-#' text.
-#' @param pattern a pre-compiled regular expression or a string
-#' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
-#' @param input a character vector
-#' @return a character vector
-#' @examples
-#' regexp = re2_compile("b+")
-#' re2_replace_all(regexp,"d", "yabba dabba doo") == "yada dada doo"
-#' re2_replace_all("b+","d", "yabba dabba doo") == "yada dada doo"
-#' @export
-re2_replace_all = function(pattern, rewrite, input, ...) UseMethod("re2_replace_all")
-
-#' @rdname re2_replace_all
-#' @export
-re2_replace_all.re2exp = function(pattern, rewrite, input, ...){
-    re2_replace_core(pattern, rewrite, input, TRUE)
-}
-
-#' @rdname re2_replace_all
-#' @export
-re2_replace_all.character = function(pattern, rewrite, input, ...){
-    pattern = re2_compile(pattern, ...)
-    re2_replace_core(pattern, rewrite, input, TRUE)
-}
-
-#' Extract matched patterns in a string.
-#'
-#' Like Replace, except that if the pattern matches, "rewrite"
-#' is copied into "out" with substitutions.  The non-matching
-#' portions of "text" are ignored.
-#'
-#' Returns true iff a match occurred and the extraction happened
-#' @param pattern a pre-compiled regular expression or a string
-#' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
-#' @param input a character vector
-#' @examples
-#' re2_extract("b+","d", "yabba dabba doo")
-#' @export
-re2_extract = function(pattern, rewrite, input, ...) UseMethod("re2_extract")
-
-#' @rdname re2_extract
-#' @export
-re2_extract.re2exp = function(pattern, rewrite, input){
-    if (check_windows_strings(input)) input = enc2utf8(input)
-    if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
-
-    res = cpp_extract(pattern, rewrite, input)
-
-    if (update_windows_strings()) {
-        Encoding(res) = "UTF-8"
-    }
-    return(res)
-}
-
-#' @rdname re2_extract
-#' @export
-re2_extract.character = function(pattern, rewrite, input, ...){
-    pattern = re2_compile(pattern, ...)
-    re2_extract.re2exp(pattern, rewrite, input)
+re2_replace.character = function(pattern, rewrite, input, global = TRUE, ...){
+    pattern = re2(pattern, ...)
+    re2_replace.re2exp(pattern, rewrite, input, global)
 }

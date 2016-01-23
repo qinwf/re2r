@@ -2,14 +2,26 @@
 % Please edit documentation in R/search.R
 \name{re2_match}
 \alias{re2_match}
+\alias{re2_match.character}
+\alias{re2_match.re2exp}
 \title{re2_match}
 \usage{
-re2_match(pattern, string, ...)
+re2_match(pattern, string, result, anchor, ...)
+
+\method{re2_match}{re2exp}(pattern, string, result, anchor, ...)
+
+\method{re2_match}{character}(pattern, string, result, anchor, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{input}{a character vector}
+\item{string}{a character vector}
+
+\item{result}{bool, value or object}
+
+\item{anchor}{"match": anchor match at the beginning of the string, "fullmatch": anchor match at the beginning and the end of the string, "search": no anchor.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 re2_match

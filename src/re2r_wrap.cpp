@@ -87,7 +87,7 @@ XPtr<RE2> cpp_re2_compile(const char * pattern,
 //' @param regexp a pre-compiled regular expression
 //' @return a integer
 //' @examples
-//' regexp = re2_compile("1")
+//' regexp = re2("1")
 //' get_program_size(regexp)
 //' @export
 // [[Rcpp::export]]
@@ -109,7 +109,7 @@ string cpp_get_pattern(XPtr<RE2> regexp){
 //' @param regexp a pre-compiled regular expression
 //' @return a integer
 //' @examples
-//' regexp = re2_compile("1")
+//' regexp = re2("1")
 //' get_number_of_groups(regexp)
 //' @export
 // [[Rcpp::export]]
@@ -154,7 +154,7 @@ CharacterVector cpp_extract(XPtr<RE2> regexp, string rewrite, vector<string> inp
     vector<string> res(input.size());
     auto res_iter = res.begin();
     for(const string& ind : input) {
-        regexp->Extract(ind,*regexp,rewrite,&(*res_iter));
+        if (! regexp->Extract(ind,*regexp,rewrite,&(*res_iter))) *res_iter="";
         res_iter+=1;
     }
 

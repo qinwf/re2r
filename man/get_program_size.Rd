@@ -17,7 +17,7 @@ Returns the program size, a very approximate measure of a regexp's "cost".
 Larger numbers are more expensive than smaller numbers.
 }
 \examples{
-regexp = re2_compile("1")
+regexp = re2("1")
 get_program_size(regexp)
 }
 

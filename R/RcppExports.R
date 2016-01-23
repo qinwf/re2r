@@ -13,7 +13,7 @@ cpp_re2_compile <- function(pattern, log_errors_value, utf_8_value, posix_syntax
 #' @param regexp a pre-compiled regular expression
 #' @return a integer
 #' @examples
-#' regexp = re2_compile("1")
+#' regexp = re2("1")
 #' get_program_size(regexp)
 #' @export
 get_program_size <- function(regexp) {
@@ -33,7 +33,7 @@ cpp_get_pattern <- function(regexp) {
 #' @param regexp a pre-compiled regular expression
 #' @return a integer
 #' @examples
-#' regexp = re2_compile("1")
+#' regexp = re2("1")
 #' get_number_of_groups(regexp)
 #' @export
 get_number_of_groups <- function(regexp) {

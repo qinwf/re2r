@@ -18,7 +18,7 @@ regexp wasn't valid on construction.  The overall match ($0)
 does not count: if the regexp is "(a)(b)", returns 2.
 }
 \examples{
-regexp = re2_compile("1")
+regexp = re2("1")
 get_number_of_groups(regexp)
 }
 

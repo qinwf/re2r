@@ -53,10 +53,10 @@
 #' DefaultMaxMem = 8<<20;
 #'
 #' @examples
-#' regexp = re2_compile("test")
-#' regexp = re2_compile("(1*)")
+#' regexp = re2("test")
+#' regexp = re2("(1*)")
 #' @export
-re2_compile = function(pattern,
+re2 = function(pattern,
                        utf_8 = TRUE,
                        case_sensitive = TRUE,
                        posix_syntax = FALSE,
@@ -92,15 +92,11 @@ re2_compile = function(pattern,
     regexp
 }
 
-#' @rdname re2_compile
-#' @export
-re2_create = re2_compile
-
 #' The string specification for this RE2.
 #'
 #' @param regexp a pre-compiled regular expression
 #' @examples
-#' regexp = re2_compile("1")
+#' regexp = re2("1")
 #' get_pattern(regexp)
 #' @return a string
 #' @export
@@ -118,7 +114,7 @@ get_pattern = function(regexp){
 #' @param regexp a pre-compiled regular expression
 #' @return capturing names with indices.
 #' @examples
-#' regexp = re2_compile("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
+#' regexp = re2("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
 #' (res = get_named_groups(regexp))
 #' names(res)
 #' @export

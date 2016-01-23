@@ -12,7 +12,7 @@ Imports:
 LinkingTo: Rcpp
 Suggests:
     knitr,testthat,
-    rmarkdown
+    rmarkdown,microbenchmark
 URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr

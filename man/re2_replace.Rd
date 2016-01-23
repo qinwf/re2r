@@ -6,18 +6,22 @@
 \alias{re2_replace.re2exp}
 \title{Replace matched patterns in a string.}
 \usage{
-re2_replace(pattern, rewrite, input, ...)
+re2_replace(pattern, rewrite, input, global = TRUE, ...)
 
-\method{re2_replace}{re2exp}(pattern, rewrite, input, ...)
+\method{re2_replace}{re2exp}(pattern, rewrite, input, global = TRUE, ...)
 
-\method{re2_replace}{character}(pattern, rewrite, input, ...)
+\method{re2_replace}{character}(pattern, rewrite, input, global = TRUE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{rewrite}{replace the first match of "pattern" in "input" with "rewrite"}
+\item{rewrite}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
 
 \item{input}{a character vector}
+
+\item{global}{if it is TRUE, it will replaces successive non-overlapping occurrences}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a character vector
@@ -30,8 +34,8 @@ from the pattern.  \\0 in "rewrite" refers to the entire matching
 text.
 }
 \examples{
-regexp = re2_compile("b+")
-re2_replace(regexp,"d", "yabba dabba doo") == "yada dabba doo"
-re2_replace("b+","d", "yabba dabba doo") == "yada dabba doo"
+regexp = re2("b+")
+re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
+re2_replace("b+","d", "yabba dabba doo", global = FALSE) == "yada dabba doo"
 }
 
