@@ -6,6 +6,21 @@
 
 using namespace Rcpp;
 
+// cpp_match
+SEXP cpp_match(XPtr<RE2> pattern, vector<string> input, bool value, string anchor, bool all);
+RcppExport SEXP re2r_cpp_match(SEXP patternSEXP, SEXP inputSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2> >::type pattern(patternSEXP);
+    Rcpp::traits::input_parameter< vector<string> >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
+    Rcpp::traits::input_parameter< string >::type anchor(anchorSEXP);
+    Rcpp::traits::input_parameter< bool >::type all(allSEXP);
+    __result = Rcpp::wrap(cpp_match(pattern, input, value, anchor, all));
+    return __result;
+END_RCPP
+}
 // cpp_re2_compile
 XPtr<RE2> cpp_re2_compile(const char * pattern, bool log_errors_value, bool utf_8_value, bool posix_syntax_value, bool case_sensitive_value, bool dot_nl_value, bool literal_value, bool longest_match_value, bool never_nl_value, bool never_capture_value, bool one_line_value, bool perl_classes_value, bool word_boundary_value, int64_t max_mem_value);
 RcppExport SEXP re2r_cpp_re2_compile(SEXP patternSEXP, SEXP log_errors_valueSEXP, SEXP utf_8_valueSEXP, SEXP posix_syntax_valueSEXP, SEXP case_sensitive_valueSEXP, SEXP dot_nl_valueSEXP, SEXP literal_valueSEXP, SEXP longest_match_valueSEXP, SEXP never_nl_valueSEXP, SEXP never_capture_valueSEXP, SEXP one_line_valueSEXP, SEXP perl_classes_valueSEXP, SEXP word_boundary_valueSEXP, SEXP max_mem_valueSEXP) {

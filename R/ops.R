@@ -14,14 +14,22 @@
     eval(call("<-", lhs, re2(rhss)), parent, parent)
 }
 
-#' @rdname re2_match
+#' check a regular expression
+#'
+#' return re2_match(pattern, string)
+#'
+#' @param string a character vector
+#' @param pattern a pre-compiled regular expression or a string
+#' @examples
+#' "sd" %=~% c("pt","sd")
+#' "sd" %!~% c("pt","sd")
 #' @export
 `%=~%` = function(pattern, string){
-    re2_match(pattern, string, "bool", "none")
+    re2_match(pattern, string, value = FALSE, anchor = "none")
 }
 
-#' @rdname re2_match
+#' @rdname `%=~%`
 #' @export
 `%!~%` = function(pattern, string){
-    !re2_match(pattern, string, "bool", "none")
+    !re2_match(pattern, string, value = FALSE, anchor = "none")
 }

@@ -59,6 +59,7 @@ RCPP_EXCEPTION_CLASS(ErrorPatternTooLarge, std::string("pattern too large (compi
 
 RCPP_EXCEPTION_CLASS(ErrorRewriteString, std::string("rewrite string error: ") + message)
 
+RCPP_EXCEPTION_CLASS(ErrorAnchorType, std::string("anchor type error: ") + message)
 
 XPtr<RE2> cpp_re2_compile(const char* pattern,
                           bool log_errors_value,
