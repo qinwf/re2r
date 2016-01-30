@@ -12,21 +12,21 @@ pattern \%=~\% string
 
 pattern \%!~\% string
 
-re2_match(pattern, string, result = "bool", anchor = "start", all = TRUE,
+re2_match(pattern, string, value = FALSE, anchor = "none", all = TRUE,
   ...)
 
-\method{re2_match}{re2exp}(pattern, string, result = "bool",
-  anchor = "start", all = TRUE, ...)
+\method{re2_match}{re2exp}(pattern, string, value = FALSE, anchor = "none",
+  all = TRUE, ...)
 
-\method{re2_match}{character}(pattern, string, result = "bool",
-  anchor = "start", all = TRUE, ...)
+\method{re2_match}{character}(pattern, string, value = FALSE,
+  anchor = "none", all = TRUE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{string}{a character vector}
 
-\item{result}{"bool", "value", "object"}
+\item{value}{return value instead of bool result}
 
 \item{anchor}{"start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.}
 
