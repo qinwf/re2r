@@ -14,3 +14,4 @@ GRTAGS
 GTAGS
 .vscode/
 .Rprofile
+^TODO\.md$
