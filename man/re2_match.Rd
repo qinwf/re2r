@@ -13,13 +13,13 @@ pattern \%=~\% string
 pattern \%!~\% string
 
 re2_match(pattern, string, result = "bool", anchor = "start", all = TRUE,
-  simplify = TRUE, ...)
+  ...)
 
 \method{re2_match}{re2exp}(pattern, string, result = "bool",
-  anchor = "start", all = TRUE, simplify = TRUE, ...)
+  anchor = "start", all = TRUE, ...)
 
 \method{re2_match}{character}(pattern, string, result = "bool",
-  anchor = "start", all = TRUE, simplify = TRUE, ...)
+  anchor = "start", all = TRUE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
@@ -31,8 +31,6 @@ re2_match(pattern, string, result = "bool", anchor = "start", all = TRUE,
 \item{anchor}{"start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.}
 
 \item{all}{find all match instead of first match. When all = FALSE and result = "value", the return type will be character vector when there is no capture group or data.frame.}
-
-\item{simplify}{when result = "value", with only one input string, function will return a data.frame instead of a list of data.frames.}
 
 \item{...}{further arguments passed to or from other methods.}
 }
