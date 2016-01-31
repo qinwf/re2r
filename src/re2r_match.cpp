@@ -32,6 +32,54 @@
 
 #include <cstddef>
 
+#include <sstream>
+
+template <typename T>
+string NumberToString ( T Number )
+{
+    ostringstream ss;
+    ss << "?";
+    ss << Number;
+    return ss.str();
+}
+
+map<int, string> get_groups_name(XPtr<RE2>& pattern, int cap_nums){
+    auto groups_name = pattern->CapturingGroupNames();
+
+    vector<int> alls;
+    alls.reserve(cap_nums);
+    int cnt = 1;
+    while(cnt <= cap_nums){
+        alls.push_back(cnt);
+        cnt+=1;
+    }
+
+    vector<int> nums;
+    nums.reserve(cap_nums);
+
+    vector<string> cap_names;
+    cap_names.reserve(cap_nums);
+
+    for(auto it = groups_name.begin(); it != groups_name.end(); ++it) {
+        nums.push_back(it->first);
+    }
+
+    vector<int> diff_nums(alls.size()+nums.size());
+
+    auto diff_res = set_difference(alls.begin(),
+                                   alls.end(),
+                                   nums.begin(),
+                                   nums.end(),
+                                   diff_nums.begin());
+    diff_nums.resize(diff_res-diff_nums.begin());
+
+    for(auto ind : diff_nums) {
+        groups_name.insert(make_pair(ind, NumberToString(ind)));
+    }
+    return groups_name;
+}
+
+
 RE2::Anchor get_anchor_type(const string& anchor){
     if (anchor == "none") {
         return RE2::UNANCHORED;
@@ -60,8 +108,9 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
         }
         return wrap(res);
     } else{
+        auto cap_nums = pattern->NumberOfCapturingGroups();
             // no capture group, return CharacterVector, like grep(value = T)
-        if (pattern->NumberOfCapturingGroups() == 0){
+        if ( cap_nums == 0){
             vector<string> res;
             res.reserve(input.size());
             for(const string& ind : input){
@@ -74,12 +123,12 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
         }
 
         // at least one capture group, return data.frame
+        map<int, string> groups_name = get_groups_name(pattern, cap_nums);
 
         if (all == false) {
-
-            return wrap(1);
+            return wrap(groups_name);
         } else {
-            return wrap(1);
+            return wrap(groups_name);
         }
 
     }
