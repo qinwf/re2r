@@ -60,9 +60,25 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
         }
         return wrap(res);
     } else{
+            // no capture group, return CharacterVector, like grep(value = T)
+        if (pattern->NumberOfCapturingGroups() == 0){
+            vector<string> res;
+            res.reserve(input.size());
+            for(const string& ind : input){
+                if(pattern->Match(ind,0,(int) ind.length(),
+                                    anchor_type, nullptr, 0)){
+                    res.push_back(ind);
+                };
+                return(wrap(ind));
+            }
+            return wrap(res);
+        }
+
+        // at least one capture group, return data.frame
 
         if (all == false) {
 
+            return wrap(1);
         } else {
             return wrap(1);
         }
