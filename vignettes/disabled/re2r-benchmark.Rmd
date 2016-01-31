@@ -9,6 +9,9 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+Derived from Toby Dylan Hocking [tdhock/regex-tutorial
+](https://github.com/tdhock/regex-tutorial)
+
 ```{r, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(
   comment = "#>",
