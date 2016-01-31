@@ -15,3 +15,4 @@ GTAGS
 .vscode/
 .Rprofile
 ^TODO\.md$
+^times\.RData$
