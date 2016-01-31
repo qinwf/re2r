@@ -68,8 +68,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                 if(pattern->Match(ind,0,(int) ind.length(),
                                     anchor_type, nullptr, 0)){
                     res.push_back(ind);
-                };
-                return(wrap(ind));
+                }
             }
             return wrap(res);
         }
