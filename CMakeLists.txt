@@ -48,6 +48,7 @@ set(RE2R_LIBRARY_SOURCES
     src/valgrind.cc
     # wrap
     src/re2r_wrap.cpp
+    src/re2r_match.cpp
     )
 
 add_library(re2r SHARED ${RE2R_LIBRARY_SOURCES})
