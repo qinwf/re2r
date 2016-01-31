@@ -1,5 +1,5 @@
 ---
-title: "Introduction to re2r"
+title: "re2r benckmark"
 author: "Qin Wenfeng"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
