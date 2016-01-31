@@ -30,7 +30,7 @@
 
 
 
-#' print information about a pre-compiled regular expression
+#' Print information about a pre-compiled regular expression
 #' @param x a pre-compiled regular expression
 #' @param ... further arguments passed to or from other methods.
 #' @examples

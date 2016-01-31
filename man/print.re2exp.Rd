@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.R
 \name{print.re2exp}
 \alias{print.re2exp}
-\title{print information about a pre-compiled regular expression}
+\title{Print information about a pre-compiled regular expression}
 \usage{
 \method{print}{re2exp}(x, ...)
 }
@@ -12,7 +12,7 @@
 \item{...}{further arguments passed to or from other methods.}
 }
 \description{
-print information about a pre-compiled regular expression
+Print information about a pre-compiled regular expression
 }
 \examples{
 re2("(.*)@([^.]*)")

@@ -46,7 +46,7 @@
     eval(call("<-", lhs, re2(rhss)), parent, parent)
 }
 
-#' check a regular expression
+#' Check strings with a regular expression
 #'
 #' return re2_match(pattern, string)
 #'
@@ -60,7 +60,7 @@
     re2_match(pattern, string, value = FALSE, anchor = "none")
 }
 
-#' @rdname `%=~%`
+#' @rdname grapes-equals-twiddle-grapes
 #' @export
 `%!~%` = function(pattern, string){
     !re2_match(pattern, string, value = FALSE, anchor = "none")
