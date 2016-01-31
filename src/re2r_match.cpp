@@ -44,10 +44,10 @@ RE2::Anchor get_anchor_type(const string& anchor){
 }
 
 // [[Rcpp::export]]
-SEXP cpp_match(XPtr<RE2>     pattern,
-                  vector<string> input,
+SEXP cpp_match(XPtr<RE2>&     pattern,
+                  vector<string>& input,
                   bool value,
-                  string anchor,
+                  string& anchor,
                   bool all){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
@@ -60,7 +60,13 @@ SEXP cpp_match(XPtr<RE2>     pattern,
         }
         return wrap(res);
     } else{
-        // return value
-        return wrap(1);
+
+        if (all == false) {
+
+        } else {
+            return wrap(1);
+        }
+
     }
+    throw ErrorInternal("unreachable cpp_match");
 }
