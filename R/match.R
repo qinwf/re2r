@@ -1,4 +1,5 @@
-#' re2_match
+#' Match patterns in a string.
+#'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param string a character vector
 #' @param value return value instead of bool result
