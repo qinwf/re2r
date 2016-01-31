@@ -23,6 +23,3 @@ For example, most Windows computers in China will used CP936 charset with GBK en
 ### pro: RE2 pre-compiled pattern is thread safe. It may give better performance.
 
 ### con: cross platform.
-
-
-### con: slow down the speed.
