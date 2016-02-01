@@ -35,6 +35,8 @@
 #include <sstream>
 #include <memory>
 
+#define RE2R_STATIC_SIZE 10
+
 template <typename T>
 inline string NumberToString ( T Number )
 {
@@ -190,17 +192,45 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
         vector<string> groups_name;
         vector<int> groups_number;
 
+
+
+        // static when the number of capture group is smaller than 10
+        RE2::Arg* args_static[RE2R_STATIC_SIZE];
+        RE2::Arg  argv_static[RE2R_STATIC_SIZE];
+        StringPiece piece_static[RE2R_STATIC_SIZE];
+
+        // dynamic when the number of capture group is bigger than 10
         // We use exception, it will be better to use unique_ptr instead of raw ptr.
-        unique_ptr<RE2::Arg[]> argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);
-        unique_ptr<RE2::Arg*[]> args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]);
-        unique_ptr<StringPiece[]> piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
+        unique_ptr<RE2::Arg[]> argv;
+        unique_ptr<RE2::Arg*[]> args;
+        unique_ptr<StringPiece[]> piece;
+        // pointer to used
+        RE2::Arg** args_ptr;
+        StringPiece* piece_ptr;
+        RE2::Arg* argv_ptr;
 
-        // It should be safe, as long as we do not manually delete this.
-        auto piece_ptr = piece.get();
+        // when we have a small number of capture groups,
+        // we do not need to used heap
+        if(cap_nums <= RE2R_STATIC_SIZE){ // RE2R_STATIC_SIZE = 10
+            args_ptr = args_static;
+            argv_ptr = argv_static;
+            piece_ptr = piece_static;
+        } else{
+            argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);
+            args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]);
+            piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
+            piece_ptr = piece.get();
+            args_ptr = args.get();
+            argv_ptr = argv.get();
+        };
 
+        // It we do not manually delete this, it will be safe:
+        // args_ptr， argv_ptr, piece_ptr
+        // below we can only use these three ptr
+        //
         for (int nn = 0; nn != cap_nums; nn++){
-            args[nn] = &argv[nn];
-            argv[nn] = &piece_ptr[nn];
+            args_ptr[nn] = &argv_ptr[nn];
+            argv_ptr[nn] = &piece_ptr[nn];
         }
         // each string get a group of result
         if (all == false) {
@@ -220,20 +250,20 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
             switch(anchor_type){
             case RE2::UNANCHORED:
                 for(const string& ind : input){
-                    for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums, groups_number,
                              piece_ptr, res,
-                             RE2::PartialMatchN(ind, *pattern, args.get(), cap_nums));
+                             RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                 }
                 break;
             default:
                 for(const string& ind : input){
-                    for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums, groups_number,
                              piece_ptr, res,
-                             RE2::FullMatchN(ind, *pattern, args.get(), cap_nums));
+                             RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
                     break;
                 }
             }
@@ -282,14 +312,14 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                 for(const string& ind : input){
                     StringPiece todo_str(ind);    // Wrap a StringPiece around it
                     StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                    for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                     size_t cnt = 0;
-                    while (RE2::FindAndConsumeN(&todo_str, *pattern, args.get(), cap_nums)) {
+                    while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                         cnt+=1;
                         string numstring = numbertostring(times_n);
                         fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
 
-                        for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                         // Note that if the
                         // regular expression matches an empty string, input will advance
@@ -319,15 +349,15 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                     for(const string& ind : input){
                         StringPiece todo_str(ind);    // Wrap a StringPiece around it
                         StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                        for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                         size_t cnt = 0;
-                        while (RE2::ConsumeN(&todo_str, *pattern, args.get(), cap_nums)) {
-                            for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                        while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                             cnt+=1;
                             string numstring = numbertostring(times_n);
                             fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
 
-                            for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                             // Note that if the
                             // regular expression matches an empty string, input will advance
