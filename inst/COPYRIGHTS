@@ -1,5 +1,5 @@
-re2r is built RE2 projects, and part of the code is copied
-or derived from this projects.
+re2r is built upon RE2 projects, and part of the code is copied
+or derived from this project.
 
 The files in inst/include and inst/include/re2, inst/include/util, and src/ subdirectory,
 
