@@ -5,20 +5,20 @@
 \alias{\%=~\%}
 \title{Check strings with a regular expression}
 \usage{
-pattern \%=~\% string
+string \%=~\% pattern
 
-pattern \%!~\% string
+string \%!~\% pattern
 }
 \arguments{
-\item{pattern}{a pre-compiled regular expression or a string}
-
 \item{string}{a character vector}
+
+\item{pattern}{a pre-compiled regular expression or a string}
 }
 \description{
 return re2_match(pattern, string)
 }
 \examples{
-"sd" \%=~\% c("pt","sd")
-"sd" \%!~\% c("pt","sd")
+c("pt","sd") \%=~\% "sd"
+c("pt","sd") \%!~\% "sd"
 }
 

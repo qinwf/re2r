@@ -53,15 +53,15 @@
 #' @param string a character vector
 #' @param pattern a pre-compiled regular expression or a string
 #' @examples
-#' "sd" %=~% c("pt","sd")
-#' "sd" %!~% c("pt","sd")
+#' c("pt","sd") %=~% "sd"
+#' c("pt","sd") %!~% "sd"
 #' @export
-`%=~%` = function(pattern, string){
+`%=~%` = function(string, pattern){
     re2_match(pattern, string, value = FALSE, anchor = "none")
 }
 
 #' @rdname grapes-equals-twiddle-grapes
 #' @export
-`%!~%` = function(pattern, string){
+`%!~%` = function(string, pattern){
     !re2_match(pattern, string, value = FALSE, anchor = "none")
 }

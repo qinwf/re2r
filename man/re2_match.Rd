@@ -6,14 +6,14 @@
 \alias{re2_match.re2exp}
 \title{Match patterns in a string.}
 \usage{
-re2_match(pattern, string, value = FALSE, anchor = "none", all = TRUE,
+re2_match(pattern, string, value = FALSE, anchor = "none", all = FALSE,
   ...)
 
 \method{re2_match}{re2exp}(pattern, string, value = FALSE, anchor = "none",
-  all = TRUE, ...)
+  all = FALSE, ...)
 
 \method{re2_match}{character}(pattern, string, value = FALSE,
-  anchor = "none", all = TRUE, ...)
+  anchor = "none", all = FALSE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
