@@ -150,10 +150,10 @@ RE2::Anchor get_anchor_type(const string& anchor){
 
 // [[Rcpp::export]]
 SEXP cpp_match(XPtr<RE2>&     pattern,
-                  vector<string>& input,
-                  bool value,
-                  string& anchor,
-                  bool all){
+               vector<string>& input,
+               bool value,
+               string& anchor,
+               bool all){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
     if (value == false){
@@ -175,7 +175,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
             res.reserve(input.size());
             for(const string& ind : input){
                 if(pattern->Match(ind,0,(int) ind.length(),
-                                    anchor_type, nullptr, 0)){
+                                  anchor_type, nullptr, 0)){
                     res.push_back(ind);
                 }
             }
@@ -217,25 +217,27 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
             for(auto it: groups_number) {
                 res[it] = CharacterVector();
             }
+            switch(anchor_type){
+            case RE2::UNANCHORED:
+                for(const string& ind : input){
+                    for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
 
-            for(const string& ind : input){
-                for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                    fill_res(cap_nums, groups_number,
+                             piece_ptr, res,
+                             RE2::PartialMatchN(ind, *pattern, args.get(), cap_nums));
+                }
+                break;
+            default:
+                for(const string& ind : input){
+                    for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
 
-                switch(anchor_type){
-                case RE2::UNANCHORED:
-                fill_res(cap_nums, groups_number,
-                         piece_ptr, res,
-                         RE2::PartialMatchN(ind, *pattern, args.get(), cap_nums));
-                    break;
-                default:
-                fill_res(cap_nums, groups_number,
-                         piece_ptr, res,
-                         RE2::FullMatchN(ind, *pattern, args.get(), cap_nums));
+                    fill_res(cap_nums, groups_number,
+                             piece_ptr, res,
+                             RE2::FullMatchN(ind, *pattern, args.get(), cap_nums));
                     break;
                 }
-                //res.push_back(pattern->Match(ind,0,(int) ind.length(),
-                                             //anchor_type, nullptr, 0));
             }
+
 
             // generate data.frame
 
@@ -274,12 +276,14 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
 
             // for each input string, get a !n label.
             size_t times_n = 1;
-            for(const string& ind : input){
-                StringPiece todo_str(ind);    // Wrap a StringPiece around it
-                StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
-                size_t cnt = 0;
-                if (anchor_type == RE2::UNANCHORED){
+
+            //  FIXME Duplicated Code
+            if (anchor_type == RE2::UNANCHORED){
+                for(const string& ind : input){
+                    StringPiece todo_str(ind);    // Wrap a StringPiece around it
+                    StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                    for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                    size_t cnt = 0;
                     while (RE2::FindAndConsumeN(&todo_str, *pattern, args.get(), cap_nums)) {
                         cnt+=1;
                         string numstring = numbertostring(times_n);
@@ -306,60 +310,69 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
 
                         // try next place
                     }   // while
-                }else{
-                    while (RE2::ConsumeN(&todo_str, *pattern, args.get(), cap_nums)) {
-                        for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
-                        cnt+=1;
+                    if(cnt == 0){ // no one match, all NA return
                         string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
-
+                        fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, false);
+                    }
+                    times_n+=1; //bump times_n !n
+                }}else{
+                    for(const string& ind : input){
+                        StringPiece todo_str(ind);    // Wrap a StringPiece around it
+                        StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
                         for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                        size_t cnt = 0;
+                        while (RE2::ConsumeN(&todo_str, *pattern, args.get(), cap_nums)) {
+                            for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
+                            cnt+=1;
+                            string numstring = numbertostring(times_n);
+                            fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
 
-                        // Note that if the
-                        // regular expression matches an empty string, input will advance
-                        // by 0 bytes.  If the regular expression being used might match
-                        // an empty string, the loop body must check for this case and either
-                        // advance the string or break out of the loop.
-                        //
-                        if(todo_str.length() == 0) break; // end of search for this string
+                            for(int pn = 0; pn!=cap_nums; pn++) piece[pn].clear();
 
-                        if((todo_str.data() == tmp_piece.data()) &&
-                           (todo_str.length() == tmp_piece.length()) &&
-                           (todo_str.length() !=0) ){
-                            todo_str.remove_prefix(1);
+                            // Note that if the
+                            // regular expression matches an empty string, input will advance
+                            // by 0 bytes.  If the regular expression being used might match
+                            // an empty string, the loop body must check for this case and either
+                            // advance the string or break out of the loop.
+                            //
+                            if(todo_str.length() == 0) break; // end of search for this string
+
+                            if((todo_str.data() == tmp_piece.data()) &&
+                               (todo_str.length() == tmp_piece.length()) &&
+                               (todo_str.length() !=0) ){
+                                todo_str.remove_prefix(1);
+                            }
+
+                            // update tmp_piece
+                            tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+
+                            // advanced try next place
+                        }   // else while
+                        if(cnt == 0){ // no one match, all NA return
+                            string numstring = numbertostring(times_n);
+                            fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, false);
                         }
-
-                        // update tmp_piece
-                        tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-
-                        // advanced try next place
-                    }   // else while
+                        times_n+=1; //bump times_n !n
+                    }
                 } // else
 
-                if(cnt == 0){ // no one match, all NA return
-                    string numstring = numbertostring(times_n);
-                    fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, false);
+
+
+                // generate data.frame
+                List res2 = wrap(res);
+                auto res_begin = res.begin();
+                auto res_size = res_begin->second.size();
+                vector<string> row_names;
+                row_names.reserve(res_size);
+                for (auto i = 1; i <= res_size ; i++) {
+                    row_names.emplace_back(numbertostring(i));
                 }
-                times_n+=1; //bump times_n !n
 
-                // try next string
-            }
+                res2.attr("row.names") = row_names;
+                res2.attr("class") = "data.frame";
+                res2.attr("names") = groups_name;
 
-            // generate data.frame
-            List res2 = wrap(res);
-            auto res_begin = res.begin();
-            auto res_size = res_begin->second.size();
-            vector<string> row_names;
-            row_names.reserve(res_size);
-            for (auto i = 1; i <= res_size ; i++) {
-                row_names.emplace_back(numbertostring(i));
-            }
-
-            res2.attr("row.names") = row_names;
-            res2.attr("class") = "data.frame";
-            res2.attr("names") = groups_name;
-
-            return wrap(res2);
+                return wrap(res2);
 
         }
 
