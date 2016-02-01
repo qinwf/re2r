@@ -180,6 +180,34 @@ re2_extract("(.*)@([^.]*)","test@me.com","\\2!\\1")
 
 `\\1` and `\\2` are the first and second capture groups.
 
+### 4. `Regular Expression Object` for better performance
+
+We can create a regular expression object (RE2 object) from a string. It will reduce the time to parse the syntax of the same pattern. 
+
+And this will also give us more option for the pattern. run `help(re2)` to get more detials.
+
+```{r,collapse=TRUE}
+regexp = re2("test",case_sensitive = FALSE)
+print(regexp)
+regexp %<~% "(?P<first>1*)"
+regexp
+```
+
+`%<~%` is a operator to create a new RE2 object.
+
+```{r,collapse=TRUE}
+regexp = re2("test",case_sensitive = FALSE)
+re2_match(regexp, "TEST")
+re2_replace(regexp, "ops", "TEST")
+```
+
+If you come from a `Perl` world, you may be insterested in `%=~%`  `%!~%`.
+
+```{r,collapse=TRUE}
+"TEST" %=~% regexp
+"TEST" %!~% regexp
+```
+
 ## Want to learn more?
 
 For more examples, you can check out `RE2 Example` vignette.
