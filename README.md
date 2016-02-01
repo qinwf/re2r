@@ -18,3 +18,175 @@ To learn how to use, you can check out the [vignettes](vignettes/re2r-intro.Rmd)
 ## Related Work
 
 [Google Summer of Code](https://github.com/rstats-gsoc/gsoc2016/wiki/re2-regular-expressions) - re2 regular expressions.
+
+## Brief Intro
+
+### Search a string for a pattern
+
+```r
+## Sys.setlocale(locale = "English") ## for Windows users with non-UTF8 locale
+## re2_match(pattern, string)
+
+test_string = "this is just one test";
+re2_match("(o.e)", test_string)
+```
+
+```r
+[1] TRUE
+```
+
+Searches the string expression for the occurence(s) of a substring that matches 'pattern' and returns boolean result.
+
+With `value = TRUE` option, function will return the capture groups with `()`.
+
+```r
+(res = re2_match("(o.e)", test_string, value = TRUE))
+##    ?1
+## 1 one
+str(res)
+## 'data.frame':    1 obs. of  1 variable:
+##  $ ?1: chr "one"
+```
+
+The return result is a data.frame. `?1` is the first capture group and it is unnamed group.
+
+We can create named capture group with `(?P<name>pattern)` syntax.
+
+```r
+(res = re2_match("(?P<testname>this)( is)", test_string, value = TRUE))
+##   testname  ?2
+## 1     this  is
+str(res)
+## 'data.frame':    1 obs. of  2 variables:
+##  $ testname: chr "this"
+##  $ ?2      : chr " is"
+```
+
+With `all = TRUE` option, function will return the all of patterns in a string instead of just the first one.
+
+```r
+(res = re2_match("(is)", test_string, value = TRUE, all = TRUE))
+##   !n ?1
+## 1  1 is
+## 2  1 is
+str(res)
+## 'data.frame':    2 obs. of  2 variables:
+##  $ !n: chr  "1" "1"
+##  $ ?1: chr  "is" "is"
+```
+
+`!n` is the index of the input string. We can provide a character vector to a pattern.
+
+```{r,collapse=TRUE}
+test_string = c("this is just one test", "the second test");
+(res = re2_match("(is)", test_string, value = TRUE, all = TRUE))
+##   !n   ?1
+## 1  1   is
+## 2  1   is
+## 3  2 <NA>
+str(res)
+## 'data.frame':    3 obs. of  2 variables:
+##  $ !n: chr  "1" "1" "2"
+##  $ ?1: chr  "is" "is" NA
+```
+
+If there is no capture group, and `value = TRUE`, the matched origin strings will be returned.
+
+```r
+test_string = c("this is just one test", "the second test");
+(res = re2_match("is", test_string, value = TRUE))
+## [1] "this is just one test"
+str(res)
+##  chr "this is just one test"
+```
+
+### 2. Replace a substring
+
+```r
+## re2_replace(pattern, rewrite, input)
+```
+
+Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and replaces the found substrings with "rewrite text".
+
+```r
+input_string = "this is just one test";
+new_string = "my"
+re2_replace("(o.e)", new_string, input_string)
+```
+
+```r
+## [1] "this is just my test"
+```
+
+### 3. Extract a substring
+
+```r
+## re2_extract(pattern, input, rewrite = optional)
+```
+
+Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and return the found substrings with "rewrite text".
+
+```r
+re2_extract("(.)","yabba dabba doo")
+```
+
+```r
+## [1] "y"
+```
+
+```r
+re2_extract("(.*)@([^.]*)","test@me.com","\\2!\\1")
+```
+
+```r
+## [1] "me!test"
+```
+
+`\\1` and `\\2` are the first and second capture groups.
+
+### 4. `Regular Expression Object` for better performance
+
+We can create a regular expression object (RE2 object) from a string. It will reduce the time to parse the syntax of the same pattern. 
+
+And this will also give us more option for the pattern. run `help(re2)` to get more detials.
+
+```r
+regexp = re2("test",case_sensitive = FALSE)
+print(regexp)
+## re2 pre-compiled regular expression
+## 
+## pattern: test
+## number of capturing subpatterns: 0
+## capturing names with indices: 
+## named integer(0)
+## expression size: 11
+regexp %<~% "(?P<first>1*)"
+regexp
+## re2 pre-compiled regular expression
+## 
+## pattern: (?P<first>1*)
+## number of capturing subpatterns: 1
+## capturing names with indices: 
+## first 
+##     1 
+## expression size: 8
+```
+
+`%<~%` is a operator to create a new RE2 object.
+
+```r
+regexp = re2("test",case_sensitive = FALSE)
+re2_match(regexp, "TEST")
+## [1] TRUE
+re2_replace(regexp, "ops", "TEST")
+## [1] "ops"
+```
+
+If you come from a `Perl` world, you may be insterested in `%=~%`  `%!~%`.
+
+```r
+"TEST" %=~% regexp
+## [1] TRUE
+"TEST" %!~% regexp
+## [1] FALSE
+```
