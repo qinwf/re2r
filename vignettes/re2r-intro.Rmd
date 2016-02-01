@@ -27,7 +27,7 @@ This Article is derived from [An Introduction to Regular Expressions](http://www
 
 Regular expressions are a way to search for substrings ("matches") in strings. This is done by searching with "patterns" through the string.
 
-### Example
+Example:
 
 You probably know the `*` and `?` charachters used in the dir command on the command line. The `*` character means "zero or more arbitrary characters" and the `?` means "one arbitrary character". 
 
@@ -47,7 +47,7 @@ This is exactly the way REs work. While the `*` and `?` are a very limited ways 
 
 ## Why would we use Regular Expressions
 
-### Example usages could be:
+Example usages could be:
 
 1. Remove all occurences of a specific tag from text file
 2. Check whether an e-mail address is well-formed
@@ -56,34 +56,34 @@ This is exactly the way REs work. While the `*` and `?` are a very limited ways 
 
 Basically we can do the following operations on a string with REs:
 
-#### Test for a pattern
+#### 1. Test for a pattern
 
 Search through a string and check whether a pattern matches a substring, returning true or false.
 
-#### Extract a substring
+#### 2. Extract a substring
 
 Search for a substring and return that substring.
 
-#### Replace a substring
+#### 3. Replace a substring
 
 Search for a substring that matches a pattern and replace it by another string.
 
 ## Where to use Regular Expressions
 
 
-### Base R functions with `PCRE`
+### 1. Base R functions with `PCRE`
 
 Base R functions such as `regexpr` use [PCRE](http://www.pcre.org/) when given the `perl=TRUE` argument. PCRE includes many useful features, such as [named capture](https://github.com/tdhock/regex-tutorial#motivation-for-using-named-capture-regular-expressions-5-minutes), but has an exponential time complexity.
 
-### Base R functions with `TRE`
+### 2. Base R functions with `TRE`
 
 Base R functions such as `regexpr` use [TRE](https://github.com/laurikari/tre) when given the `perl=FALSE` argument. TRE has a polynomial time complexity but does not include named capture groups.
 
-### `stringi` with `ICU`
+### 3. `stringi` with `ICU`
 
 `stringr::str_match` and `stringi::stri_match` use the regex engine from the ICU library, which has an exponential time complexity. The stringi package does not support named capture yet as such a feature set is still considered as [experimental in ICU](https://github.com/hadley/stringr/pull/16).
 
-### `re2r` with `RE2`
+### 4. `re2r` with `RE2`
 
 `RE2` is a primarily DFA based regexp engine from Google that is very fast at matching large amounts of text. It is has a `polynomial time complexity` (or `fast and scalable` in general case), but it does not support `look behind` and some regular expression features.
 
@@ -95,7 +95,7 @@ Although being slightly different to use (because of the design of the engines),
 
 As stated, I do all examples in `re2r`. Therefore here a quick overview over the most common methods on how to execute a regular expression in `re2r`.
 
-### Search a string for a pattern
+### 1. Search a string for a pattern
 
 Here a quick overview over the most common methods on how to execute a regular expression.
 
@@ -151,7 +151,7 @@ test_string = c("this is just one test", "the second test");
 str(res)
 ```
 
-### Replace a substring
+### 2. Replace a substring
 
 ```{r, eval=FALSE, include=TRUE}
 re2_replace(pattern, rewrite, input)
@@ -164,5 +164,22 @@ input_string = "this is just one test";
 new_string = "my"
 re2_replace("(o.e)", new_string, input_string)
 ```
+
+### 3. Extract a substring
+
+```{r, eval=FALSE, include=TRUE}
+re2_extract(pattern, input, rewrite = optional)
+```
+
+Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and return the found substrings with "rewrite text".
+
+```{r}
+re2_extract("(.)","yabba dabba doo")
+re2_extract("(.*)@([^.]*)","test@me.com","\\2!\\1")
+```
+
+`\\1` and `\\2` are the first and second capture groups.
+
+## Want to learn more?
 
 For more examples, you can check out `RE2 Example` vignette.
