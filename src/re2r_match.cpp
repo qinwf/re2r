@@ -302,7 +302,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                         }
 
                         // update tmp_piece
-                        StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                        tmp_piece = StringPiece(todo_str.data(), todo_str.length());
 
                         // try next place
                     }   // while
@@ -330,7 +330,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                         }
 
                         // update tmp_piece
-                        StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                        tmp_piece = StringPiece(todo_str.data(), todo_str.length());
 
                         // advanced try next place
                     }   // else while
@@ -351,7 +351,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
             auto res_size = res_begin->second.size();
             vector<string> row_names;
             row_names.reserve(res_size);
-            for (unsigned int i = 1; i <= res_size ; i++) {
+            for (auto i = 1; i <= res_size ; i++) {
                 row_names.emplace_back(numbertostring(i));
             }
 
