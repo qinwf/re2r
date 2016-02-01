@@ -21,7 +21,7 @@ To learn how to use, you can check out the [vignettes](vignettes/re2r-intro.Rmd)
 
 ## Brief Intro
 
-### Search a string for a pattern
+### 1. Search a string for a pattern
 
 ```r
 ## Sys.setlocale(locale = "English") ## for Windows users with non-UTF8 locale
