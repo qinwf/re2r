@@ -2,7 +2,7 @@
 output: 
     html_document:
         toc: no
-        css: csssimple.css
+        css: one.css
 vignette: >
   %\VignetteIndexEntry{Compare RE in R}
   %\VignetteEngine{knitr::rmarkdown}

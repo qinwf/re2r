@@ -2,7 +2,7 @@
 output: 
     html_document:
         toc: no
-        css: csssimple.css
+        css: one.css
 vignette: >
   %\VignetteIndexEntry{RE2 Syntax}
   %\VignetteEngine{knitr::rmarkdown}
