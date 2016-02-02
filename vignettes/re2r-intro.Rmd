@@ -18,9 +18,8 @@ This Article is derived from [An Introduction to Regular Expressions](http://www
 
 1. What are Regular Expressions?
 2. Why would we use Regular Expressions
-3. Where to use Regular Expressions
-4. How to use the Regular Expression Syntax Basics
-
+3. How to use the Regular Expression Syntax Basics
+4. Where to use Regular Expressions
 
 ## What are Regular Expressions?
 
@@ -67,32 +66,9 @@ Search for a substring and return that substring.
 
 Search for a substring that matches a pattern and replace it by another string.
 
-## Where to use Regular Expressions
-
-
-#### 1. Base R functions with `PCRE`
-
-Base R functions such as `regexpr` use [PCRE](http://www.pcre.org/) when given the `perl=TRUE` argument. PCRE includes many useful features, such as [named capture](https://github.com/tdhock/regex-tutorial#motivation-for-using-named-capture-regular-expressions-5-minutes), but has an exponential time complexity.
-
-#### 2. Base R functions with `TRE`
-
-Base R functions such as `regexpr` use [TRE](https://github.com/laurikari/tre) when given the `perl=FALSE` argument. TRE has a polynomial time complexity but does not include named capture groups.
-
-#### 3. `stringi` with `ICU`
-
-`stringr::str_match` and `stringi::stri_match` use the regex engine from the ICU library, which has an exponential time complexity. The stringi package does not support named capture yet as such a feature set is still considered as [experimental in ICU](https://github.com/hadley/stringr/pull/16).
-
-#### 4. `re2r` with `RE2`
-
-`RE2` is a primarily DFA based regexp engine from Google that is very fast at matching large amounts of text. It is has a `polynomial time complexity` (or `fast and scalable` in general case), but it does not support `look behind` and some regular expression features.
-
-#### above all
-
-Although being slightly different to use (because of the design of the engines), all are quite similar to `Perl`'s implementation of REs. 
-
 ## How to use Regular Expressions from re2r
 
-As stated, I do all examples in `re2r`. Therefore here a quick overview over the most common methods on how to execute a regular expression in `re2r`.
+Here is a quick overview over the most common methods on how to execute a regular expression in `re2r`.
 
 ### 1. Search a string for a pattern
 
@@ -212,6 +188,28 @@ If you come from a `Perl` world, you may be insterested in `%=~%`  `%!~%`.
 "TEST" %=~% regexp
 "TEST" %!~% regexp
 ```
+
+## Where to use Regular Expressions
+
+#### 1. Base R functions with `PCRE`
+
+Base R functions such as `regexpr` use [PCRE](http://www.pcre.org/) when given the `perl=TRUE` argument. PCRE includes many useful features, such as [named capture](https://github.com/tdhock/regex-tutorial#motivation-for-using-named-capture-regular-expressions-5-minutes), but has an exponential time complexity.
+
+#### 2. Base R functions with `TRE`
+
+Base R functions such as `regexpr` use [TRE](https://github.com/laurikari/tre) when given the `perl=FALSE` argument. TRE has a polynomial time complexity but does not include named capture groups.
+
+#### 3. `stringi` with `ICU`
+
+`stringr::str_match` and `stringi::stri_match` use the regex engine from the ICU library, which has an exponential time complexity. The stringi package does not support named capture yet as such a feature set is still considered as [experimental in ICU](https://github.com/hadley/stringr/pull/16).
+
+#### 4. `re2r` with `RE2`
+
+`RE2` is a primarily DFA based regexp engine from Google that is very fast at matching large amounts of text. It is has a `polynomial time complexity` (or `fast and scalable` in general case), but it does not support `look behind` and some regular expression features.
+
+#### above all
+
+Although being slightly different to use (because of the design of the engines), all are quite similar to `Perl`'s implementation of REs. 
 
 ## Want to learn more?
 
