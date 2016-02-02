@@ -14,7 +14,7 @@ install:
 
 build_script:
   - travis-tool.sh install_deps
-  - travis-tool.sh install_github rstudio/rmarkdown
+  - travis-tool.sh install_git https://github.com/rstudio/rmarkdown
 
 test_script:
   - travis-tool.sh run_tests
