@@ -13,6 +13,31 @@ vignette: >
 library(re2r)
 ```
 
-This Article is derived from [An Introduction to Regular Expressions](http://www.codeproject.com/Articles/939/An-Introduction-to-Regular-Expressions)
-
-## What are Regular Expressions?
+<div class="markdown-body">
+<table>
+<tr><td>**package**</td>
+<td>**code &amp; result**</td>
+</tr>
+<tr><td>**descrition**</td>
+<td>simple match</td>
+</tr>
+<tr><td>common</td>
+<td>`ss = "this is just one test"`</td>
+</tr>
+<tr><td>base</td>
+<td>`grepl("(o.e)", ss)`</td>
+</tr>
+<tr><td>re2r</td>
+<td>`re2_match("(o.e)", ss)`</td>
+</tr>
+<tr><td>stringr(stringi)</td>
+<td>`str_match(ss, "(o.e)")`</td>
+</tr>
+<tr><td>rex</td>
+<td>`rex(capture("o",shortcuts$any,"e"))`</td>
+</tr>
+<tr><td>result</td>
+<td>`c(TRUE)`</td>
+</tr>
+</table>
+</div>

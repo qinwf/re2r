@@ -1,0 +1,15 @@
+package,code & result
+descrition,match
+common,"`ss = ""this is just one test""`"
+base,"`grepl(""(o.e)"", ss)`"
+re2r,"`re2_match(""(o.e)"", ss)`"
+stringr(stringi),"`str_match(ss, ""(o.e)"")`"
+rex,"`rex(capture(""o"",shortcuts$any,""e""))`"
+result,`c(TRUE)`
+descrition,match
+common,"`ss = ""this is just one test""`"
+base,"`grepl(""(o.e)"", ss)`"
+re2r,"`re2_match(""(o.e)"", ss)`"
+stringr(stringi),"`str_match(ss, ""(o.e)"")`"
+rex,"`rex(capture(""o"",shortcuts$any,""e""))`"
+result,`c(TRUE)`
