@@ -13,6 +13,642 @@ vignette: >
 library(re2r)
 ```
 
+## Engine
+
+<div class="markdown-body">
+<table>
+<tr><td>**Flag** </td>
+<td> </td>
+<td>**PCRE** </td>
+<td>**ICU** </td>
+<td>**Boost.Regex** </td>
+<td>**std::regex** </td>
+<td>**RE2** </td>
+</tr>
+<tr><td>/i </td>
+<td>case insensitive </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>/m </td>
+<td>multi-line </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>/s </td>
+<td>dot matches anything </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>/x </td>
+<td>ignore whitespace and comments </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>/U </td>
+<td>minimal match </td>
+<td>o </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>**Operator** </td>
+<td> </td>
+<td>**PCRE** </td>
+<td>**ICU** </td>
+<td>**Boost.Regex** </td>
+<td>**std::regex** </td>
+<td>**RE2** </td>
+</tr>
+<tr><td>star </td>
+<td>match 0 or more times </td>
+<td>o </td>
+<td>o </td>
+<td>? </td>
+<td>? </td>
+<td>o </td>
+</tr>
+<tr><td>+ </td>
+<td>match 1 or more times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>?? </td>
+<td>match 0 or 1 times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>{n} </td>
+<td>match n times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>{n,} </td>
+<td>match n or more times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>{n,m} </td>
+<td>match between n and m times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>*? </td>
+<td>match 0 or more times, not greedy </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>? </td>
+<td>match 1 or more times, not greedy </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>??? </td>
+<td>match 0 or 1 times, not greedy </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>{n}? </td>
+<td>match n times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>{n,}? </td>
+<td>match n or more times, not greedy </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>{n,m}? </td>
+<td>match between n and m times, not greedy </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>*+ </td>
+<td>match 0 or more times, possessive </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>+ </td>
+<td>match 1 or more times, possessive </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>?? </td>
+<td>match 0 or 1 times, possessive </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>{n}+ </td>
+<td>match n times </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>{n,}+ </td>
+<td>match n or more times, possessive </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>{n,m}+ </td>
+<td>match between n and m times, possessive </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>( ... ) </td>
+<td>capturing group </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>(?: ... ) </td>
+<td>group </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>(?&gt; ... ) </td>
+<td>atomic grouping </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?# ... ) </td>
+<td>comment </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?= ... ) </td>
+<td>look-ahead assertion </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?! ... ) </td>
+<td>negative look-ahead assertion </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?&lt;= ... ) </td>
+<td>look-behind assertion </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?&lt;! ... ) </td>
+<td>negative look-behind assertion </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?flags: ... ) </td>
+<td>flags change </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>(?flags) </td>
+<td>flags change </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>(?P&lt;name&gt; ...) </td>
+<td>named capturing group </td>
+<td>o </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td>o </td>
+</tr>
+<tr><td>(?&lt;name&gt; ...) </td>
+<td>named capturing group </td>
+<td>o </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>(?&#39;name&#39; ...) </td>
+<td>named capturing group </td>
+<td>o </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>...) </td>
+<td>branch reset </td>
+<td>o </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td>x </td>
+</tr>
+<tr><td>**Characters**</td>
+<td> </td>
+<td>**PCRE** </td>
+<td>**ICU** </td>
+<td>**Boost.Regex** </td>
+<td>**std::regex** </td>
+<td>**RE2** </td>
+</tr>
+<tr><td>\\a </td>
+<td>BELL </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\A </td>
+<td>beginning of input </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\b inside a [set] </td>
+<td>BACKSPACE </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\b outside a [set] </td>
+<td>on a word boundary </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\B </td>
+<td>not on a word boundary </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\cX </td>
+<td>ASCII control character X </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\d </td>
+<td>digit </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\D </td>
+<td>non digit </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\e </td>
+<td>ESCAPE </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\E </td>
+<td>end of \Q ... \E quoting </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\f </td>
+<td>FORM FEED </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\G </td>
+<td>end of previous match </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\n </td>
+<td>LINE FEED </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\N{x} </td>
+<td>UNICODE CHARACTER NAME x </td>
+<td>x </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\p{x} </td>
+<td>UNICODE PROPERTY NAME x </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\P{x} </td>
+<td>UNICODE PROPERTY NAME not x </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\Q </td>
+<td>start of \Q ... \E quoting </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\r </td>
+<td>CARRIAGE RETURN </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\s </td>
+<td>white space </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\S </td>
+<td>non white space </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\t </td>
+<td>HORIZONTAL TAB </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\uhhhh </td>
+<td>U+hhhh (between U+0000 and U+FFFF) </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\Uhhhhhhhh </td>
+<td>U+hhhhhhhh (between U+00000000 and U+0010FFFF) </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\v </td>
+<td>VERTICAL TAB </td>
+<td>o </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\w </td>
+<td>word character </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\W </td>
+<td>non word character </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\x{hhhh} </td>
+<td>U+hhhh </td>
+<td>o (0-10FFFF) </td>
+<td>o (0-10FFFF) </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\xhhhh </td>
+<td>U+hhhh </td>
+<td>o (00-FF) </td>
+<td>o (00-FF) </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\X </td>
+<td>grapheme cluster </td>
+<td>x </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\Z </td>
+<td>end of input (or before the final ) </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\z </td>
+<td>end of input </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\n </td>
+<td>n-th backreference </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\0ooo </td>
+<td>ASCII/Latin-1 character 0ooo </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>. </td>
+<td>any character but newlines </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>^ </td>
+<td>line beginning </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>$ </td>
+<td>line end </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>\\ </td>
+<td>quote the following symbol </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>[pattern] </td>
+<td>set </td>
+<td>o </td>
+<td>o </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+</table>
+</div>
+
+<p />
+<p />
+
+## Package Function
+
 <div class="markdown-body">
 <table>
 <tr><td>**package**</td>
