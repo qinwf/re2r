@@ -70,23 +70,23 @@ Search for a substring that matches a pattern and replace it by another string.
 ## Where to use Regular Expressions
 
 
-### 1. Base R functions with `PCRE`
+#### 1. Base R functions with `PCRE`
 
 Base R functions such as `regexpr` use [PCRE](http://www.pcre.org/) when given the `perl=TRUE` argument. PCRE includes many useful features, such as [named capture](https://github.com/tdhock/regex-tutorial#motivation-for-using-named-capture-regular-expressions-5-minutes), but has an exponential time complexity.
 
-### 2. Base R functions with `TRE`
+#### 2. Base R functions with `TRE`
 
 Base R functions such as `regexpr` use [TRE](https://github.com/laurikari/tre) when given the `perl=FALSE` argument. TRE has a polynomial time complexity but does not include named capture groups.
 
-### 3. `stringi` with `ICU`
+#### 3. `stringi` with `ICU`
 
 `stringr::str_match` and `stringi::stri_match` use the regex engine from the ICU library, which has an exponential time complexity. The stringi package does not support named capture yet as such a feature set is still considered as [experimental in ICU](https://github.com/hadley/stringr/pull/16).
 
-### 4. `re2r` with `RE2`
+#### 4. `re2r` with `RE2`
 
 `RE2` is a primarily DFA based regexp engine from Google that is very fast at matching large amounts of text. It is has a `polynomial time complexity` (or `fast and scalable` in general case), but it does not support `look behind` and some regular expression features.
 
-### above all
+#### above all
 
 Although being slightly different to use (because of the design of the engines), all are quite similar to `Perl`'s implementation of REs. 
 
