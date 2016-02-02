@@ -16,28 +16,69 @@ library(re2r)
 <div class="markdown-body">
 <table>
 <tr><td>**package**</td>
-<td>**code &amp; result**</td>
+<td>**code**</td>
+<td>**note**</td>
+<td>**result**</td>
 </tr>
 <tr><td>**descrition**</td>
-<td>simple match</td>
+<td>**simple match**</td>
+<td> </td>
+<td> </td>
 </tr>
 <tr><td>common</td>
 <td>`ss = "this is just one test"`</td>
-</tr>
-<tr><td>base</td>
-<td>`grepl("(o.e)", ss)`</td>
-</tr>
-<tr><td>re2r</td>
-<td>`re2_match("(o.e)", ss)`</td>
-</tr>
-<tr><td>stringr(stringi)</td>
-<td>`str_match(ss, "(o.e)")`</td>
+<td> </td>
+<td> </td>
 </tr>
 <tr><td>rex</td>
 <td>`rex(capture("o",shortcuts$any,"e"))`</td>
+<td> </td>
+<td>"(o.e)"</td>
 </tr>
-<tr><td>result</td>
+<tr><td>base</td>
+<td>`grepl("(o.e)", ss)`</td>
+<td> </td>
 <td>`c(TRUE)`</td>
+</tr>
+<tr><td>re2r</td>
+<td>`re2_match("(o.e)", ss)`</td>
+<td> </td>
+<td>`c(TRUE)`</td>
+</tr>
+<tr><td>stringr(stringi)</td>
+<td>`str_match(ss, "(o.e)")`</td>
+<td> </td>
+<td>`c(TRUE)`</td>
+</tr>
+<tr><td>**descrition**</td>
+<td>**unnamed capture groups**</td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>common</td>
+<td>`ss = "this is just one test"`</td>
+<td> </td>
+<td> </td>
+</tr>
+<tr><td>rex</td>
+<td>`rex(capture("o",shortcuts$any,"e"))`</td>
+<td> </td>
+<td>"(o.e)"</td>
+</tr>
+<tr><td>base</td>
+<td>`regexpr("(o.e)",ss)`</td>
+<td>Return the matched start<br/>positions with length <br/>attributtes</td>
+<td><br/> atomic [1:1] 14<br/> - attr(*, "match.length")= int 3<br/> - attr(*, "useBytes")= logi TRUE</td>
+</tr>
+<tr><td>re2r</td>
+<td>`re2_match("(o.e)", ss, value = TRUE)`</td>
+<td>Return the capture groups <br/>as a data.frame, <br/>row.names are the index<br/>of input string</td>
+<td>data.frame&#39;: 1 obs. of  1 variable:<br/> $ ?1: chr "one"<br/></td>
+</tr>
+<tr><td>stringr(stringi)</td>
+<td>`str_match(ss, "(o.e)")`</td>
+<td>First column is the complete<br/> match, followed by one <br/>column for each capture group</td>
+<td> chr [1, 1:2] "one" "one"<br/></td>
 </tr>
 </table>
 </div>
