@@ -1,19 +1,19 @@
 ---
-title: "RE2 Syntax"
-date: "`r Sys.Date()`"
 output: 
-      html_document:
-        css: markdown-body.css
+    html_document:
+        toc: no
+        css: csssimple.css
 vignette: >
   %\VignetteIndexEntry{RE2 Syntax}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-<div class="markdown-body">
-<p>This page lists the regular expression syntax accepted by RE2.
-<p>It also lists syntax accepted by PCRE, PERL, and VIM.
-<p>Grayed out expressions are not supported by RE2.
 
+This page lists the regular expression syntax accepted by RE2. It also lists syntax accepted by PCRE, PERL, and VIM.
+
+Grayed out expressions are not supported by RE2.
+
+<div class="markdown-body">
 <table>
 <tr><th>kinds of single-character expressions</th><th>examples</th></tr>
 <tr><td>any character, possibly including newline (s=true)</td><td><code>.</code></td></tr>

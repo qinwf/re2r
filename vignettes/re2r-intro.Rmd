@@ -1,6 +1,5 @@
 ---
 title: "Introduction to `RE2`"
-date: "`r Sys.Date()`"
 output: html_document
 vignette: >
   %\VignetteIndexEntry{Introduction to RE2}

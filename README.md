@@ -10,7 +10,10 @@ RE2 is a primarily DFA based regexp engine from Google that is very fast at matc
 To install from GitHub:
 
 ```r
-devtools::install_github("qinwf/re2r", build_vignettes = T, force = T)
+library(devtools)
+install_github("rstudio/rmarkdown")
+install_github("yihui/knitr")
+install_github("qinwf/re2r", build_vignettes = T, force = T)
 ```
 
 To learn how to use, you can check out the [vignettes](vignettes/re2r-intro.Rmd).

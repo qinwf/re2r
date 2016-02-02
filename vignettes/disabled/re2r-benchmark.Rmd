@@ -2,7 +2,9 @@
 title: "re2r benckmark"
 author: "Qin Wenfeng"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+    rmarkdown::html_vignette:
+        self_contained: TRUE
 vignette: >
   %\VignetteIndexEntry{benchmark on re2r}
   %\VignetteEngine{knitr::rmarkdown}

@@ -1,0 +1,11 @@
+html_document:
+    toc: yes
+    toc_level: 2
+    toc_float:
+        collapsed: yes
+    theme: sandstone
+    highlight: textmate
+    self_contained: yes
+    css: cstyles.css
+    include:
+        before_body: navbar.htm

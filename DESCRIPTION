@@ -12,7 +12,7 @@ Imports:
     Rcpp (>= 0.12.2)
 LinkingTo: Rcpp
 Suggests:
-    knitr,testthat,
+    knitr (>= 1.12.4),testthat,
     rmarkdown,microbenchmark,rex
 URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
