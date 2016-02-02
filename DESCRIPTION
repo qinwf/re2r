@@ -12,8 +12,8 @@ Imports:
     Rcpp (>= 0.12.2)
 LinkingTo: Rcpp
 Suggests:
-    knitr (>= 1.12.4),testthat,
-    rmarkdown,microbenchmark,rex
+    knitr (>= 1.12.3),testthat,
+    rmarkdown (>= 0.9.5),microbenchmark,rex
 URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr

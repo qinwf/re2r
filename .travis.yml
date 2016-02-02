@@ -31,6 +31,7 @@ before_install:
 
 install:
   - ./travis-tool.sh install_deps
+  - ./travis-tool.sh install_github rstudio/rmarkdown
 
 before_script:
   - ./travis-tool.sh dump_sysinfo
@@ -47,4 +48,4 @@ after_success:
 notifications:
   email:
     on_success: change
-    on_failure: change
+    on_failure: always
