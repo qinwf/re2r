@@ -48,11 +48,11 @@
 #' re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
 #' re2_replace("b+","d", "yabba dabba doo", global = FALSE) == "yada dabba doo"
 #' @export
-re2_replace = function(pattern, rewrite, input, global = TRUE, ...) UseMethod("re2_replace")
+re2_replace = function(pattern, rewrite, input, global = FALSE, ...) UseMethod("re2_replace")
 
 #' @rdname re2_replace
 #' @export
-re2_replace.re2exp = function(pattern, rewrite, input, global = TRUE, ...){
+re2_replace.re2exp = function(pattern, rewrite, input, global = FALSE, ...){
     # if (check_windows_strings(input)) input = enc2utf8(input)
     # if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
 
@@ -66,7 +66,7 @@ re2_replace.re2exp = function(pattern, rewrite, input, global = TRUE, ...){
 
 #' @rdname re2_replace
 #' @export
-re2_replace.character = function(pattern, rewrite, input, global = TRUE, ...){
+re2_replace.character = function(pattern, rewrite, input, global = FALSE, ...){
     pattern = re2(pattern, ...)
     re2_replace.re2exp(pattern, rewrite, input, global)
 }

@@ -169,9 +169,18 @@ CharacterVector cpp_replace(XPtr<RE2>& regexp, string& rewrite, vector<string>& 
         throw ErrorRewriteString(errmsg);
     }
 
-    if(!global_) for(string& ind : input) regexp->Replace(&ind,*regexp,rewrite);
-    else         for(string& ind : input) regexp->GlobalReplace(&ind,*regexp,rewrite);
-    return wrap(input);
+    if(!global_) {
+        for(string& ind : input) regexp->Replace(&ind,*regexp,rewrite);
+        return wrap(input);
+    }
+    else {
+        vector<size_t> count;
+        count.reserve(input.size());
+        for(string& ind : input) count.push_back(regexp->GlobalReplace(&ind,*regexp,rewrite));
+        CharacterVector res = wrap(input);
+        res.attr("count") = count;
+        return res;
+    }
 }
 
 // [[Rcpp::export]]

@@ -6,11 +6,11 @@
 \alias{re2_replace.re2exp}
 \title{Replace matched patterns in a string.}
 \usage{
-re2_replace(pattern, rewrite, input, global = TRUE, ...)
+re2_replace(pattern, rewrite, input, global = FALSE, ...)
 
-\method{re2_replace}{re2exp}(pattern, rewrite, input, global = TRUE, ...)
+\method{re2_replace}{re2exp}(pattern, rewrite, input, global = FALSE, ...)
 
-\method{re2_replace}{character}(pattern, rewrite, input, global = TRUE, ...)
+\method{re2_replace}{character}(pattern, rewrite, input, global = FALSE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
