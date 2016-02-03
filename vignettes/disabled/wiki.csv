@@ -1,0 +1,19 @@
+**Feature**,**ICU**,**PCRE**,**TRE**,**RE2**,**Boost.Regex**
+"""+"" quantifier",o,o,o,o,o
+Negated character classes,o,o,o,o,o
+Non-greedy quantifiers,o,o,o,o,o
+non-capturing groups,o,o,o,o,o
+Recursion,x,o,x,x,o
+Look-ahead,o,o,x,x,o
+Look-behind,o,o,x,x,o
+Backreferences,o,o,o,x,o
+>9 indexable captures,o,o,x,o,o
+Flags modifiers ,o,o,o,o,o
+Conditionals,x,o,x,x,o
+Independent sub-expressions,o,o,x,??,o
+Named capture,x,o,x,o,o
+Comments,o,o,o,x,o
+Embedded code,x,o,x,x,x
+Unicode property support ,o,o,?,Some,Some
+Balancing groups,x,x,x,x,x
+Variable-length look-behinds,x,x,x,x,x
