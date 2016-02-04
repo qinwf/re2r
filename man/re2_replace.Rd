@@ -6,11 +6,11 @@
 \alias{re2_replace.re2exp}
 \title{Replace matched patterns in a string.}
 \usage{
-re2_replace(pattern, rewrite, input, global = FALSE, ...)
+re2_replace(pattern, rewrite, input, all = FALSE, ...)
 
-\method{re2_replace}{re2exp}(pattern, rewrite, input, global = FALSE, ...)
+\method{re2_replace}{re2exp}(pattern, rewrite, input, all = FALSE, ...)
 
-\method{re2_replace}{character}(pattern, rewrite, input, global = FALSE, ...)
+\method{re2_replace}{character}(pattern, rewrite, input, all = FALSE, ...)
 }
 \arguments{
 \item{pattern}{a pre-compiled regular expression or a string}
@@ -19,7 +19,7 @@ re2_replace(pattern, rewrite, input, global = FALSE, ...)
 
 \item{input}{a character vector}
 
-\item{global}{if it is TRUE, it will replaces successive non-overlapping occurrences}
+\item{all}{if it is TRUE, it will replaces successive non-overlapping occurrences}
 
 \item{...}{further arguments passed to or from other methods.}
 }
@@ -36,6 +36,6 @@ text.
 \examples{
 regexp = re2("b+")
 re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
-re2_replace("b+","d", "yabba dabba doo", global = FALSE) == "yada dabba doo"
+re2_replace("b+","d", "yabba dabba doo", all = FALSE) == "yada dabba doo"
 }
 

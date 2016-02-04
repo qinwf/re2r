@@ -46,7 +46,7 @@
 #' @examples
 #' regexp = re2("b+")
 #' re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
-#' re2_replace("b+","d", "yabba dabba doo", global = FALSE) == "yada dabba doo"
+#' re2_replace("b+","d", "yabba dabba doo", all = FALSE) == "yada dabba doo"
 #' @export
 re2_replace = function(pattern, rewrite, input, all = FALSE, ...) UseMethod("re2_replace")
 
