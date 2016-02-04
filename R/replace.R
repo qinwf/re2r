@@ -40,7 +40,7 @@
 #' @param pattern a pre-compiled regular expression or a string
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
-#' @param global if it is TRUE, it will replaces successive non-overlapping occurrences
+#' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
 #' @param ... further arguments passed to or from other methods.
 #' @return a character vector
 #' @examples
@@ -48,15 +48,15 @@
 #' re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
 #' re2_replace("b+","d", "yabba dabba doo", global = FALSE) == "yada dabba doo"
 #' @export
-re2_replace = function(pattern, rewrite, input, global = FALSE, ...) UseMethod("re2_replace")
+re2_replace = function(pattern, rewrite, input, all = FALSE, ...) UseMethod("re2_replace")
 
 #' @rdname re2_replace
 #' @export
-re2_replace.re2exp = function(pattern, rewrite, input, global = FALSE, ...){
+re2_replace.re2exp = function(pattern, rewrite, input, all = FALSE, ...){
     # if (check_windows_strings(input)) input = enc2utf8(input)
     # if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
 
-    res = cpp_replace(pattern, rewrite, input, global)
+    res = cpp_replace(pattern, rewrite, input, all)
 
     # if (update_windows_strings()) {
     #     Encoding(res) = "UTF-8"
@@ -66,7 +66,7 @@ re2_replace.re2exp = function(pattern, rewrite, input, global = FALSE, ...){
 
 #' @rdname re2_replace
 #' @export
-re2_replace.character = function(pattern, rewrite, input, global = FALSE, ...){
+re2_replace.character = function(pattern, rewrite, input, all = FALSE, ...){
     pattern = re2(pattern, ...)
-    re2_replace.re2exp(pattern, rewrite, input, global)
+    re2_replace.re2exp(pattern, rewrite, input, all)
 }

@@ -76,7 +76,7 @@ test_that("re2_replace", {
 
         expect_identical(re2_replace(ind[1],ind[2],ind[3], global = FALSE), ind[4])
 
-        res = re2_replace(ind[1],ind[2],ind[3],global = TRUE)
+        res = re2_replace(ind[1],ind[2],ind[3], all = TRUE)
         expect_identical(as.character(res), ind[5])
         expect_identical(attr(res, "count"), as.numeric(ind[6]))
 
