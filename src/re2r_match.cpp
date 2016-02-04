@@ -352,7 +352,6 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                         size_t cnt = 0;
                         while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                             cnt+=1;
                             string numstring = numbertostring(times_n);
                             fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
