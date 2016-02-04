@@ -199,3 +199,18 @@ CharacterVector cpp_extract(XPtr<RE2>& regexp, string& rewrite, vector<string>& 
 
     return wrap(res);
 }
+
+template <typename T>
+inline string numbertostring ( T Number )
+{
+    ostringstream ss;
+    ss << Number;
+    return ss.str();
+}
+
+// [[Rcpp::export]]
+SEXP cpp_get_program_fanout(XPtr<RE2>& regexp){
+    map<int,int> res;
+    regexp->ProgramFanout(&res);
+    return(wrap(res));
+}

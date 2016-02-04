@@ -60,3 +60,7 @@ cpp_extract <- function(regexp, rewrite, input) {
     .Call('re2r_cpp_extract', PACKAGE = 're2r', regexp, rewrite, input)
 }
 
+cpp_get_program_fanout <- function(regexp) {
+    .Call('re2r_cpp_get_program_fanout', PACKAGE = 're2r', regexp)
+}
+
