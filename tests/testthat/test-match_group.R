@@ -43,7 +43,7 @@ test_that("Test Match Number Peculiarity",{
                           `?3` = "baz"),
                      .Names = c("?1", "?2", "?3"),
                      row.names = "1", class = "data.frame")
-    expect_identical(res3, exp3)
+    expect_identical(res2, exp2)
 
     res3 = re2_match(ree1, "bar", value = TRUE)
     exp3 = structure(list(`?1` = NA_character_, `?2` = "bar",
