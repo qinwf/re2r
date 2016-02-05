@@ -173,15 +173,28 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
         // no capture group, return CharacterVector, like grep(value = T)
 
         if ( cap_nums == 0){
-            vector<string> res;
-            res.reserve(input.size());
-            for(const string& ind : input){
-                if(pattern->Match(ind,0,(int) ind.length(),
+            CharacterVector res(input.size());
+            auto ip = input.begin();
+            for(auto it = res.begin(); it!= res.end(); it++){
+                if(pattern->Match(*ip,0,(int) ip->length(),
                                   anchor_type, nullptr, 0)){
-                    res.push_back(ind);
+                    *it = *ip;
+                } else {
+                    *it = NA_STRING;
                 }
+                ip++;
             }
-            return wrap(res);
+            List res2 = List::create(res);
+            vector<string> row_names;
+            row_names.reserve(input.size());
+            for (unsigned int i = 1; i <= input.size(); i++) {
+                row_names.emplace_back(numbertostring(i));
+            }
+
+            res2.attr("row.names") = row_names;
+            res2.attr("class") = "data.frame";
+            res2.attr("names") = "?nocapture";
+            return wrap(res2);
             // no capture group return
         }
 

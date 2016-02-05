@@ -98,9 +98,12 @@ If there is no capture group, and `value = TRUE`, the matched origin strings wil
 ```r
 test_string = c("this is just one test", "the second test");
 (res = re2_match("is", test_string, value = TRUE))
-## [1] "this is just one test"
+##              ?nocapture
+## 1 this is just one test
+## 2                  <NA>
 str(res)
-##  chr "this is just one test"
+## 'data.frame':	2 obs. of  1 variable:
+##  $ ?nocapture: chr  "this is just one test" NA
 ```
 
 ### 2. Replace a substring
