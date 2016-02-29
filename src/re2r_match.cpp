@@ -92,49 +92,53 @@ map<int,string> get_groups_name(XPtr<RE2>& pattern, int cap_nums){
 
 void fill_all_res(string& times_n,
                   int cap_nums,
-                  const vector<int>& groups_number,
                   StringPiece* piece,
-                  map<int,CharacterVector>& res, bool matched){
-    auto gn_iter = groups_number.begin();
-    res[*gn_iter].push_back(times_n);
-    gn_iter++;
+                  CharacterVector& res, size_t cnt,bool matched){
+    auto all_na = true;
+
+    // don't get all na
+    if(cnt > 1 && matched ==true ){
+        for(auto it = 0; it != cap_nums; ++it) {
+            if((piece[it]).data() != NULL){
+                    all_na = false;
+                    break;
+            }
+        }
+        if (all_na) return;
+    }
+
+    res.push_back(times_n);
 
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                res[*gn_iter].push_back(piece[it].as_string());
+                res.push_back(piece[it].as_string());
             } else{
-                res[*gn_iter].push_back(NA_STRING);
+                res.push_back(NA_STRING);
             }
-            gn_iter++;
         }
     }else{
         for(auto it = 0; it != cap_nums; ++it) {
-            res[*gn_iter].push_back(NA_STRING);
-            gn_iter++;
+            res.push_back(NA_STRING);
         }
     }
 }
 
 
 void fill_res(int cap_nums,
-              const vector<int>& groups_number,
               StringPiece* piece,
-              map<int,CharacterVector>& res, bool matched){
-    auto gn_iter = groups_number.begin();
+              CharacterVector& res, bool matched){
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                res[*gn_iter].push_back(piece[it].as_string());
+                res.push_back(piece[it].as_string());
             } else{
-                res[*gn_iter].push_back(NA_STRING);
+                res.push_back(NA_STRING);
             }
-            gn_iter++;
         }
     }else{
         for(auto it = 0; it != cap_nums; ++it) {
-            res[*gn_iter].push_back(NA_STRING);
-            gn_iter++;
+            res.push_back(NA_STRING);
         }
     }
 }
@@ -170,8 +174,6 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
     } else{
         auto cap_nums = pattern->NumberOfCapturingGroups();
 
-        // no capture group, return CharacterVector, like grep(value = T)
-
         if ( cap_nums == 0){
             CharacterVector res(input.size());
             auto ip = input.begin();
@@ -184,17 +186,11 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                 }
                 ip++;
             }
-            List res2 = List::create(res);
-            vector<string> row_names;
-            row_names.reserve(input.size());
-            for (unsigned int i = 1; i <= input.size(); i++) {
-                row_names.emplace_back(numbertostring(i));
-            }
+            res.attr("dim") = Dimension(input.size(),1);
+            CharacterMatrix mat_res = wrap(res);
 
-            res2.attr("row.names") = row_names;
-            res2.attr("class") = "data.frame";
-            res2.attr("names") = "?nocapture";
-            return wrap(res2);
+            colnames(mat_res) = CharacterVector::create("?nocapture");
+            return wrap(mat_res);
             // no capture group return
         }
 
@@ -254,18 +250,15 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                 groups_number.push_back(it->first);
                 groups_name.push_back(it->second);
             }
-            map<int,CharacterVector> res; // data.frame
 
-            // init res
-            for(auto it: groups_number) {
-                res[it] = CharacterVector();
-            }
+            CharacterVector res; // will be constructed as Matrix
+
             switch(anchor_type){
             case RE2::UNANCHORED:
                 for(const string& ind : input){
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
-                    fill_res(cap_nums, groups_number,
+                    fill_res(cap_nums,
                              piece_ptr, res,
                              RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                 }
@@ -274,7 +267,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                 for(const string& ind : input){
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
-                    fill_res(cap_nums, groups_number,
+                    fill_res(cap_nums,
                              piece_ptr, res,
                              RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
                     break;
@@ -282,20 +275,12 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
             }
 
 
-            // generate data.frame
-
-            List res2 = wrap(res);
-            vector<string> row_names;
-            row_names.reserve(input.size());
-            for (unsigned int i = 1; i <= input.size(); i++) {
-                row_names.emplace_back(numbertostring(i));
-            }
-
-            res2.attr("row.names") = row_names;
-            res2.attr("class") = "data.frame";
-            res2.attr("names") = groups_name;
-
-            return wrap(res2);
+            // generate CharacterMatrix
+            res.attr("dim") = Dimension(cap_nums,input.size());
+            CharacterMatrix mat_res = wrap(res);
+            CharacterMatrix t_mat_res = transpose(mat_res);
+            colnames(t_mat_res) = wrap(groups_name);
+            return wrap(t_mat_res);
 
         } else { // all == true
 
@@ -310,12 +295,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                 groups_name.push_back(it->second);
             }
 
-            map<int,CharacterVector> res; // data.frame
-
-            // init res
-            for(auto it: groups_number) {
-                res[it] = CharacterVector();
-            }
+            CharacterVector res; // data.frame
 
             // for each input string, get a !n label.
             size_t times_n = 1;
@@ -330,7 +310,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                     while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                         cnt+=1;
                         string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
+                        fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, true);
 
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
@@ -355,7 +335,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                     }   // while
                     if(cnt == 0){ // no one match, all NA return
                         string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, false);
+                        fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, false);
                     }
                     times_n+=1; //bump times_n !n
                 }}else{
@@ -367,7 +347,7 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                         while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                             cnt+=1;
                             string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, true);
+                            fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, true);
 
                             for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
@@ -392,29 +372,18 @@ SEXP cpp_match(XPtr<RE2>&     pattern,
                         }   // else while
                         if(cnt == 0){ // no one match, all NA return
                             string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, groups_number, piece_ptr, res, false);
+                            fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, false);
                         }
                         times_n+=1; //bump times_n !n
                     }
                 } // else
 
-
-
-                // generate data.frame
-                List res2 = wrap(res);
-                auto res_begin = res.begin();
-                auto res_size = res_begin->second.size();
-                vector<string> row_names;
-                row_names.reserve(res_size);
-                for (auto i = 1; i <= res_size ; i++) {
-                    row_names.emplace_back(numbertostring(i));
-                }
-
-                res2.attr("row.names") = row_names;
-                res2.attr("class") = "data.frame";
-                res2.attr("names") = groups_name;
-
-                return wrap(res2);
+                // generate CharacterMatrix
+                res.attr("dim") = Dimension(groups_name.size(), res.size() / groups_name.size());
+                CharacterMatrix mat_res = wrap(res);
+                CharacterMatrix t_mat_res = transpose(mat_res);
+                colnames(t_mat_res) = wrap(groups_name);
+                return wrap(t_mat_res);
 
         }
 
