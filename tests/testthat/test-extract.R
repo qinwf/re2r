@@ -1,4 +1,4 @@
-context("check rewrite")
+context("check extract")
 
 test_that("check rewrite", {
     # from re2_test.cc

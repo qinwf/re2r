@@ -1,4 +1,4 @@
-context("quote")
+context("check quote")
 
 test_that("quote", {
     # from re2_test.cc

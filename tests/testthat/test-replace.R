@@ -1,4 +1,4 @@
-context("re2_replace")
+context("check replace")
 
 test_that("re2_replace", {
     # from re2_test.cc
