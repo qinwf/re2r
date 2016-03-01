@@ -35,7 +35,7 @@ re2_match("(o.e)", test_string)
 ```
 
 ```r
-[1] TRUE
+## [1] TRUE
 ```
 
 Searches the string expression for the occurence(s) of a substring that matches 'pattern' and returns boolean result.
@@ -44,11 +44,16 @@ With `value = TRUE` option, function will return the capture groups with `()`.
 
 ```r
 (res = re2_match("(o.e)", test_string, value = TRUE))
-##    ?1
-## 1 one
+
+##     ?1   
+##[1,] "one"
+
 str(res)
-## 'data.frame':    1 obs. of  1 variable:
-##  $ ?1: chr "one"
+
+## chr [1, 1] "one"
+## - attr(*, "dimnames")=List of 2
+##  ..$ : NULL
+##  ..$ : chr "?1"
 ```
 
 The return result is a data.frame. `?1` is the first capture group and it is unnamed group.
@@ -57,40 +62,39 @@ We can create named capture group with `(?P<name>pattern)` syntax.
 
 ```r
 (res = re2_match("(?P<testname>this)( is)", test_string, value = TRUE))
-##   testname  ?2
-## 1     this  is
+
+##     testname ?2   
+##[1,] "this"   " is"
+
 str(res)
-## 'data.frame':    1 obs. of  2 variables:
-##  $ testname: chr "this"
-##  $ ?2      : chr " is"
+
+##[1] "matrix"
 ```
 
 With `all = TRUE` option, function will return the all of patterns in a string instead of just the first one.
 
 ```r
 (res = re2_match("(is)", test_string, value = TRUE, all = TRUE))
-##   !n ?1
-## 1  1 is
-## 2  1 is
-str(res)
-## 'data.frame':    2 obs. of  2 variables:
-##  $ !n: chr  "1" "1"
-##  $ ?1: chr  "is" "is"
+```
+
+```r
+##     !n  ?1  
+##[1,] "1" "is"
+##[2,] "1" "is"
 ```
 
 `!n` is the index of the input string. We can provide a character vector to a pattern.
 
-```{r,collapse=TRUE}
+```r
 test_string = c("this is just one test", "the second test");
 (res = re2_match("(is)", test_string, value = TRUE, all = TRUE))
-##   !n   ?1
-## 1  1   is
-## 2  1   is
-## 3  2 <NA>
-str(res)
-## 'data.frame':    3 obs. of  2 variables:
-##  $ !n: chr  "1" "1" "2"
-##  $ ?1: chr  "is" "is" NA
+```
+
+```r
+##     !n  ?1  
+##[1,] "1" "is"
+##[2,] "1" "is"
+##[3,] "2" NA  
 ```
 
 If there is no capture group, and `value = TRUE`, the matched origin strings will be returned.
@@ -98,12 +102,12 @@ If there is no capture group, and `value = TRUE`, the matched origin strings wil
 ```r
 test_string = c("this is just one test", "the second test");
 (res = re2_match("is", test_string, value = TRUE))
-##              ?nocapture
-## 1 this is just one test
-## 2                  <NA>
-str(res)
-## 'data.frame':	2 obs. of  1 variable:
-##  $ ?nocapture: chr  "this is just one test" NA
+```
+
+```r
+##     ?nocapture             
+##[1,] "this is just one test"
+##[2,] NA    
 ```
 
 ### 2. Replace a substring
@@ -166,6 +170,7 @@ print(regexp)
 ## capturing names with indices: 
 ## named integer(0)
 ## expression size: 11
+
 regexp %<~% "(?P<first>1*)"
 regexp
 ## re2 pre-compiled regular expression
