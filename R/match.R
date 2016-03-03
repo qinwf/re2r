@@ -36,7 +36,7 @@
 #' @param string a character vector
 #' @param value return value instead of bool result
 #' @param anchor "start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.
-#' @param all find all match instead of first match. When all = FALSE and result = "value", the return type will be character vector when there is no capture group or data.frame.
+#' @param all find all matches instead of the first match. When result = "value", a matched character matrix will be returned.
 #' @param ... further arguments passed to or from other methods.
 #' @export
 re2_match = function(pattern, string, value = FALSE, anchor = "none", all = FALSE, ...) UseMethod("re2_match")

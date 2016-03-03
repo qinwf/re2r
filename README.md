@@ -56,7 +56,7 @@ str(res)
 ##  ..$ : chr "?1"
 ```
 
-The return result is a data.frame. `?1` is the first capture group and it is unnamed group.
+The return result is a character matrix. `?1` is the first capture group and it is unnamed group.
 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
