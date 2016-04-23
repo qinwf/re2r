@@ -66,7 +66,7 @@ re2_match = function(input,
                      anchor = "none",
                      all = FALSE,
                      ...) {
-    if (!inherits(pattern, "re2exp")) {
+    if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
     cpp_match(input, pattern, value, anchor, all)

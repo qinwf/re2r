@@ -45,7 +45,7 @@
 #' re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 #' @export
 re2_extract = function(input, pattern, rewrite = "\\1", ...) {
-    if (!inherits(pattern, "re2exp")) {
+    if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
     cpp_extract(input, pattern, rewrite)

@@ -49,7 +49,7 @@
 #' re2_replace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
 #' @export
 re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
-    if (!inherits(pattern, "re2exp")) {
+    if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
     cpp_replace(input, pattern, rewrite,  all)
