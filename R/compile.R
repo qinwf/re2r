@@ -108,7 +108,7 @@ re2 = function(pattern,
     #     pattern = enc2utf8(pattern)
     # }
     regexp = cpp_re2_compile(
-        pattern,
+        stri_enc_toutf8(pattern),
         log_errors_value = FALSE,
         utf_8_value = utf_8,
         case_sensitive_value = case_sensitive,
@@ -178,10 +178,7 @@ get_named_groups = function(regexp) {
 #' @return quoted string
 #' @export
 quote_meta = function(unquoted) {
-    # if (check_windows_strings(unquoted)) {
-    #     unquoted = enc2utf8(unquoted)
-    # }
-    res = cpp_quote_meta(unquoted)
+    res = cpp_quote_meta(stri_enc_toutf8(unquoted))
     # if (update_windows_strings()) {
     #     Encoding(res) = "UTF-8"
     # }

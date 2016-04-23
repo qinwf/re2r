@@ -32,4 +32,5 @@
 
 ##' @useDynLib re2r
 ##' @import Rcpp
+##' @importFrom stringi stri_enc_toutf8
 NULL

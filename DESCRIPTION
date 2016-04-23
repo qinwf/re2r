@@ -9,13 +9,13 @@ Description: RE2 is a primarily DFA based regexp engine from Google that is very
 License: BSD_3_clause + file LICENSE
 LazyData: TRUE
 Imports:
-    Rcpp (>= 0.12.2)
+    Rcpp (>= 0.12.2), stringi
 LinkingTo: Rcpp
 Suggests:
     knitr (>= 1.12.3),testthat,
     rmarkdown (>= 0.9.5),microbenchmark,rex
 Enhances:
-    directlabels, ggplot2 ,stringi
+    directlabels, ggplot2
 URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr

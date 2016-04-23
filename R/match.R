@@ -69,5 +69,5 @@ re2_match = function(input,
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_match(input, pattern, value, anchor, all)
+    cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all)
 }

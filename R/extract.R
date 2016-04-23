@@ -48,5 +48,5 @@ re2_extract = function(input, pattern, rewrite = "\\1", ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(input, pattern, rewrite)
+    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite))
 }

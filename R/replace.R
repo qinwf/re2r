@@ -52,5 +52,5 @@ re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(input, pattern, rewrite,  all)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all)
 }
