@@ -39,7 +39,7 @@
 #' regexp
 #' @seealso more options with \code{\link{re2}}
 #' @export
-`%<~%` = function(varible, pattern){
+`%<~%` = function(varible, pattern) {
     parent <- parent.frame()
     rhss  <- substitute(pattern) # the right-hand sides
     lhs   <- substitute(varible) # the left-hand side.
@@ -56,12 +56,12 @@
 #' c("pt","sd") %=~% "sd"
 #' c("pt","sd") %!~% "sd"
 #' @export
-`%=~%` = function(string, pattern){
-    re2_match(pattern, string, value = FALSE, anchor = "none")
+`%=~%` = function(string, pattern) {
+    re2_match(string, pattern, value = FALSE, anchor = "none")
 }
 
 #' @rdname grapes-equals-twiddle-grapes
 #' @export
-`%!~%` = function(string, pattern){
-    !re2_match(pattern, string, value = FALSE, anchor = "none")
+`%!~%` = function(string, pattern) {
+    !re2_match(string, pattern, value = FALSE, anchor = "none")
 }

@@ -91,36 +91,38 @@
 #' regexp
 #' @export
 re2 = function(pattern,
-                       utf_8 = TRUE,
-                       case_sensitive = TRUE,
-                       posix_syntax = FALSE,
-                       dot_nl = FALSE,
-                       literal = FALSE,
-                       longest_match = FALSE,
-                       never_nl = FALSE,
-                       never_capture = FALSE,
-                       one_line= FALSE,
-                       perl_classes = FALSE,
-                       word_boundary = FALSE,
-                       max_mem = 8388608){
+               utf_8 = TRUE,
+               case_sensitive = TRUE,
+               posix_syntax = FALSE,
+               dot_nl = FALSE,
+               literal = FALSE,
+               longest_match = FALSE,
+               never_nl = FALSE,
+               never_capture = FALSE,
+               one_line = FALSE,
+               perl_classes = FALSE,
+               word_boundary = FALSE,
+               max_mem = 8388608) {
     # if ( .Platform$OS.type %==% "windows" &&
     #    Encoding(pattern[1]) %!==% "UTF-8" ) {
     #     pattern = enc2utf8(pattern)
     # }
-    regexp = cpp_re2_compile(pattern,
-                    log_errors_value = FALSE,
-                    utf_8_value = utf_8,
-                    case_sensitive_value = case_sensitive,
-                    posix_syntax_value = posix_syntax,
-                    dot_nl_value = dot_nl,
-                    literal_value = literal,
-                    longest_match_value = longest_match,
-                    never_nl_value = never_nl,
-                    never_capture_value = never_capture,
-                    one_line_value = one_line,
-                    perl_classes_value = perl_classes,
-                    word_boundary_value = word_boundary,
-                    max_mem_value = max_mem)
+    regexp = cpp_re2_compile(
+        pattern,
+        log_errors_value = FALSE,
+        utf_8_value = utf_8,
+        case_sensitive_value = case_sensitive,
+        posix_syntax_value = posix_syntax,
+        dot_nl_value = dot_nl,
+        literal_value = literal,
+        longest_match_value = longest_match,
+        never_nl_value = never_nl,
+        never_capture_value = never_capture,
+        one_line_value = one_line,
+        perl_classes_value = perl_classes,
+        word_boundary_value = word_boundary,
+        max_mem_value = max_mem
+    )
 
     class(regexp) = "re2exp"
     regexp
@@ -134,7 +136,7 @@ re2 = function(pattern,
 #' get_pattern(regexp)
 #' @return a string
 #' @export
-get_pattern = function(regexp){
+get_pattern = function(regexp) {
     res = cpp_get_pattern(regexp)
     # if (.Platform$OS.type %==% "windows") {
     #     Encoding(res) = "UTF-8"
@@ -152,7 +154,7 @@ get_pattern = function(regexp){
 #' (res = get_named_groups(regexp))
 #' names(res)
 #' @export
-get_named_groups = function(regexp){
+get_named_groups = function(regexp) {
     res = cpp_get_named_groups(regexp)
     # if (.Platform$OS.type %==% "windows") {
     #     Encoding(names(res)) = "UTF-8"
@@ -175,7 +177,7 @@ get_named_groups = function(regexp){
 #' quote_meta(c("1.2","abc"))
 #' @return quoted string
 #' @export
-quote_meta = function(unquoted){
+quote_meta = function(unquoted) {
     # if (check_windows_strings(unquoted)) {
     #     unquoted = enc2utf8(unquoted)
     # }

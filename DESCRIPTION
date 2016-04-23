@@ -14,6 +14,8 @@ LinkingTo: Rcpp
 Suggests:
     knitr (>= 1.12.3),testthat,
     rmarkdown (>= 0.9.5),microbenchmark,rex
+Enhances:
+    directlabels, ggplot2 ,stringi
 URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr

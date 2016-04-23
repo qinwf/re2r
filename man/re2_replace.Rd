@@ -2,22 +2,16 @@
 % Please edit documentation in R/replace.R
 \name{re2_replace}
 \alias{re2_replace}
-\alias{re2_replace.character}
-\alias{re2_replace.re2exp}
 \title{Replace matched patterns in a string.}
 \usage{
-re2_replace(pattern, rewrite, input, all = FALSE, ...)
-
-\method{re2_replace}{re2exp}(pattern, rewrite, input, all = FALSE, ...)
-
-\method{re2_replace}{character}(pattern, rewrite, input, all = FALSE, ...)
+re2_replace(input, pattern, rewrite, all = FALSE, ...)
 }
 \arguments{
+\item{input}{a character vector}
+
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{rewrite}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
-
-\item{input}{a character vector}
 
 \item{all}{if it is TRUE, it will replaces successive non-overlapping occurrences}
 
@@ -35,7 +29,7 @@ text.
 }
 \examples{
 regexp = re2("b+")
-re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
-re2_replace("b+","d", "yabba dabba doo", all = FALSE) == "yada dabba doo"
+re2_replace("yabba dabba doo", regexp,"d") == "yada dada doo"
+re2_replace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
 }
 

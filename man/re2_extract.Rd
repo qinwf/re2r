@@ -2,20 +2,14 @@
 % Please edit documentation in R/extract.R
 \name{re2_extract}
 \alias{re2_extract}
-\alias{re2_extract.character}
-\alias{re2_extract.re2exp}
 \title{Extract one matched patterns in a string.}
 \usage{
-re2_extract(pattern, input, rewrite = "\\\\1", ...)
-
-\method{re2_extract}{re2exp}(pattern, input, rewrite = "\\\\1", ...)
-
-\method{re2_extract}{character}(pattern, input, rewrite = "\\\\1", ...)
+re2_extract(input, pattern, rewrite = "\\\\1", ...)
 }
 \arguments{
-\item{pattern}{a pre-compiled regular expression or a string}
-
 \item{input}{a character vector}
+
+\item{pattern}{a pre-compiled regular expression or a string}
 
 \item{rewrite}{replace the first match of "pattern" in "input" with "rewrite"}
 
@@ -30,7 +24,7 @@ portions of "text" are ignored.
 Returns true iff a match occurred and the extraction happened
 }
 \examples{
-re2_extract("(.)","yabba dabba doo")
-re2_extract("(.*)@([^.]*)","test@me.com","\\\\2!\\\\1")
+re2_extract("yabba dabba doo", "(.)")
+re2_extract("test@me.com", "(.*)@([^.]*)", "\\\\2!\\\\1")
 }
 

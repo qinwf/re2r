@@ -162,7 +162,7 @@ CharacterVector cpp_quote_meta(vector<string>& input){
 }
 
 // [[Rcpp::export]]
-CharacterVector cpp_replace(XPtr<RE2>& regexp, string& rewrite, vector<string>& input, bool global_){
+CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_){
     string errmsg;
 
     if(!regexp->CheckRewriteString(rewrite, &errmsg)){
@@ -184,7 +184,7 @@ CharacterVector cpp_replace(XPtr<RE2>& regexp, string& rewrite, vector<string>& 
 }
 
 // [[Rcpp::export]]
-CharacterVector cpp_extract(XPtr<RE2>& regexp, string& rewrite, vector<string>& input){
+CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite){
     string errmsg;
 
     if(!regexp->CheckRewriteString(rewrite, &errmsg)){

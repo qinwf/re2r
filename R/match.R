@@ -33,23 +33,41 @@
 #' Match patterns in a string.
 #'
 #' @param pattern a pre-compiled regular expression or a string
-#' @param string a character vector
+#' @param input a character vector
 #' @param value return value instead of bool result
 #' @param anchor "start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.
 #' @param all find all matches instead of the first match. When result = "value", a matched character matrix will be returned.
 #' @param ... further arguments passed to or from other methods.
+#' @examples
+#'
+#' test_string = "this is just one test";
+#' re2_match(test_string, "(o.e)")
+#'
+#' (res = re2_match(test_string, "(o.e)", value = TRUE))
+#' str(res)
+#'
+#' (res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
+#' str(res)
+#'
+#' (res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+#'
+#' test_string = c("this is just one test", "the second test");
+#' (res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+#'
+#' test_string = c("this is just one test", "the second test")
+#' (res = re2_match(test_string, "is", value = TRUE))
+#'
+#' regexp = re2("test",case_sensitive = FALSE)
+#' re2_match("TEST", regexp)
 #' @export
-re2_match = function(pattern, string, value = FALSE, anchor = "none", all = FALSE, ...) UseMethod("re2_match")
-
-#' @rdname re2_match
-#' @export
-re2_match.re2exp = function(pattern, string, value = FALSE, anchor = "none", all = FALSE, ...){
-    cpp_match(pattern, string, value, anchor, all)
-}
-
-#' @rdname re2_match
-#' @export
-re2_match.character = function(pattern, string, value = FALSE, anchor = "none", all = FALSE, ...){
-    pattern = re2(pattern, ...)
-    re2_match.re2exp(pattern, string, value, anchor, all)
+re2_match = function(input,
+                     pattern,
+                     value = FALSE,
+                     anchor = "none",
+                     all = FALSE,
+                     ...) {
+    if (!inherits(pattern, "re2exp")) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_match(input, pattern, value, anchor, all)
 }

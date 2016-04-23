@@ -45,28 +45,12 @@
 #' @return a character vector
 #' @examples
 #' regexp = re2("b+")
-#' re2_replace(regexp,"d", "yabba dabba doo") == "yada dada doo"
-#' re2_replace("b+","d", "yabba dabba doo", all = FALSE) == "yada dabba doo"
+#' re2_replace("yabba dabba doo", regexp,"d") == "yada dada doo"
+#' re2_replace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
 #' @export
-re2_replace = function(pattern, rewrite, input, all = FALSE, ...) UseMethod("re2_replace")
-
-#' @rdname re2_replace
-#' @export
-re2_replace.re2exp = function(pattern, rewrite, input, all = FALSE, ...){
-    # if (check_windows_strings(input)) input = enc2utf8(input)
-    # if (check_windows_strings(rewrite))  rewrite = enc2utf8(rewrite)
-
-    res = cpp_replace(pattern, rewrite, input, all)
-
-    # if (update_windows_strings()) {
-    #     Encoding(res) = "UTF-8"
-    # }
-    return(res)
-}
-
-#' @rdname re2_replace
-#' @export
-re2_replace.character = function(pattern, rewrite, input, all = FALSE, ...){
-    pattern = re2(pattern, ...)
-    re2_replace.re2exp(pattern, rewrite, input, all)
+re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
+    if (!inherits(pattern, "re2exp")) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_replace(input, pattern, rewrite,  all)
 }

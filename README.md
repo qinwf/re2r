@@ -11,9 +11,7 @@ To install from GitHub:
 
 ```r
 library(devtools)
-install_github("rstudio/rmarkdown")
-install_github("yihui/knitr")
-install_github("qinwf/re2r", build_vignettes = T, force = T)
+install_github("qinwf/re2r", build_vignettes = T)
 ```
 
 To learn how to use, you can check out the [vignettes](vignettes/re2r-intro.Rmd).
@@ -28,10 +26,10 @@ To learn how to use, you can check out the [vignettes](vignettes/re2r-intro.Rmd)
 
 ```r
 ## Sys.setlocale(locale = "English") ## for Windows users with non-UTF8 locale
-## re2_match(pattern, string)
+## re2_match(string, pattern)
 
 test_string = "this is just one test";
-re2_match("(o.e)", test_string)
+re2_match(test_string, "(o.e)")
 ```
 
 ```r
@@ -43,7 +41,7 @@ Searches the string expression for the occurence(s) of a substring that matches 
 With `value = TRUE` option, function will return the capture groups with `()`.
 
 ```r
-(res = re2_match("(o.e)", test_string, value = TRUE))
+(res = re2_match(test_string, "(o.e)", value = TRUE))
 
 ##     ?1   
 ##[1,] "one"
@@ -61,7 +59,7 @@ The return result is a character matrix. `?1` is the first capture group and it 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
 ```r
-(res = re2_match("(?P<testname>this)( is)", test_string, value = TRUE))
+(res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
 
 ##     testname ?2   
 ##[1,] "this"   " is"
@@ -74,7 +72,7 @@ str(res)
 With `all = TRUE` option, function will return the all of patterns in a string instead of just the first one.
 
 ```r
-(res = re2_match("(is)", test_string, value = TRUE, all = TRUE))
+(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
 ```
 
 ```r
@@ -87,7 +85,7 @@ With `all = TRUE` option, function will return the all of patterns in a string i
 
 ```r
 test_string = c("this is just one test", "the second test");
-(res = re2_match("(is)", test_string, value = TRUE, all = TRUE))
+(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
 ```
 
 ```r
@@ -101,7 +99,7 @@ If there is no capture group, and `value = TRUE`, the matched origin strings wil
 
 ```r
 test_string = c("this is just one test", "the second test");
-(res = re2_match("is", test_string, value = TRUE))
+(res = re2_match(test_string, "is", value = TRUE))
 ```
 
 ```r
@@ -113,7 +111,7 @@ test_string = c("this is just one test", "the second test");
 ### 2. Replace a substring
 
 ```r
-## re2_replace(pattern, rewrite, input)
+## re2_replace(input, pattern, rewrite)
 ```
 
 Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and replaces the found substrings with "rewrite text".
@@ -121,7 +119,7 @@ Searches the string "input string" for the occurence(s) of a substring that matc
 ```r
 input_string = "this is just one test";
 new_string = "my"
-re2_replace("(o.e)", new_string, input_string)
+re2_replace(new_string, "(o.e)", input_string)
 ```
 
 ```r
@@ -131,13 +129,13 @@ re2_replace("(o.e)", new_string, input_string)
 ### 3. Extract a substring
 
 ```r
-## re2_extract(pattern, input, rewrite = optional)
+## re2_extract(input, pattern, rewrite = optional)
 ```
 
 Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and return the found substrings with "rewrite text".
 
 ```r
-re2_extract("(.)","yabba dabba doo")
+re2_extract("yabba dabba doo", "(.)")
 ```
 
 ```r
@@ -145,7 +143,7 @@ re2_extract("(.)","yabba dabba doo")
 ```
 
 ```r
-re2_extract("(.*)@([^.]*)","test@me.com","\\2!\\1")
+re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 ```
 
 ```r
@@ -187,9 +185,9 @@ regexp
 
 ```r
 regexp = re2("test",case_sensitive = FALSE)
-re2_match(regexp, "TEST")
+re2_match("TEST", regexp)
 ## [1] TRUE
-re2_replace(regexp, "ops", "TEST")
+re2_replace("TEST", regexp, "ops")
 ## [1] "ops"
 ```
 

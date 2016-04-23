@@ -155,8 +155,8 @@ RE2::Anchor get_anchor_type(const string& anchor){
 }
 
 // [[Rcpp::export]]
-SEXP cpp_match(XPtr<RE2>&     pattern,
-               vector<string>& input,
+SEXP cpp_match(vector<string>& input,
+               XPtr<RE2>& pattern,
                bool value,
                string& anchor,
                bool all){

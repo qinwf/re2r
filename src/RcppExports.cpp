@@ -7,17 +7,17 @@
 using namespace Rcpp;
 
 // cpp_match
-SEXP cpp_match(XPtr<RE2>& pattern, vector<string>& input, bool value, string& anchor, bool all);
-RcppExport SEXP re2r_cpp_match(SEXP patternSEXP, SEXP inputSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP) {
+SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, string& anchor, bool all);
+RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP patternSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2>& >::type pattern(patternSEXP);
     Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type pattern(patternSEXP);
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
     Rcpp::traits::input_parameter< string& >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
-    __result = Rcpp::wrap(cpp_match(pattern, input, value, anchor, all));
+    __result = Rcpp::wrap(cpp_match(input, pattern, value, anchor, all));
     return __result;
 END_RCPP
 }
@@ -101,29 +101,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_replace
-CharacterVector cpp_replace(XPtr<RE2>& regexp, string& rewrite, vector<string>& input, bool global_);
-RcppExport SEXP re2r_cpp_replace(SEXP regexpSEXP, SEXP rewriteSEXP, SEXP inputSEXP, SEXP global_SEXP) {
+CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_);
+RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
-    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
     Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);
-    __result = Rcpp::wrap(cpp_replace(regexp, rewrite, input, global_));
+    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite, global_));
     return __result;
 END_RCPP
 }
 // cpp_extract
-CharacterVector cpp_extract(XPtr<RE2>& regexp, string& rewrite, vector<string>& input);
-RcppExport SEXP re2r_cpp_extract(SEXP regexpSEXP, SEXP rewriteSEXP, SEXP inputSEXP) {
+CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite);
+RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
-    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
-    __result = Rcpp::wrap(cpp_extract(regexp, rewrite, input));
+    __result = Rcpp::wrap(cpp_extract(input, regexp, rewrite));
     return __result;
 END_RCPP
 }

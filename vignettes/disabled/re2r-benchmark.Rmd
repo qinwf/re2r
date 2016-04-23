@@ -41,7 +41,7 @@ for(N in 1:max.N){
     ICU = stri_match(subject, regex = pattern),
     PCRE = regexpr(pattern, subject, perl = TRUE),
     TRE = regexpr(pattern, subject, perl = FALSE),
-    RE2 = re2_match(regexp, subject),
+    RE2 = re2_match(subject, regexp),
     times = 10)
   times.list[[N]] <- data.frame(N, N.times)
 }

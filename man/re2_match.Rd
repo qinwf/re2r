@@ -2,23 +2,15 @@
 % Please edit documentation in R/match.R
 \name{re2_match}
 \alias{re2_match}
-\alias{re2_match.character}
-\alias{re2_match.re2exp}
 \title{Match patterns in a string.}
 \usage{
-re2_match(pattern, string, value = FALSE, anchor = "none", all = FALSE,
+re2_match(input, pattern, value = FALSE, anchor = "none", all = FALSE,
   ...)
-
-\method{re2_match}{re2exp}(pattern, string, value = FALSE, anchor = "none",
-  all = FALSE, ...)
-
-\method{re2_match}{character}(pattern, string, value = FALSE,
-  anchor = "none", all = FALSE, ...)
 }
 \arguments{
-\item{pattern}{a pre-compiled regular expression or a string}
+\item{input}{a character vector}
 
-\item{string}{a character vector}
+\item{pattern}{a pre-compiled regular expression or a string}
 
 \item{value}{return value instead of bool result}
 
@@ -30,5 +22,27 @@ re2_match(pattern, string, value = FALSE, anchor = "none", all = FALSE,
 }
 \description{
 Match patterns in a string.
+}
+\examples{
+
+test_string = "this is just one test";
+re2_match(test_string, "(o.e)")
+
+(res = re2_match(test_string, "(o.e)", value = TRUE))
+str(res)
+
+(res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
+str(res)
+
+(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+
+test_string = c("this is just one test", "the second test");
+(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+
+test_string = c("this is just one test", "the second test")
+(res = re2_match(test_string, "is", value = TRUE))
+
+regexp = re2("test",case_sensitive = FALSE)
+re2_match("TEST", regexp)
 }
 
