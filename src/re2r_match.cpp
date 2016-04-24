@@ -130,22 +130,30 @@ void fill_all_res(string& times_n,
 }
 
 
+void bump_count(size_t& rowi,size_t& coli, size_t rows){
+    rowi++;
+    if (rowi== rows){
+        rowi = 0;
+        coli++;
+    }
+}
+
 void fill_res(int cap_nums,
               StringPiece* piece,
-              CharacterVector::iterator& res, bool matched){
+              CharacterMatrix& res, size_t& rowi, size_t& coli, size_t rows, bool matched){
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                *res = piece[it].as_string();
+                res(coli,rowi) = piece[it].as_string();
             } else{
-                *res = NA_STRING;
+                res(coli,rowi) = NA_STRING;
             }
-            res +=1;
+            bump_count(rowi,coli, rows);
         }
     }else{
         for(auto it = 0; it != cap_nums; ++it) {
-            *res = NA_STRING;
-            res +=1;
+            res(coli,rowi) = NA_STRING;
+            bump_count(rowi,coli, rows);
         }
     }
 
@@ -259,16 +267,17 @@ SEXP cpp_match(vector<string>& input,
                 groups_name.push_back(it->second);
             }
 
-            CharacterVector res(cap_nums * input.size()); // will be constructed as Matrix
-            auto resi = res.begin();
-
+            CharacterMatrix res(input.size(),groups_name.size()); // will be constructed as Matrix
+            const auto rows = groups_name.size();
+            size_t rowi = 0;
+            size_t coli = 0;
             switch(anchor_type){
             case RE2::UNANCHORED:
                 for(const string& ind : input){
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
-                             piece_ptr, resi,
+                             piece_ptr, res, rowi, coli, rows,
                              RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                 }
                 break;
@@ -277,7 +286,7 @@ SEXP cpp_match(vector<string>& input,
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
-                             piece_ptr, resi,
+                             piece_ptr, res, rowi, coli, rows,
                              RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
                     break;
                 }
@@ -285,11 +294,8 @@ SEXP cpp_match(vector<string>& input,
 
 
             // generate CharacterMatrix
-            res.attr("dim") = Dimension(cap_nums,input.size());
-            CharacterMatrix mat_res = wrap(res);
-            CharacterMatrix t_mat_res = transpose(mat_res);
-            colnames(t_mat_res) = wrap(groups_name);
-            return wrap(t_mat_res);
+            colnames(res) = wrap(groups_name);
+            return wrap(res);
 
         } else { // all == true
 
@@ -385,23 +391,22 @@ SEXP cpp_match(vector<string>& input,
                         times_n+=1; //bump times_n !n
                     }
                 } // end else
-                CharacterVector res(optres.size());
+                auto rows = groups_name.size();
+                CharacterMatrix res(optres.size() / groups_name.size(), groups_name.size());
 
-                auto it = res.begin();
+                size_t rowi = 0;
+                size_t coli = 0;
                 for(auto dd : optres){
                     if (bool(dd)) {
-                        *it = dd.value();
+                        res(coli,rowi) = dd.value();
                     } else{
-                        *it = NA_STRING;
+                        res(coli,rowi) = NA_STRING;
                     }
-                    it++;
+                    bump_count(rowi, coli, rows);
                 }
                 // generate CharacterMatrix
-                res.attr("dim") = Dimension(groups_name.size(), res.size() / groups_name.size());
-                CharacterMatrix mat_res = wrap(res);
-                CharacterMatrix t_mat_res = transpose(mat_res);
-                colnames(t_mat_res) = wrap(groups_name);
-                return wrap(t_mat_res);
+                colnames(res) = wrap(groups_name);
+                return wrap(res);
 
         }
 
