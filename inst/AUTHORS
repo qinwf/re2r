@@ -67,4 +67,12 @@ were originally written by:
 
 and modified by Qin Wenfeng.
 
+The files in inst/include and inst/include/,
+	
+	optional.hpp
+
+were originally written by:
+
+	Andrzej Krzemienski.
+
 Other part of this package is written by Qin Wenfeng.

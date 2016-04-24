@@ -29,11 +29,16 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../inst/include/re2r.h"
+#include "../inst/include/optional.hpp"
 
 #include <cstddef>
 
 #include <sstream>
 #include <memory>
+
+namespace tr2 = std::experimental;
+
+typedef vector<tr2::optional<string>> optstring;
 
 #define RE2R_STATIC_SIZE 10
 
@@ -93,7 +98,7 @@ map<int,string> get_groups_name(XPtr<RE2>& pattern, int cap_nums){
 void fill_all_res(string& times_n,
                   int cap_nums,
                   StringPiece* piece,
-                  CharacterVector& res, size_t cnt,bool matched){
+                  optstring& res, size_t cnt,bool matched){
     auto all_na = true;
 
     // don't get all na
@@ -107,19 +112,19 @@ void fill_all_res(string& times_n,
         if (all_na) return;
     }
 
-    res.push_back(times_n);
+    res.push_back(tr2::make_optional(times_n));
 
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                res.push_back(piece[it].as_string());
+                res.push_back(tr2::make_optional(piece[it].as_string())) ;
             } else{
-                res.push_back(NA_STRING);
+                res.push_back(tr2::nullopt);
             }
         }
     }else{
         for(auto it = 0; it != cap_nums; ++it) {
-            res.push_back(NA_STRING);
+            res.push_back(tr2::nullopt);
         }
     }
 }
@@ -127,20 +132,23 @@ void fill_all_res(string& times_n,
 
 void fill_res(int cap_nums,
               StringPiece* piece,
-              CharacterVector& res, bool matched){
+              CharacterVector::iterator& res, bool matched){
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                res.push_back(piece[it].as_string());
+                *res = piece[it].as_string();
             } else{
-                res.push_back(NA_STRING);
+                *res = NA_STRING;
             }
+            res +=1;
         }
     }else{
         for(auto it = 0; it != cap_nums; ++it) {
-            res.push_back(NA_STRING);
+            *res = NA_STRING;
+            res +=1;
         }
     }
+
 }
 
 RE2::Anchor get_anchor_type(const string& anchor){
@@ -251,7 +259,8 @@ SEXP cpp_match(vector<string>& input,
                 groups_name.push_back(it->second);
             }
 
-            CharacterVector res; // will be constructed as Matrix
+            CharacterVector res(cap_nums * input.size()); // will be constructed as Matrix
+            auto resi = res.begin();
 
             switch(anchor_type){
             case RE2::UNANCHORED:
@@ -259,7 +268,7 @@ SEXP cpp_match(vector<string>& input,
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
-                             piece_ptr, res,
+                             piece_ptr, resi,
                              RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                 }
                 break;
@@ -268,7 +277,7 @@ SEXP cpp_match(vector<string>& input,
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
-                             piece_ptr, res,
+                             piece_ptr, resi,
                              RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
                     break;
                 }
@@ -295,8 +304,7 @@ SEXP cpp_match(vector<string>& input,
                 groups_name.push_back(it->second);
             }
 
-            CharacterVector res; // data.frame
-
+            optstring optres;
             // for each input string, get a !n label.
             size_t times_n = 1;
 
@@ -310,7 +318,7 @@ SEXP cpp_match(vector<string>& input,
                     while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                         cnt+=1;
                         string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, true);
+                        fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
@@ -335,7 +343,7 @@ SEXP cpp_match(vector<string>& input,
                     }   // while
                     if(cnt == 0){ // no one match, all NA return
                         string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, false);
+                        fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
                     }
                     times_n+=1; //bump times_n !n
                 }}else{
@@ -347,7 +355,7 @@ SEXP cpp_match(vector<string>& input,
                         while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                             cnt+=1;
                             string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, true);
+                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
                             for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
@@ -372,12 +380,22 @@ SEXP cpp_match(vector<string>& input,
                         }   // else while
                         if(cnt == 0){ // no one match, all NA return
                             string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, piece_ptr, res, cnt, false);
+                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
                         }
                         times_n+=1; //bump times_n !n
                     }
-                } // else
+                } // end else
+                CharacterVector res(optres.size());
 
+                auto it = res.begin();
+                for(auto dd : optres){
+                    if (bool(dd)) {
+                        *it = dd.value();
+                    } else{
+                        *it = NA_STRING;
+                    }
+                    it++;
+                }
                 // generate CharacterMatrix
                 res.attr("dim") = Dimension(groups_name.size(), res.size() / groups_name.size());
                 CharacterMatrix mat_res = wrap(res);
