@@ -108,6 +108,30 @@ test_string = c("this is just one test", "the second test");
 ##[2,] NA    
 ```
 
+If `tolist = TRUE`, the result will be a list.
+
+```r
+re2_match(c("this is test", 
+            "this is test, and this is not test", 
+            "they are tests"), 
+          pattern = "(?P<testname>this)( is)", 
+          value = TRUE, all = T, tolist = T)
+```
+
+```r
+[[1]]
+     testname ?2   
+[1,] "this"   " is"
+
+[[2]]
+     testname ?2   
+[1,] "this"   " is"
+[2,] "this"   " is"
+
+[[3]]
+NULL
+```
+
 ### 2. Replace a substring
 
 ```r

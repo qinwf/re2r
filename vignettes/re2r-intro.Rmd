@@ -132,6 +132,16 @@ test_string = c("this is just one test", "the second test");
 str(res)
 ```
 
+If `tolist = TRUE`, the result will be a list.
+
+```{r,collapse=TRUE}
+re2_match(c("this is test", 
+            "this is test, and this is not test", 
+            "they are tests"), 
+          pattern = "(?P<testname>this)( is)", 
+          value = TRUE, all = T, tolist = T)
+```
+
 ### 2. Replace a substring
 
 ```{r, eval=FALSE, include=TRUE}
