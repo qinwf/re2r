@@ -5,7 +5,8 @@ test_that("long string", {
         r = stri_c(stringi::stri_dup("x", 2 ^ 28 - 1), "y")
         expect_true(re2_match(r, "y"))
     }
-    if (memory.limit() > 4500) {
+    if (memory.limit() > 4500 &&
+        Sys.getenv("RE2R_LONG_TEST") == "TRUE") {
         r = stri_c(stringi::stri_dup("x", 2 ^ 31 - 3), "y")
         expect_true(re2_match(r, "y"))
     }
