@@ -43,8 +43,8 @@ With `value = TRUE` option, function will return the capture groups with `()`.
 ```r
 (res = re2_match(test_string, "(o.e)", value = TRUE))
 
-##     ?1   
-##[1,] "one"
+##      ?1   
+## [1,] "one"
 
 str(res)
 
@@ -61,12 +61,12 @@ We can create named capture group with `(?P<name>pattern)` syntax.
 ```r
 (res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
 
-##     testname ?2   
-##[1,] "this"   " is"
+##      testname ?2   
+## [1,] "this"   " is"
 
 str(res)
 
-##[1] "matrix"
+## [1] "matrix"
 ```
 
 With `all = TRUE` option, function will return the all of patterns in a string instead of just the first one.
@@ -76,9 +76,9 @@ With `all = TRUE` option, function will return the all of patterns in a string i
 ```
 
 ```r
-##     !n  ?1  
-##[1,] "1" "is"
-##[2,] "1" "is"
+##      !n  ?1  
+## [1,] "1" "is"
+## [2,] "1" "is"
 ```
 
 `!n` is the index of the input string. We can provide a character vector to a pattern.
@@ -89,10 +89,10 @@ test_string = c("this is just one test", "the second test");
 ```
 
 ```r
-##     !n  ?1  
-##[1,] "1" "is"
-##[2,] "1" "is"
-##[3,] "2" NA  
+##      !n  ?1  
+## [1,] "1" "is"
+## [2,] "1" "is"
+## [3,] "2" NA  
 ```
 
 If there is no capture group, and `value = TRUE`, the matched origin strings will be returned.
@@ -103,9 +103,9 @@ test_string = c("this is just one test", "the second test");
 ```
 
 ```r
-##     ?nocapture             
-##[1,] "this is just one test"
-##[2,] NA    
+##      ?nocapture             
+## [1,] "this is just one test"
+## [2,] NA    
 ```
 
 If `tolist = TRUE`, the result will be a list.
@@ -119,17 +119,17 @@ re2_match(c("this is test",
 ```
 
 ```r
-[[1]]
-     testname ?2   
-[1,] "this"   " is"
-
-[[2]]
-     testname ?2   
-[1,] "this"   " is"
-[2,] "this"   " is"
-
-[[3]]
-NULL
+## [[1]]
+##      testname ?2   
+## [1,] "this"   " is"
+##
+## [[2]]
+##      testname ?2   
+## [1,] "this"   " is"
+## [2,] "this"   " is"
+## 
+## [[3]]
+## NULL
 ```
 
 ### 2. Replace a substring
