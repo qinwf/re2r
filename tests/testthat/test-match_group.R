@@ -3,15 +3,15 @@ context("check match group")
 test_that("check match group 1", {
     # from re2_test.cc
     ree1 = re2("\\s*(\\w+)")
-    res1 = re2_match("   aaa b!@#$@#$cccc", ree1, value = TRUE, anchor = "start", all = TRUE)
+    res1 = re2_match("   aaa b!@#$@#$cccc", ree1, value = TRUE, anchor = 1, all = TRUE)
     exp1 = structure(c("1", "1", "aaa", "b"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
     expect_identical(res1, exp1)
 
-    res2 = re2_match("   aaa b!@#$@#$cccc", ree1, value = TRUE, anchor = "none", all = TRUE)
+    res2 = re2_match("   aaa b!@#$@#$cccc", ree1, value = TRUE, anchor = 0, all = TRUE)
     exp2 = structure(c("1", "1", "1", "aaa", "b", "cccc"), .Dim = c(3L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
     expect_identical(res2, exp2)
 
-    res3 = re2_match(" one two three 4", "(\\w+)", value = TRUE, anchor = "none", all = TRUE)
+    res3 = re2_match(" one two three 4", "(\\w+)", value = TRUE, anchor = 0, all = TRUE)
     exp3 = structure(c("1", "1", "1", "1", "one", "two", "three", "4"), .Dim = c(4L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
     expect_identical(res3, exp3)
 
@@ -36,7 +36,7 @@ test_that("Test Match Number Peculiarity",{
     exp4 = structure(c(NA_character_, NA_character_, NA_character_), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
     expect_identical(res4, exp4)
 
-    res5 = re2_match("hello", "(foo)|hello", value = TRUE, anchor = "start")
+    res5 = re2_match("hello", "(foo)|hello", value = TRUE, anchor = 1)
     exp5 = structure(NA_character_, .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
     expect_identical(res5, exp5)
 

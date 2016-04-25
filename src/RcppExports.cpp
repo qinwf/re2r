@@ -7,7 +7,7 @@
 using namespace Rcpp;
 
 // cpp_match
-SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, string& anchor, bool all);
+SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, size_t anchor, bool all);
 RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP patternSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -15,7 +15,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type pattern(patternSEXP);
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
-    Rcpp::traits::input_parameter< string& >::type anchor(anchorSEXP);
+    Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     __result = Rcpp::wrap(cpp_match(input, pattern, value, anchor, all));
     return __result;

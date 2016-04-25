@@ -57,11 +57,11 @@
 #' c("pt","sd") %!~% "sd"
 #' @export
 `%=~%` = function(string, pattern) {
-    re2_match(string, pattern, value = FALSE, anchor = "none")
+    re2_match(string, pattern, value = FALSE, anchor = 0)
 }
 
 #' @rdname grapes-equals-twiddle-grapes
 #' @export
 `%!~%` = function(string, pattern) {
-    !re2_match(string, pattern, value = FALSE, anchor = "none")
+    !re2_match(string, pattern, value = FALSE, anchor = 0)
 }

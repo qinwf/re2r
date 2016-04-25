@@ -159,22 +159,21 @@ void fill_res(int cap_nums,
 
 }
 
-RE2::Anchor get_anchor_type(const string& anchor){
-    if (anchor == "none") {
+RE2::Anchor get_anchor_type(size_t anchor){
+    if (anchor == 0) {
         return RE2::UNANCHORED;
-    } else if (anchor == "start") {
+    } else if (anchor == 1) {
         return RE2::ANCHOR_START;
-    } else if (anchor == "both") {
+    } else {
         return RE2::ANCHOR_BOTH;
     }
-    throw ErrorAnchorType(anchor);
 }
 
 // [[Rcpp::export]]
 SEXP cpp_match(vector<string>& input,
                XPtr<RE2>& pattern,
                bool value,
-               string& anchor,
+               size_t anchor,
                bool all){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 

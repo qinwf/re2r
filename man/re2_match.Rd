@@ -4,8 +4,8 @@
 \alias{re2_match}
 \title{Match patterns in a string.}
 \usage{
-re2_match(input, pattern, value = FALSE, anchor = "none", all = FALSE,
-  ...)
+re2_match(input, pattern, value = FALSE, anchor = 0, all = FALSE,
+  tolist = FALSE, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -14,7 +14,7 @@ re2_match(input, pattern, value = FALSE, anchor = "none", all = FALSE,
 
 \item{value}{return value instead of bool result}
 
-\item{anchor}{"start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.}
+\item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
 
 \item{all}{find all matches instead of the first match. When result = "value", a matched character matrix will be returned.}
 

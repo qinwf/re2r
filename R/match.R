@@ -35,7 +35,7 @@
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
 #' @param value return value instead of bool result
-#' @param anchor "start": anchor match at the beginning of the string, "both": anchor match at the beginning and the end of the string, "none": no anchor.
+#' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
 #' @param all find all matches instead of the first match. When result = "value", a matched character matrix will be returned.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
@@ -63,8 +63,9 @@
 re2_match = function(input,
                      pattern,
                      value = FALSE,
-                     anchor = "none",
+                     anchor = 0,
                      all = FALSE,
+                     tolist = FALSE,
                      ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
