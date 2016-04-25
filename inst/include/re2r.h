@@ -45,7 +45,7 @@ using re2::StringPiece;
 #define RCPP_EXCEPTION_CLASS(__CLASS__,__WHAT__)                               \
     class __CLASS__ : public std::exception{                                       \
     public:                                                                        \
-        __CLASS__( const std::string& messages ) throw() : message( __WHAT__ ){} ;  \
+        __CLASS__( const std::string messages ) throw() : message( __WHAT__ ){} ;  \
         virtual ~__CLASS__() throw(){} ;                                           \
         virtual const char* what() const throw() { return message.c_str() ; }      \
     private:                                                                       \
