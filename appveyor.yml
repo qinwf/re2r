@@ -25,6 +25,7 @@ environment:
 # Adapt as necessary starting from here
 
 build_script:
+  - Rscript -e 'install.packages(commandArgs(TRUE), repos="https://cran.rstudio.com")' digest devtools testthat
   - travis-tool.sh install_deps
 
 test_script:
