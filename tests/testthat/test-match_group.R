@@ -7,6 +7,14 @@ test_that("check match group 1", {
     exp1 = structure(c("1", "1", "aaa", "b"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
     expect_identical(res1, exp1)
 
+    res1_tolist = re2_match(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), ree1, value = TRUE, anchor = 1, all = TRUE,tolist = T)
+
+    exp1_tolist = list(structure(c("aaa", "b"), .Dim = c(2L, 1L), .Dimnames = list(
+        NULL, "?1")), structure(c("aaa", "bb", "cccc"), .Dim = c(3L,
+                                                                 1L), .Dimnames = list(NULL, "?1")))
+
+    expect_identical(res1_tolist, exp1_tolist)
+
     res2 = re2_match("   aaa b!@#$@#$cccc", ree1, value = TRUE, anchor = 0, all = TRUE)
     exp2 = structure(c("1", "1", "1", "aaa", "b", "cccc"), .Dim = c(3L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
     expect_identical(res2, exp2)

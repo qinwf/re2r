@@ -105,14 +105,46 @@ void fill_all_res(string& times_n,
     if(cnt > 1 && matched ==true ){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                    all_na = false;
-                    break;
+                all_na = false;
+                break;
             }
         }
         if (all_na) return;
     }
 
     res.push_back(tr2::make_optional(times_n));
+
+    if(matched){
+        for(auto it = 0; it != cap_nums; ++it) {
+            if((piece[it]).data() != NULL){
+                res.push_back(tr2::make_optional(piece[it].as_string())) ;
+            } else{
+                res.push_back(tr2::nullopt);
+            }
+        }
+    }else{
+        for(auto it = 0; it != cap_nums; ++it) {
+            res.push_back(tr2::nullopt);
+        }
+    }
+}
+
+void fill_list_res(string& times_n,
+                  int cap_nums,
+                  StringPiece* piece,
+                  optstring& res, size_t cnt,bool matched){
+    auto all_na = true;
+
+    // don't get all na
+    if(cnt > 1 && matched ==true ){
+        for(auto it = 0; it != cap_nums; ++it) {
+            if((piece[it]).data() != NULL){
+                all_na = false;
+                break;
+            }
+        }
+        if (all_na) return;
+    }
 
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
@@ -174,7 +206,8 @@ SEXP cpp_match(vector<string>& input,
                XPtr<RE2>& pattern,
                bool value,
                size_t anchor,
-               bool all){
+               bool all,
+               bool tolist){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
     if (value == false){
@@ -298,66 +331,30 @@ SEXP cpp_match(vector<string>& input,
 
         } else { // all == true
 
-            // each string get at least one group of result
-            groups_name.reserve(g_numbers_names.size()+1);
-            groups_number.reserve(g_numbers_names.size()+1);
-            groups_name.push_back("!n");
-            groups_number.push_back(0);
+            if (!tolist){
+                // each string get at least one group of result
+                groups_name.reserve(g_numbers_names.size()+1);
+                groups_number.reserve(g_numbers_names.size()+1);
+                groups_name.push_back("!n");
+                groups_number.push_back(0);
 
-            for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
-                groups_number.push_back(it->first);
-                groups_name.push_back(it->second);
-            }
+                for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
+                    groups_number.push_back(it->first);
+                    groups_name.push_back(it->second);
+                }
 
-            optstring optres;
-            // for each input string, get a !n label.
-            size_t times_n = 1;
+                optstring optres;
+                // for each input string, get a !n label.
+                size_t times_n = 1;
 
-            //  FIXME Duplicated Code
-            if (anchor_type == RE2::UNANCHORED){
-                for(const string& ind : input){
-                    StringPiece todo_str(ind);    // Wrap a StringPiece around it
-                    StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                    size_t cnt = 0;
-                    while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                        cnt+=1;
-                        string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
-
-                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-                        // Note that if the
-                        // regular expression matches an empty string, input will advance
-                        // by 0 bytes.  If the regular expression being used might match
-                        // an empty string, the loop body must check for this case and either
-                        // advance the string or break out of the loop.
-                        //
-                        if(todo_str.length() == 0) break; // end of search for this string
-
-                        if((todo_str.data() == tmp_piece.data()) &&
-                           (todo_str.length() == tmp_piece.length()) &&
-                           (todo_str.length() !=0) ){
-                            todo_str.remove_prefix(1);
-                        }
-
-                        // update tmp_piece
-                        tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-
-                        // try next place
-                    }   // while
-                    if(cnt == 0){ // no one match, all NA return
-                        string numstring = numbertostring(times_n);
-                        fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
-                    }
-                    times_n+=1; //bump times_n !n
-                }}else{
+                //  FIXME Duplicated Code
+                if (anchor_type == RE2::UNANCHORED){
                     for(const string& ind : input){
                         StringPiece todo_str(ind);    // Wrap a StringPiece around it
                         StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                         size_t cnt = 0;
-                        while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                        while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                             cnt+=1;
                             string numstring = numbertostring(times_n);
                             fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
@@ -381,33 +378,202 @@ SEXP cpp_match(vector<string>& input,
                             // update tmp_piece
                             tmp_piece = StringPiece(todo_str.data(), todo_str.length());
 
-                            // advanced try next place
-                        }   // else while
+                            // try next place
+                        }   // while
                         if(cnt == 0){ // no one match, all NA return
                             string numstring = numbertostring(times_n);
                             fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
                         }
                         times_n+=1; //bump times_n !n
-                    }
-                } // end else
-                auto rows = groups_name.size();
-                CharacterMatrix res(optres.size() / groups_name.size(), groups_name.size());
+                    }}else{
+                        for(const string& ind : input){
+                            StringPiece todo_str(ind);    // Wrap a StringPiece around it
+                            StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                            size_t cnt = 0;
+                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                                cnt+=1;
+                                string numstring = numbertostring(times_n);
+                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
-                size_t rowi = 0;
-                size_t coli = 0;
-                for(auto dd : optres){
-                    if (bool(dd)) {
-                        res(coli,rowi) = dd.value();
-                    } else{
-                        res(coli,rowi) = NA_STRING;
+                                for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+
+                                // Note that if the
+                                // regular expression matches an empty string, input will advance
+                                // by 0 bytes.  If the regular expression being used might match
+                                // an empty string, the loop body must check for this case and either
+                                // advance the string or break out of the loop.
+                                //
+                                if(todo_str.length() == 0) break; // end of search for this string
+
+                                if((todo_str.data() == tmp_piece.data()) &&
+                                   (todo_str.length() == tmp_piece.length()) &&
+                                   (todo_str.length() !=0) ){
+                                    todo_str.remove_prefix(1);
+                                }
+
+                                // update tmp_piece
+                                tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+
+                                // advanced try next place
+                            }   // else while
+                            if(cnt == 0){ // no one match, all NA return
+                                string numstring = numbertostring(times_n);
+                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
+                            }
+                            times_n+=1; //bump times_n !n
+                        }
+                    } // end else
+                    auto rows = groups_name.size();
+                    CharacterMatrix res(optres.size() / groups_name.size(), groups_name.size());
+
+                    size_t rowi = 0;
+                    size_t coli = 0;
+                    for(auto dd : optres){
+                        if (bool(dd)) {
+                            res(coli,rowi) = dd.value();
+                        } else{
+                            res(coli,rowi) = NA_STRING;
+                        }
+                        bump_count(rowi, coli, rows);
                     }
-                    bump_count(rowi, coli, rows);
+                    // generate CharacterMatrix
+                    colnames(res) = wrap(groups_name);
+                    return wrap(res);
+            } // tolist == false
+            else{ // tolist == true
+
+                // each string get at least one group of result
+                groups_name.reserve(g_numbers_names.size());
+                groups_number.reserve(g_numbers_names.size());
+
+                for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
+                    groups_number.push_back(it->first);
+                    groups_name.push_back(it->second);
                 }
-                // generate CharacterMatrix
-                colnames(res) = wrap(groups_name);
-                return wrap(res);
 
-        }
+                List listres(input.size());
+                auto listi = listres.begin();
+                // for each input string, get a !n label.
+                size_t times_n = 1;
+
+                //  FIXME Duplicated Code
+                if (anchor_type == RE2::UNANCHORED){
+                    for(const string& ind : input){
+                        StringPiece todo_str(ind);    // Wrap a StringPiece around it
+                        StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                        size_t cnt = 0;
+                        optstring optinner;
+
+                        while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                            cnt+=1;
+                            string numstring = numbertostring(times_n);
+                            fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
+
+                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+
+                            // Note that if the
+                            // regular expression matches an empty string, input will advance
+                            // by 0 bytes.  If the regular expression being used might match
+                            // an empty string, the loop body must check for this case and either
+                            // advance the string or break out of the loop.
+                            //
+                            if(todo_str.length() == 0) break; // end of search for this string
+
+                            if((todo_str.data() == tmp_piece.data()) &&
+                               (todo_str.length() == tmp_piece.length()) &&
+                               (todo_str.length() !=0) ){
+                                todo_str.remove_prefix(1);
+                            }
+
+                            // update tmp_piece
+                            tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+
+                            // try next place
+                        }   // while
+                        if(cnt == 0){ // no one match, all NA return
+                            *listi = R_NilValue;
+                        } else {
+                            auto rows = groups_name.size();
+                            CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
+
+                            size_t rowi = 0;
+                            size_t coli = 0;
+                            for(auto dd : optinner){
+                                if (bool(dd)) {
+                                    res(coli,rowi) = dd.value();
+                                } else{
+                                    res(coli,rowi) = NA_STRING;
+                                }
+                                bump_count(rowi, coli, rows);
+                            }
+                            // generate CharacterMatrix
+                            colnames(res) = wrap(groups_name);
+                            *listi = res;
+                        }
+                        listi+=1;
+                    }}else{
+                        for(const string& ind : input){
+                            StringPiece todo_str(ind);    // Wrap a StringPiece around it
+                            StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                            size_t cnt = 0;
+                            optstring optinner;
+                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                                cnt+=1;
+                                string numstring = numbertostring(times_n);
+                                fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
+
+                                for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+
+                                // Note that if the
+                                // regular expression matches an empty string, input will advance
+                                // by 0 bytes.  If the regular expression being used might match
+                                // an empty string, the loop body must check for this case and either
+                                // advance the string or break out of the loop.
+                                //
+                                if(todo_str.length() == 0) break; // end of search for this string
+
+                                if((todo_str.data() == tmp_piece.data()) &&
+                                   (todo_str.length() == tmp_piece.length()) &&
+                                   (todo_str.length() !=0) ){
+                                    todo_str.remove_prefix(1);
+                                }
+
+                                // update tmp_piece
+                                tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+
+                                // advanced try next place
+                            }   // else while
+                            if(cnt == 0){ // no one match, all NA return
+                                *listi = R_NilValue;
+                            } else {
+                                auto rows = groups_name.size();
+                                CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
+
+                                size_t rowi = 0;
+                                size_t coli = 0;
+                                for(auto dd : optinner){
+                                    if (bool(dd)) {
+                                        res(coli,rowi) = dd.value();
+                                    } else{
+                                        res(coli,rowi) = NA_STRING;
+                                    }
+                                    bump_count(rowi, coli, rows);
+                                }
+                                // generate CharacterMatrix
+                                colnames(res) = wrap(groups_name);
+                                *listi = res;
+                            }
+                            listi+=1; //bump times_n !n
+                        }
+                    } // end else
+
+                    return wrap(listres);
+
+            }
+        } // all == true
 
         // unique_ptr go out of scrope
     }

@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // cpp_match
-SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, size_t anchor, bool all);
-RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP patternSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP) {
+SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, size_t anchor, bool all, bool tolist);
+RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP patternSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP tolistSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -17,7 +17,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
     Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
-    __result = Rcpp::wrap(cpp_match(input, pattern, value, anchor, all));
+    Rcpp::traits::input_parameter< bool >::type tolist(tolistSEXP);
+    __result = Rcpp::wrap(cpp_match(input, pattern, value, anchor, all, tolist));
     return __result;
 END_RCPP
 }

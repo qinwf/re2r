@@ -44,5 +44,7 @@ test_string = c("this is just one test", "the second test")
 
 regexp = re2("test",case_sensitive = FALSE)
 re2_match("TEST", regexp)
+
+re2_match(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), ree1, value = TRUE, anchor = 1, all = TRUE,tolist = T)
 }
 

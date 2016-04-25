@@ -59,6 +59,8 @@
 #'
 #' regexp = re2("test",case_sensitive = FALSE)
 #' re2_match("TEST", regexp)
+#'
+#' re2_match(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), ree1, value = TRUE, anchor = 1, all = TRUE,tolist = T)
 #' @export
 re2_match = function(input,
                      pattern,
@@ -70,5 +72,5 @@ re2_match = function(input,
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all)
+    cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all, tolist)
 }
