@@ -1,5 +1,5 @@
 
-```{r, echo = FALSE, message = FALSE}
+```{r options, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(
   comment = "#>",
   error = FALSE,
@@ -9,7 +9,7 @@ knitr::opts_chunk$set(
 options(digits = 3, microbenchmark.unit = "ms")
 ```
 
-```{r, echo = FALSE, message = FALSE}
+```{r library, echo = FALSE, message = FALSE}
 library(re2r)
 library(stringi)
 library(microbenchmark)
@@ -22,7 +22,9 @@ library(plotly)
 Derived from Toby Dylan Hocking [tdhock/regex-tutorial
 ](https://github.com/tdhock/regex-tutorial)
 
-```{r, echo=TRUE}
+### Part 1
+
+```{r Repetitions-1, echo=TRUE}
 max.N <- 25
 times.list <- list()
 for(N in 1:max.N){
@@ -31,21 +33,24 @@ for(N in 1:max.N){
   regexp = re2(pattern)
   gc()
   N.times <- microbenchmark(
-    ICU = stri_match(subject, regex = pattern),
+    ICU = stri_detect_regex(subject, pattern = pattern),
+    ICU_value = stri_match(subject, regex = pattern),
     PCRE = regexpr(pattern, subject, perl = TRUE),
     TRE = regexpr(pattern, subject, perl = FALSE),
+    RE2n_value = re2_match(subject, pattern, value = T),
+    RE2c_value = re2_match(subject, regexp, value = T),
     RE2n = re2_match(subject, pattern),
     RE2c = re2_match(subject, regexp),
     times = 10)
   times.list[[N]] <- data.frame(N, N.times)
 }
 times <- do.call(rbind, times.list)
-save(times, file="times.RData")
 
 ```
 
-```{r}
-linear.legend <- ggplot()+
+```{r Repetitions-2}
+linear.legend <- function(times) {
+    ggplot()+
   ggtitle("Timing regular expressions in R, linear scale")+
   scale_y_continuous("seconds")+
   scale_x_continuous("subject/pattern size",
@@ -54,9 +59,12 @@ linear.legend <- ggplot()+
   geom_point(aes(N, time/1e9, color=expr),
              shape=1,
              data=times)
-ggplotly(linear.legend)
+}
 
-log.legend <- ggplot()+
+ggplotly(linear.legend(times))
+
+log.legend <- function(times) { 
+    ggplot()+
   ggtitle("Timing regular expressions in R, log scale")+
   scale_y_log10("seconds")+
   scale_x_log10("subject/pattern size",
@@ -65,5 +73,46 @@ log.legend <- ggplot()+
   geom_point(aes(N, time/1e9, color=expr),
              shape=1,
              data=times)
-ggplotly(log.legend)
+}
+ggplotly(log.legend(times))
+```
+
+### Part 2
+
+Derived from [stringi](https://github.com/Rexamine/stringi/blob/master/devel/benchmarks/mbmark-regex-detect1.R).
+
+```{r}
+(lettersdigits <- c(0:9, stri_enc_fromutf32(list(97L, 98L, 99L, 100L, 101L, 102L, 103L, 104L, 105L, 106L, 107L,  108L, 109L, 110L, 111L, 112L, 113L, 114L, 115L, 116L, 117L, 118L,  119L, 120L, 121L, 122L, 261L, 263L, 281L, 322L, 324L, 243L, 347L,  378L, 380L))))
+
+(lettersdigits <- enc2native(lettersdigits))
+
+set.seed(123)
+
+letdig <- replicate(100000, {
+  paste(sample(lettersdigits, floor(abs(rcauchy(1, 10)) + 1), replace = TRUE), collapse = '')
+})
+
+
+times.list <- list()
+for(N in c(1,5,10,15,20,25)){
+    pattern = paste0("[0-9]{",N,"}")
+    regexp = re2(pattern)
+    gc(reset=TRUE)
+    times_N <- microbenchmark(
+      TRE = grepl(pattern, letdig),
+      PCRE = grepl(pattern, letdig, perl=TRUE),
+      ICU = stri_detect_regex(letdig, pattern),
+      RE2n =  re2_match(letdig, pattern),
+      RE2c = re2_match(letdig, regexp),
+      times = 10
+    )
+  times.list[[N]] <- data.frame(N, times_N)
+}
+times <- do.call(rbind, times.list)
+
+ggplotly(linear.legend(times))
+
+identical(grepl("[0-9]{3,}", letdig) , re2_match(letdig, "[0-9]{3,}"))
+identical(grepl("[0-9]{3,}", letdig, perl = TRUE), re2_match(letdig, "[0-9]{3,}"))
+identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_match(letdig, "[0-9]{3,}"))
 ```
