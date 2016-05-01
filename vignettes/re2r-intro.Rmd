@@ -16,14 +16,14 @@ This Article is derived from [An Introduction to Regular Expressions](http://www
 
 ## Table of Content
 
-1. What are Regular Expressions?
-2. Why would we use Regular Expressions
-3. How to use the Regular Expression Syntax Basics
-4. Where to use Regular Expressions
+1. What is Regular Expression
+2. When to use RE
+3. How to use RE with re2r
+4. RE packages in R
 
-## What are Regular Expressions?
+## What is Regular Expression
 
-Regular expressions are a way to search for substrings ("matches") in strings. This is done by searching with "patterns" through the string.
+It is a way to search for matches in strings. This is done by searching with "patterns" through the string.
 
 Example:
 
@@ -43,54 +43,49 @@ But it will not find files like
 
 This is exactly the way REs work. While the `*` and `?` are a very limited ways of pattern matching, REs supply a much broader spectrum of describing patterns.
 
-## Why would we use Regular Expressions
+## When to use RE
 
 Example usages could be:
 
 1. Remove all occurences of a specific tag from text file
 2. Check whether an e-mail address is well-formed
 
-### Standard Regular Expression Operations
-
 Basically we can do the following operations on a string with REs:
 
-#### 1. Test for a pattern
+### 1. Test for a pattern
 
-Search through a string and check whether a pattern matches a substring, returning true or false.
+Search through a string for a pattern, and return boolean result or matched substrings.
 
-#### 2. Extract a substring
+### 2. Extract a substring
 
-Search for a substring and return that substring.
+Search for a substring, and return that substring.
 
-#### 3. Replace a substring
+### 3. Replace a substring
 
-Search for a substring that matches a pattern and replace it by another string.
+Search for a substring that matches a pattern, and replace it by another string.
 
-## How to use Regular Expressions from re2r
+## How to use RE with re2r
 
-Here is a quick overview over the most common methods on how to execute a regular expression in `re2r`.
+Here is a quick overview over the most common methods on how to execute a regular expression in **re2r**.
 
-### 1. Search a string for a pattern
-
-Here a quick overview over the most common methods on how to execute a regular expression.
+### 1. Search a string
 
 ```{r, eval=FALSE, include=TRUE}
 re2_match(string, pattern)
 ```
 
-Searches the string expression for the occurence(s) of a substring that matches 'pattern' and returns boolean result.
+Searches the string expression for a 'pattern' and returns boolean result.
 
 ```{r}
-test_string = "this is just one test";
-re2_match(test_string, "(o.e)")
+re2_match("this is just one test", "(o.e)")
 ```
 
-`.` means `any character, possibly including newline` . For more syntax, you can check out the `RE2 Syntax` vignette.
+`.` stands for **any character, possibly including newline** . For more syntax, you can check out the [RE2 Syntax](./re2r-syntax.html) vignette.
 
 With `value = TRUE` option, function will return the capture groups with `()`.
 
-```{r,collapse=TRUE}
-(res = re2_match(test_string, "(o.e)",value = TRUE))
+```{r}
+(res = re2_match("this is just one test", "(o.e)",value = TRUE))
 str(res)
 ```
 
@@ -98,21 +93,21 @@ The return result is a character matrix. `?1` is the first capture group and it 
 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
-```{r,collapse=TRUE}
-(res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
+```{r}
+(res = re2_match("this is just one test", "(?P<testname>this)( is)", value = TRUE))
 str(res)
 ```
 
 With `all = TRUE` option, function will return the all of patterns in a string instead of just the first one.
 
-```{r,collapse=TRUE}
-(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+```{r}
+(res = re2_match("this is just one test", "(is)", value = TRUE, all = TRUE))
 str(res)
 ```
 
 `!n` is the index of the input string. We can provide a character vector to a pattern.
 
-```{r,collapse=TRUE}
+```{r}
 test_string = c("this is just one test", "the second test");
 (res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
 str(res)
@@ -120,7 +115,7 @@ str(res)
 
 If there is no capture group, and `value = TRUE`, the matched origin strings will be returned.
 
-```{r,collapse=TRUE}
+```{r}
 test_string = c("this is just one test", "the second test");
 (res = re2_match(test_string, "is", value = TRUE))
 str(res)
@@ -128,7 +123,7 @@ str(res)
 
 If `tolist = TRUE`, the result will be a list.
 
-```{r,collapse=TRUE}
+```{r}
 re2_match(c("this is test", 
             "this is test, and this is not test", 
             "they are tests"), 
@@ -165,13 +160,13 @@ re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 
 `\\1` and `\\2` are the first and second capture groups.
 
-### 4. `Regular Expression Object` for better performance
+### 4. Pre-compiled RE
 
 We can create a regular expression object (RE2 object) from a string. It will reduce the time to parse the syntax of the same pattern. 
 
 And this will also give us more option for the pattern. run `help(re2)` to get more detials.
 
-```{r,collapse=TRUE}
+```{r}
 regexp = re2("test", case_sensitive = FALSE)
 print(regexp)
 regexp %<~% "(?P<first>1*)"
@@ -180,41 +175,41 @@ regexp
 
 `%<~%` is a operator to create a new RE2 object.
 
-```{r,collapse=TRUE}
+```{r}
 regexp = re2("test",case_sensitive = FALSE)
 re2_match("TEST", regexp)
 re2_replace( "TEST", regexp, "ops")
 ```
 
-If you come from a `Perl` world, you may be insterested in `%=~%`  `%!~%`.
+If you come from the **Perl** world, you may be insterested in `%=~%`  `%!~%`.
 
-```{r,collapse=TRUE}
+```{r}
 "TEST" %=~% regexp
 "TEST" %!~% regexp
 ```
 
-## Where to use Regular Expressions
+## RE packages in R
 
-#### 1. Base R functions with `PCRE`
+### 1. Base R with **PCRE**
 
-Base R functions such as `regexpr` use [PCRE](http://www.pcre.org/) when given the `perl=TRUE` argument. PCRE includes many useful features, such as [named capture](https://github.com/tdhock/regex-tutorial#motivation-for-using-named-capture-regular-expressions-5-minutes), but has an exponential time complexity.
+Base R functions such as `regexpr` use [PCRE](http://www.pcre.org/) when given the `perl = TRUE` argument. PCRE includes many useful features, such as [named capture](https://github.com/tdhock/regex-tutorial#motivation-for-using-named-capture-regular-expressions-5-minutes), but has an exponential time complexity.
 
-#### 2. Base R functions with `TRE`
+### 2. Base R with **TRE**
 
-Base R functions such as `regexpr` use [TRE](https://github.com/laurikari/tre) when given the `perl=FALSE` argument. TRE has a polynomial time complexity but does not include named capture groups.
+Base R functions such as `regexpr` use [TRE](https://github.com/laurikari/tre) when given the `perl = FALSE` argument. TRE has a polynomial time complexity but does not include named capture groups.
 
-#### 3. `stringi` with `ICU`
+### 3. **stringi** with **ICU**
 
 `stringr::str_match` and `stringi::stri_match` use the regex engine from the ICU library, which has an exponential time complexity. The stringi package does not support named capture yet as such a feature set is still considered as [experimental in ICU](https://github.com/hadley/stringr/pull/16).
 
-#### 4. `re2r` with `RE2`
+### 4. **re2r** with **RE2**
 
-`RE2` is a primarily DFA based regexp engine from Google that is very fast at matching large amounts of text. It is has a `polynomial time complexity` (or `fast and scalable` in general case), but it does not support `look behind` and some regular expression features.
+RE2 is a primarily DFA based regexp engine from Google that is very fast at matching large amounts of text. It is has a `polynomial time complexity` (or `fast and scalable` in general case), but it does not support `look behind` and some regular expression features.
 
-#### above all
+### Above all
 
-Although being slightly different to use (because of the design of the engines), all are quite similar to `Perl`'s implementation of REs. 
+Although being slightly different to use (because of the design of the engines), all are quite similar to **Perl**'s implementation of REs. 
 
 ## Want to learn more?
 
-For more examples, you can check out `RE2 Example` vignette.
+For more examples, you can check out [RE2 Examples](./re2r-examples.html) vignette.
