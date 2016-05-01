@@ -11,7 +11,7 @@ vignette: >
 library(re2r)
 ```
 
-## Engine
+## RE Engine
 
 <div  class="markdown-body">
 <table>

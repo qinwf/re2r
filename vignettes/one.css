@@ -7,11 +7,11 @@ body {
 /* offset scroll position for anchor links (for fixed navbar)  */
 .section h2 {
   padding-top: 55px;
-  margin-top: -55px;
+  margin-top: -25px;
 }
 .section h3 {
   padding-top: 55px;
-  margin-top: -55px;
+  margin-top: -35px;
 }
 .section h4 {
   padding-top: 55px;
