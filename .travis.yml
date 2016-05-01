@@ -46,7 +46,7 @@ after_failure:
 
 after_success:
   - ./travis-tool.sh dump_logs
-  - Rscript -e 'library(devtools); build_vignettes()'
+  - Rscript -e 'if ( Sys.getenv("OS") == "Linux" && Sys.getenv("RUN_RE2R_BENCHMARK") == "TRUE") {library(devtools); install(); build_vignettes();}' 
   - cd ./inst/doc/
   - touch .nojekyll
   - cp re2r-intro.html index.html
@@ -54,7 +54,7 @@ after_success:
   - git checkout -b gh-pages
   - git add --all
   - git -c user.name='travis' -c user.email='travis@travis.travis' commit -m "update re2r gh-pages"
-  - '["${RUN_RE2R_BENCHMARK}" = "true"] && ["${OS}" = "Linux"] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && ["${TRAVIS_BRANCH}" = "master"] && git push --force --quiet "https://qinwf:$GITHUB_API_KEY@github.com/qinwf/re2r_doc.git" gh-pages > /dev/null 2>&1'
+  - if [ "${RUN_RE2R_BENCHMARK}" = "TRUE" ] && [ "${OS}" = "Linux" ] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; then git push --force --quiet "https://qinwf:$GITHUB_API_KEY@github.com/qinwf/re2r_doc.git" gh-pages > /dev/null 2>&1 ; fi;
 
 notifications:
   email:
