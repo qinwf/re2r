@@ -54,7 +54,7 @@ after_success:
   - git checkout -b gh-pages
   - git add --all
   - git -c user.name='travis' -c user.email='travis@travis.travis' commit -m "update re2r gh-pages"
-  - ["${RUN_RE2R_BENCHMARK}" = "true"] && ["${OS}" = "Linux"] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && ["${TRAVIS_BRANCH}" = "master"] && git push --force --quiet "https://$GITHUB_API_KEY@github.com/qinwf/re2r.git" gh-pages > /dev/null 2>&1
+  - '["${RUN_RE2R_BENCHMARK}" = "true"] && ["${OS}" = "Linux"] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && ["${TRAVIS_BRANCH}" = "master"] && git push --force --quiet "https://$GITHUB_API_KEY@github.com/qinwf/re2r.git" gh-pages > /dev/null 2>&1'
 
 notifications:
   email:
