@@ -6,7 +6,7 @@ html_document:
     theme: readable
     highlight: textmate
     self_contained: yes
-    css: cstyles.css
+    css: one.css
     include:
         before_body: navbar.htm
         in_header: head.html

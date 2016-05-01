@@ -1,8 +1,6 @@
 ---
-output: 
-    html_document:
-        toc: no
-        css: one.css
+title: "RE2 Syntax"
+output: html_document
 vignette: >
   %\VignetteIndexEntry{RE2 Syntax}
   %\VignetteEngine{knitr::rmarkdown}

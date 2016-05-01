@@ -1,15 +1,12 @@
 ---
 date: "`r Sys.Date()`"
-output: 
-    html_document:
-        self_contained: TRUE
+title: re2r Benchmark
+output: html_document
 vignette: >
   %\VignetteIndexEntry{benchmark on re2r}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
-# re2r Benchmark
 
 + TRE - TRE in R base
 + PRCE - Perl Compatible Regular Expressions in R base

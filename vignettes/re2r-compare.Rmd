@@ -1,8 +1,6 @@
 ---
-output: 
-    html_document:
-        toc: no
-        css: one.css
+title: "Compare Regular Expressions in R"
+output: html_document
 vignette: >
   %\VignetteIndexEntry{Compare RE in R}
   %\VignetteEngine{knitr::rmarkdown}
