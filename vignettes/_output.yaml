@@ -9,3 +9,4 @@ html_document:
     css: cstyles.css
     include:
         before_body: navbar.htm
+        in_header: head.html
