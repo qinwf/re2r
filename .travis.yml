@@ -18,6 +18,7 @@ dist: trusty
 
 env:
   global:
+    - secure: EfHMY9DyAAFHH4n3e8vFvK9K9N3uBlFdXC3UjuyFRCgABPRE/VcF9M8wKCRfA90Tkcs6YkfyROVMw9t6LU02kTmhemjK8E3p3HhmeqTbA1aRKu/obhgY5b03ygdecP7V73r00hYOoX8fGP8xOxkVZTmFVDcBTCj81KSv4A0vFuxotdtRgqLU2RQM6yU+e5fN1hznkAE457M/xjk8tc5aJxvgG6hDsbmLT677ovLzQ+XYeXsUvcJ4w78F6dtszcGDEArLNY/YejTI1hGlTyBJzDDvpjCefPGfgNNIyglzq/tDimBabR1/Why+recbRQpKewQSaorWkqq3FruJrOtk5Wv45wFGmC+hDcDxUPLkCbcrg6ckL07bOUOF3yaOhYlUcXMgHp7TYYFL1A+bv5/WM5wa3xHo4rhG0TeEv2xLZC4I4vFiYZVc5NhfNTx6nAOvq2m6LrFKZqniRpMdE+RcplGJTo9b0E+uJrAr6RKMAkRQSCcGuiuRRLanZ4dnUDKrgGJXsy1DSISBXyxcloh64yE3gObsASqTNRACKslEP29pz6lbOW2H4eb10PXgY/ehf1SOqZFPFGn7R8N95CNC/uaoAOXBPZybIW3ZIdJyBkrKe3fhDhFr9zogebVWIkfL5z98k6UBGA90+HAKaxNtK6UytE+VokCD1/TKqTrZOTs=
     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
     - R_CHECK_ARGS="--no-vignettes --no-manual"
     - OS=$(uname -s)
@@ -45,6 +46,15 @@ after_failure:
 
 after_success:
   - ./travis-tool.sh dump_logs
+  - Rscript -e 'library(devtools); build_vignettes()'
+  - cd inst/doc/
+  - touch .nojekyll
+  - cp re2r-intro.html index.html
+  - git init
+  - git checkout -b gh-pages
+  - git add --all
+  - git -c user.name='travis' -c user.email='travis@travis.travis' commit -m "update re2r gh-pages"
+  - ["${RUN_RE2R_BENCHMARK}" = "true"] && ["${OS}" = "Linux"] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && ["${TRAVIS_BRANCH}" = "master"] && git push --force --quiet "https://$GITHUB_API_KEY@github.com/qinwf/re2r.git" gh-pages > /dev/null 2>&1
 
 notifications:
   email:
