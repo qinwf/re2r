@@ -1,0 +1,30 @@
+---
+date: "`r Sys.Date()`"
+output: 
+    rmarkdown::html_vignette:
+        self_contained: TRUE
+vignette: >
+  %\VignetteIndexEntry{benchmark on re2r}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# re2r Benchmark
+
++ TRE - TRE in R base
++ PRCE - Perl Compatible Regular Expressions in R base
++ ICU - ICU with stringi
++ RE2n - RE2 with string pattern
++ RE2c - RE2 with pre-compiled regular expression
+
+```{r, include=FALSE}
+library(knitr)
+src <- if (Sys.getenv("OS") == "Linux" && # for travis
+           Sys.getenv("RUN_RE2R_BENCHMARK") == "TRUE") {
+    knit_expand(file = "./disabled/benchmark.Rmd")
+} else {
+    knit_expand(file = "./disabled/blank.Rmd")
+}
+```
+
+`r knit(text = src)`

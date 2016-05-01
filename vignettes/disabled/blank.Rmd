@@ -1,0 +1,3 @@
+## Disabled
+
+This vignette is disabled by default. See https://qinwf.github.io/re2r .

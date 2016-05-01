@@ -1,5 +1,5 @@
 ---
-title: "Introduction to `RE2`"
+title: "Introduction to RE2"
 output: html_document
 vignette: >
   %\VignetteIndexEntry{Introduction to RE2}
