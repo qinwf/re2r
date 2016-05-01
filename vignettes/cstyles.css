@@ -29,3 +29,7 @@ body {
 blockquote {
   font-size: 1em;
 }
+
+.tocify-header .tocify-item{
+  font-size: 13px;
+}

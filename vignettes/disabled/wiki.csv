@@ -10,7 +10,7 @@ Backreferences,o,o,o,x,o
 >9 indexable captures,o,o,x,o,o
 Flags modifiers ,o,o,o,o,o
 Conditionals,x,o,x,x,o
-Independent sub-expressions,o,o,x,??,o
+Independent sub-expressions,o,o,x,x,o
 Named capture,x,o,x,o,o
 Comments,o,o,o,x,o
 Embedded code,x,o,x,x,x

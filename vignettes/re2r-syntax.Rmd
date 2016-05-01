@@ -14,6 +14,9 @@ This page lists the regular expression syntax accepted by RE2. It also lists syn
 Grayed out expressions are not supported by RE2.
 
 <div class="markdown-body">
+
+## Single Character
+
 <table>
 <tr><th>kinds of single-character expressions</th><th>examples</th></tr>
 <tr><td>any character, possibly including newline (s=true)</td><td><code>.</code></td></tr>
@@ -29,11 +32,15 @@ Grayed out expressions are not supported by RE2.
 <tr><td>negated Unicode character class</td><td><code>\\P{Greek}</code></td></tr>
 </table>
 
+## Composites
+
 <table>
 <tr><th></th><th>Composites</th></tr>
 <tr><td><code>xy</code></td><td><code>x</code> followed by <code>y</code></td></tr>
 <tr><td><code>x|y</code></td><td><code>x</code> or <code>y</code> (prefer <code>x</code>)</td></tr>
 </table>
+
+## Repetitions
 
 <table>
 <tr><th></th><th>Repetitions</th></tr>
@@ -57,6 +64,8 @@ Grayed out expressions are not supported by RE2.
 
 <p>Implementation restriction: The counting forms <code>x{n,m}</code>, <code>x{n,}</code>, and <code>x{n}</code> reject forms that create a minimum or maximum repetition count above 1000. Unlimited repetitions are not subject to this restriction.
 
+## Possessive repetitions
+
 <table>
 <tr><th></th><th>Possessive repetitions</th></tr>
 <tr><td><font color='#808080'><code>x*+</code></font></td><td>zero or more <code>x</code>, possessive <small>(NOT SUPPORTED)</small></td></tr>
@@ -66,6 +75,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><font color='#808080'><code>x{n,}+</code></font></td><td><code>n</code> or more <code>x</code>, possessive <small>(NOT SUPPORTED)</small></td></tr>
 <tr><td><font color='#808080'><code>x{n}+</code></font></td><td>exactly <code>n</code> <code>x</code>, possessive <small>(NOT SUPPORTED)</small></td></tr>
 </table>
+
+## Grouping
 
 <table>
 <tr><th></th><th>Grouping</th></tr>
@@ -83,6 +94,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><font color='#808080'><code>%(re)</code></font></td><td>non-capturing group <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
 </table>
 
+## Flags
+
 <table>
 <tr><th></th><th>Flags</th></tr>
 <tr><td><code>i</code></td><td>case-insensitive (default false)</td></tr>
@@ -92,6 +105,8 @@ Grayed out expressions are not supported by RE2.
 </table>
 
 <p>Flag syntax is <code>xyz</code> (set) or <code>-xyz</code> (clear) or <code>xy-z</code> (set <code>xy</code>, clear <code>z</code>).
+
+## Empty Strings
 
 <table>
 <tr><th></th><th>Empty strings</th></tr>
@@ -124,6 +139,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><font color='#808080'><code>\\%23c</code></font></td><td>in column 23 <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
 <tr><td><font color='#808080'><code>\\%23v</code></font></td><td>in virtual column 23 <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
 </table>
+
+## Escape Sequences
 
 <table>
 <tr><th></th><th>Escape sequences</th></tr>
@@ -167,6 +184,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><font color='#808080'><code>\\%U12345678</code></font></td><td>Unicode character 0x12345678 <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
 </table>
 
+## Character Class Elements
+
 <table>
 <tr><th></th><th>Character class elements</th></tr>
 <tr><td><code>x</code></td><td>single character</td></tr>
@@ -176,6 +195,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><code>\\p{Foo}</code></td><td>Unicode character class <code>Foo</code></td></tr>
 <tr><td><code>\\pF</code></td><td>Unicode character class <code>F</code> (one-letter name)</td></tr>
 </table>
+
+## Named Character Classes
 
 <table>
 <tr><th></th><th>Named character classes as character class elements</th></tr>
@@ -188,6 +209,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><code>[\\p{Name}]</code></td><td>named Unicode property inside character class (≡ <code>\\p{Name}</code>)</td></tr>
 <tr><td><code>[^\\p{Name}]</code></td><td>named Unicode property inside negated character class (≡ <code>\\P{Name}</code>)</td></tr>
 </table>
+
+## Perl Character Classes 
 
 <a name="perl"></a>
 <table>
@@ -203,6 +226,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><font color='#808080'><code>\\v</code></font></td><td>vertical space <small>(NOT SUPPORTED)</small></td></tr>
 <tr><td><font color='#808080'><code>\\V</code></font></td><td>not vertical space <small>(NOT SUPPORTED)</small></td></tr>
 </table>
+
+## ASCII Character Classes
 
 <a name="ascii"></a>
 <table>
@@ -222,6 +247,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><code>[[:word:]]</code></td><td>word characters (≡ <code>[0-9A-Za-z_]</code>)</td></tr>
 <tr><td><code>[[:xdigit:]]</code></td><td>hex digit (≡ <code>[0-9A-Fa-f]</code>)</td></tr>
 </table>
+
+## Unicode Character Classes
 
 <table>
 <tr><th></th><th>Unicode character class names--general category</th></tr>
@@ -401,6 +428,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><code>Yi</code></td></tr>
 </table>
 
+## Vim Character Classes
+
 <table>
 <tr><th></th><th>Vim character classes</th></tr>
 <tr><td><font color='#808080'><code>\\i</code></font></td><td>identifier character <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
@@ -438,6 +467,8 @@ Grayed out expressions are not supported by RE2.
 <tr><td><font color='#808080'><code>\\V</code></font></td><td>verynomagic <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
 <tr><td><font color='#808080'><code>\\Z</code></font></td><td>ignore differences in Unicode combining characters <small>(NOT SUPPORTED)</small> <small>VIM</small></td></tr>
 </table>
+
+## Magic
 
 <table>
 <tr><th></th><th>Magic</th></tr>
