@@ -72,12 +72,6 @@ Here is a quick overview over the most common methods on how to execute a regula
 
 ### 1. Search a string for a pattern
 
-Tips: Hey, `Windows` user. If you are not using English as your default language on Windows, please consider run this line to set locale setting to ensure the input strings are valid UTF-8 strings.
-
-```{r, eval=FALSE, include=TRUE}
-Sys.setlocale(locale = "English")
-```
-
 Here a quick overview over the most common methods on how to execute a regular expression.
 
 ```{r, eval=FALSE, include=TRUE}
