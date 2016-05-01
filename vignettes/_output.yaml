@@ -4,7 +4,7 @@ html_document:
     toc_float:
         collapsed: yes
     theme: readable
-    highlight: textmate
+    highlight: tango
     self_contained: yes
     css: one.css
     include:
