@@ -18,13 +18,13 @@ dist: trusty
 
 env:
   global:
-    - secure: EfHMY9DyAAFHH4n3e8vFvK9K9N3uBlFdXC3UjuyFRCgABPRE/VcF9M8wKCRfA90Tkcs6YkfyROVMw9t6LU02kTmhemjK8E3p3HhmeqTbA1aRKu/obhgY5b03ygdecP7V73r00hYOoX8fGP8xOxkVZTmFVDcBTCj81KSv4A0vFuxotdtRgqLU2RQM6yU+e5fN1hznkAE457M/xjk8tc5aJxvgG6hDsbmLT677ovLzQ+XYeXsUvcJ4w78F6dtszcGDEArLNY/YejTI1hGlTyBJzDDvpjCefPGfgNNIyglzq/tDimBabR1/Why+recbRQpKewQSaorWkqq3FruJrOtk5Wv45wFGmC+hDcDxUPLkCbcrg6ckL07bOUOF3yaOhYlUcXMgHp7TYYFL1A+bv5/WM5wa3xHo4rhG0TeEv2xLZC4I4vFiYZVc5NhfNTx6nAOvq2m6LrFKZqniRpMdE+RcplGJTo9b0E+uJrAr6RKMAkRQSCcGuiuRRLanZ4dnUDKrgGJXsy1DSISBXyxcloh64yE3gObsASqTNRACKslEP29pz6lbOW2H4eb10PXgY/ehf1SOqZFPFGn7R8N95CNC/uaoAOXBPZybIW3ZIdJyBkrKe3fhDhFr9zogebVWIkfL5z98k6UBGA90+HAKaxNtK6UytE+VokCD1/TKqTrZOTs=
+    - secure: b9DfgCLxLdBReSvku0eSExzvip4/gTVjmtEKaV8lsOOZPK4oCrZQU0IYWezAVGOum8i2dW1wqXcEGULPsRGHl3Vci4YI+z5B6W93qVo4GVghxmkO+2nLgb/tS2QvCThBF1XDuhmwvD1lvAEJyEzxVwpt81jM58qQuLDDAL3bMOII0uCWBebGdtVKhev2UuIWzE5kArrAmzp9eHAlcM5Raft3rrOl7wLW9s1zPlfKUKVU5UOOOw+5V7Ordwjc+jCObxfXrLIwq6f1acH8bZlJ22K2MpI8TpogKvSpnNGKWQ8KZXaGnJFtzTJUfePvPinVCWj+qKIWytilqcEYE648hykCe6xFhfqsQemjcdTEEPFdynrNLB1wx2f0fW6lHPjiODYGAmtoDm6TQlkkltHJdLzpjupR9E9T0QVgcL9hGZA2Z3OvlXGeGo+dBkE0b+9aYnwVMxepvbK1z3nHL9VNiO4llKG9Cr4x4H7GcEd47QDezd/6jfSZUttvMfAhxEoXkkzcgSaTZGRPnFIEZbcixs8+oUkTqGbh6UyUKKUXZaRDE84nS9y2G2iSFWk4yd9oppjyjdysrgSMCoKiNEnQSu3c8/5KHOhglH1UsQgfT62Me7wOLSumvM9ptHeo39SBI8o3zs0vBq1VUTqDie7GsmCnliiZvb2xaqJUy8fbBno=
     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
     - R_CHECK_ARGS="--no-vignettes --no-manual"
     - OS=$(uname -s)
   matrix:
     - _R_CHECK_CRAN_INCOMING_=FALSE
-    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran" RUN_RE2R_BENCHMARK="TRUE"
+    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran" RUN_RE2R_BENCHMARK="TRUE" PANDOC_VERSION="1.15.2" BOOTSTRAP_PANDOC="1"
 
 before_install:
   - echo "options(repos = c(CRAN='http://cran.r-project.org'))" >> ~/.Rprofile
@@ -47,14 +47,14 @@ after_failure:
 after_success:
   - ./travis-tool.sh dump_logs
   - Rscript -e 'library(devtools); build_vignettes()'
-  - cd inst/doc/
+  - cd ./inst/doc/
   - touch .nojekyll
   - cp re2r-intro.html index.html
   - git init
   - git checkout -b gh-pages
   - git add --all
   - git -c user.name='travis' -c user.email='travis@travis.travis' commit -m "update re2r gh-pages"
-  - '["${RUN_RE2R_BENCHMARK}" = "true"] && ["${OS}" = "Linux"] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && ["${TRAVIS_BRANCH}" = "master"] && git push --force --quiet "https://$GITHUB_API_KEY@github.com/qinwf/re2r.git" gh-pages > /dev/null 2>&1'
+  - '["${RUN_RE2R_BENCHMARK}" = "true"] && ["${OS}" = "Linux"] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && ["${TRAVIS_BRANCH}" = "master"] && git push --force --quiet "https://qinwf:$GITHUB_API_KEY@github.com/qinwf/re2r_doc.git" gh-pages > /dev/null 2>&1'
 
 notifications:
   email:
