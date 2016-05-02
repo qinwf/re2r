@@ -227,6 +227,18 @@ struct BoolP : public Worker
     }
 };
 
+#define CHECK_RESULT                                             \
+    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();   \
+    if(todo_str.length() == 0) break;                            \
+                                                                 \
+    if((todo_str.data() == tmp_piece.data()) &&                  \
+        (todo_str.length() == tmp_piece.length()) &&             \
+        (todo_str.length() !=0) ){                               \
+            todo_str.remove_prefix(1);                           \
+    }                                                            \
+                                                                 \
+    tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
+
 // [[Rcpp::export]]
 SEXP cpp_match(vector<string>& input,
                XPtr<RE2>& ptr,
@@ -396,24 +408,13 @@ SEXP cpp_match(vector<string>& input,
                             string numstring = numbertostring(times_n);
                             fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
-                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
                             // Note that if the
                             // regular expression matches an empty string, input will advance
                             // by 0 bytes.  If the regular expression being used might match
                             // an empty string, the loop body must check for this case and either
                             // advance the string or break out of the loop.
                             //
-                            if(todo_str.length() == 0) break; // end of search for this string
-
-                            if((todo_str.data() == tmp_piece.data()) &&
-                               (todo_str.length() == tmp_piece.length()) &&
-                               (todo_str.length() !=0) ){
-                                todo_str.remove_prefix(1);
-                            }
-
-                            // update tmp_piece
-                            tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                            CHECK_RESULT
 
                             // try next place
                         }   // while
@@ -433,18 +434,7 @@ SEXP cpp_match(vector<string>& input,
                                 string numstring = numbertostring(times_n);
                                 fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
-                                for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-                                if(todo_str.length() == 0) break; // end of search for this string
-
-                                if((todo_str.data() == tmp_piece.data()) &&
-                                   (todo_str.length() == tmp_piece.length()) &&
-                                   (todo_str.length() !=0) ){
-                                    todo_str.remove_prefix(1);
-                                }
-
-                                // update tmp_piece
-                                tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                                CHECK_RESULT
 
                                 // advanced try next place
                             }   // else while
@@ -502,22 +492,11 @@ SEXP cpp_match(vector<string>& input,
                             string numstring = numbertostring(times_n);
                             fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
 
-                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-                            if(todo_str.length() == 0) break; // end of search for this string
-
-                            if((todo_str.data() == tmp_piece.data()) &&
-                               (todo_str.length() == tmp_piece.length()) &&
-                               (todo_str.length() !=0) ){
-                                todo_str.remove_prefix(1);
-                            }
-
-                            // update tmp_piece
-                            tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                            CHECK_RESULT
 
                             // try next place
                         }   // while
-                        if(cnt == 0){ // no one match, all NA return
+                        if(cnt == 0){ // no one match, NULL return
                             *listi = R_NilValue;
                         } else {
                             auto rows = groups_name.size();
@@ -550,18 +529,7 @@ SEXP cpp_match(vector<string>& input,
                                 string numstring = numbertostring(times_n);
                                 fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
 
-                                for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-                                if(todo_str.length() == 0) break; // end of search for this string
-
-                                if((todo_str.data() == tmp_piece.data()) &&
-                                   (todo_str.length() == tmp_piece.length()) &&
-                                   (todo_str.length() !=0) ){
-                                    todo_str.remove_prefix(1);
-                                }
-
-                                // update tmp_piece
-                                tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+                                CHECK_RESULT
 
                                 // advanced try next place
                             }   // else while
