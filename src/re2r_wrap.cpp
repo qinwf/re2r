@@ -30,6 +30,10 @@
 
 #include "../inst/include/re2r.h"
 
+// [[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
+using namespace RcppParallel;
+
 #define thr(code) case RE2::ErrorCode::code: throw code(msg); break;
 
 void check_compile_error(RE2::ErrorCode code_,const string& msg){
@@ -152,31 +156,86 @@ IntegerVector cpp_get_named_groups(XPtr<RE2>& regexp){
     return wrap(regexp->NamedCapturingGroups());
 }
 
-// [[Rcpp::export]]
-CharacterVector cpp_quote_meta(vector<string>& input){
-    RE2 tt(""); // break on windows without tt
-    vector<string> res;
-    res.reserve(input.size());
-    for(auto ind : input) res.push_back(tt.QuoteMeta(ind));
-    return wrap(res);
-}
+struct QuoteMetaP : public Worker
+{
+    // source matrix
+    const vector<string>& input;
+    RE2 tt;
+    // destination matrix
+    vector<string>& output;
+
+    // initialize with source and destination
+    QuoteMetaP(const vector<string>&  input_, vector<string>& output_)
+        : input(input_), tt(""), output(output_) {}
+
+    // take the square root of the range of elements requested
+    void operator()(std::size_t begin, std::size_t end) {
+        std::transform(input.begin() + begin,
+                       input.begin() + end,
+                       output.begin() + begin,
+                       tt.QuoteMeta);
+    }
+};
 
 // [[Rcpp::export]]
-CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_){
+CharacterVector cpp_quote_meta(vector<string>& input, bool parallel){
+
+    vector<string> res(input.size());
+
+    if (!parallel){
+        RE2 tt(""); // break on windows without tt
+        auto it = res.begin();
+        for(auto ind : input) {
+            *it = tt.QuoteMeta(ind);
+            it++;
+        }
+        return wrap(res);
+    }
+    else{
+        QuoteMetaP pobj(input, res);
+        parallelFor(0, input.size(), pobj);
+        return wrap(res);
+    }
+}
+
+struct ReplaceP : public Worker
+{
+    vector<string>& input;
+    RE2* tt;
+    string& rewrite;
+
+    ReplaceP(vector<string>&  input_, RE2* tt_,string& rewrite_)
+        : input(input_), tt(tt_), rewrite(rewrite_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        std::for_each(input.begin() + begin,
+                       input.begin() + end,
+                       [this](string& x){ tt->Replace(&x, *tt, rewrite);});
+    }
+};
+// [[Rcpp::export]]
+CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel){
     string errmsg;
 
     if(!regexp->CheckRewriteString(rewrite, &errmsg)){
         throw ErrorRewriteString(errmsg);
     }
+    auto ptr = regexp.checked_get();
 
     if(!global_) {
-        for(string& ind : input) regexp->Replace(&ind,*regexp,rewrite);
-        return wrap(input);
+        if (!parallel){
+            for(string& ind : input) ptr->Replace(&ind,*ptr,rewrite);
+            return wrap(input);
+        } else{
+            ReplaceP pobj(input, ptr, rewrite);
+            parallelFor(0, input.size(), pobj);
+            return wrap(input);
+        }
     }
     else {
         vector<size_t> count;
         count.reserve(input.size());
-        for(string& ind : input) count.push_back(regexp->GlobalReplace(&ind,*regexp,rewrite));
+        for(string& ind : input) count.push_back(ptr->GlobalReplace(&ind,*ptr,rewrite));
         CharacterVector res = wrap(input);
         res.attr("count") = count;
         return res;

@@ -116,3 +116,19 @@ identical(grepl("[0-9]{3,}", letdig) , re2_match(letdig, "[0-9]{3,}"))
 identical(grepl("[0-9]{3,}", letdig, perl = TRUE), re2_match(letdig, "[0-9]{3,}"))
 identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_match(letdig, "[0-9]{3,}"))
 ```
+
+## Parallel
+
+Run on Travis-CI with 2 core CPU.
+
+### quote_meta()
+
+```{r}
+dd =stri_rand_strings(1000000,10, pattern = "[a-zA-Z0-9\"\']")
+head(dd)
+
+identical(quote_meta(dd), quote_meta(dd, parallel = T))
+
+microbenchmark(quote_meta(dd),quote_meta(dd,parallel = T),times = 5)
+```
+

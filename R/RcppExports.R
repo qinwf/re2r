@@ -48,12 +48,12 @@ cpp_get_named_groups <- function(regexp) {
     .Call('re2r_cpp_get_named_groups', PACKAGE = 're2r', regexp)
 }
 
-cpp_quote_meta <- function(input) {
-    .Call('re2r_cpp_quote_meta', PACKAGE = 're2r', input)
+cpp_quote_meta <- function(input, parallel) {
+    .Call('re2r_cpp_quote_meta', PACKAGE = 're2r', input, parallel)
 }
 
-cpp_replace <- function(input, regexp, rewrite, global_) {
-    .Call('re2r_cpp_replace', PACKAGE = 're2r', input, regexp, rewrite, global_)
+cpp_replace <- function(input, regexp, rewrite, global_, parallel) {
+    .Call('re2r_cpp_replace', PACKAGE = 're2r', input, regexp, rewrite, global_, parallel)
 }
 
 cpp_extract <- function(input, regexp, rewrite) {
