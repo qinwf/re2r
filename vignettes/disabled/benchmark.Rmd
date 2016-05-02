@@ -119,7 +119,7 @@ identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_match(letdig, "[0-9]{3,}")
 
 ## Parallel
 
-Run on Travis-CI with 2 core CPU.
+On Travis-CI with 2 cores CPU.
 
 ### Quote
 
