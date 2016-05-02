@@ -158,17 +158,17 @@ IntegerVector cpp_get_named_groups(XPtr<RE2>& regexp){
 
 struct QuoteMetaP : public Worker
 {
-    // source matrix
+    // source
     const vector<string>& input;
     RE2 tt;
-    // destination matrix
+    // destination
     vector<string>& output;
 
     // initialize with source and destination
     QuoteMetaP(const vector<string>&  input_, vector<string>& output_)
         : input(input_), tt(""), output(output_) {}
 
-    // take the square root of the range of elements requested
+    // the range of elements requested
     void operator()(std::size_t begin, std::size_t end) {
         std::transform(input.begin() + begin,
                        input.begin() + end,
