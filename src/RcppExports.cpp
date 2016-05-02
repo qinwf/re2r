@@ -7,18 +7,19 @@
 using namespace Rcpp;
 
 // cpp_match
-SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, size_t anchor, bool all, bool tolist);
-RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP patternSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP tolistSEXP) {
+SEXP cpp_match(vector<string>& input, XPtr<RE2>& ptr, bool value, size_t anchor, bool all, bool tolist, bool parallel);
+RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP tolistSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2>& >::type pattern(patternSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
     Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type tolist(tolistSEXP);
-    __result = Rcpp::wrap(cpp_match(input, pattern, value, anchor, all, tolist));
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_match(input, ptr, value, anchor, all, tolist, parallel));
     return __result;
 END_RCPP
 }

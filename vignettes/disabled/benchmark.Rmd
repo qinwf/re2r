@@ -161,3 +161,16 @@ identical(re2_extract(dd, regexp,parallel = T), re2_extract(dd, regexp))
 gc()
 microbenchmark(sequential =  re2_extract(dd, regexp), parallel = re2_extract(dd, regexp, parallel = T) ,times = 5)
 ```
+
+### match
+
+```{r}
+dd =stri_rand_strings(5000000,10, pattern = "[a-zA-Z0-9\"\']")
+head(dd)
+regexp = re2("sd")
+
+identical(re2_match(dd, regexp, parallel = T), re2_match(dd, regexp))
+
+gc()
+microbenchmark(sequential =  re2_match(dd, regexp), parallel = re2_match(dd, regexp, parallel = T) ,times = 5)
+```

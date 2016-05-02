@@ -70,9 +70,10 @@ re2_match = function(input,
                      anchor = 0,
                      all = FALSE,
                      tolist = FALSE,
+                     parallel = FALSE,
                      ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all, tolist)
+    cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all, tolist, parallel)
 }

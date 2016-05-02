@@ -31,6 +31,11 @@
 #include "../inst/include/re2r.h"
 #include "../inst/include/optional.hpp"
 
+// [[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
+using namespace RcppParallel;
+
+
 #include <cstddef>
 
 #include <sstream>
@@ -59,7 +64,7 @@ inline string numbertostring ( T Number )
     return ss.str();
 }
 
-map<int,string> get_groups_name(XPtr<RE2>& pattern, int cap_nums){
+map<int,string> get_groups_name(RE2* pattern, int cap_nums){
     auto groups_name = pattern->CapturingGroupNames();
 
     vector<int> alls;
@@ -201,22 +206,54 @@ RE2::Anchor get_anchor_type(size_t anchor){
     }
 }
 
+struct BoolP : public Worker
+{
+    const vector<string>& input;
+    vector<bool>& output;
+    RE2* tt;
+    const RE2::Anchor anchor_type;
+
+    BoolP (const vector<string>&  input_,vector<bool>& output_, RE2* tt_, const RE2::Anchor&  anchor_type_)
+        : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        std::transform(input.begin() + begin,
+                       input.begin() + end,
+                       output.begin() + begin,
+                       [this](const string& x){
+                           return tt->Match(x, 0, (int) x.length(),
+                                                 anchor_type, nullptr, 0);
+                           });
+    }
+};
+
 // [[Rcpp::export]]
 SEXP cpp_match(vector<string>& input,
-               XPtr<RE2>& pattern,
+               XPtr<RE2>& ptr,
                bool value,
                size_t anchor,
                bool all,
-               bool tolist){
+               bool tolist,
+               bool parallel){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
+
+    auto pattern = ptr.checked_get();
 
     if (value == false){
         vector<bool> res;
-        res.reserve(input.size());
-        for(const string& ind : input){
-            res.push_back(pattern->Match(ind,0,(int) ind.length(),
-                                         anchor_type, nullptr, 0));
+
+        if (!parallel){
+            res.reserve(input.size());
+            for(const string& ind : input){
+                res.push_back(pattern->Match(ind,0,(int) ind.length(),
+                                             anchor_type, nullptr, 0));
+            }
+        } else {
+            res.resize(input.size());
+            BoolP pobj(input, res, pattern, anchor_type);
+            parallelFor(0, input.size(), pobj);
         }
+
         return wrap(res);
         // bool return, the fastest one
     } else{
@@ -398,12 +435,6 @@ SEXP cpp_match(vector<string>& input,
 
                                 for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
-                                // Note that if the
-                                // regular expression matches an empty string, input will advance
-                                // by 0 bytes.  If the regular expression being used might match
-                                // an empty string, the loop body must check for this case and either
-                                // advance the string or break out of the loop.
-                                //
                                 if(todo_str.length() == 0) break; // end of search for this string
 
                                 if((todo_str.data() == tmp_piece.data()) &&
@@ -473,12 +504,6 @@ SEXP cpp_match(vector<string>& input,
 
                             for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
-                            // Note that if the
-                            // regular expression matches an empty string, input will advance
-                            // by 0 bytes.  If the regular expression being used might match
-                            // an empty string, the loop body must check for this case and either
-                            // advance the string or break out of the loop.
-                            //
                             if(todo_str.length() == 0) break; // end of search for this string
 
                             if((todo_str.data() == tmp_piece.data()) &&
@@ -527,12 +552,6 @@ SEXP cpp_match(vector<string>& input,
 
                                 for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
-                                // Note that if the
-                                // regular expression matches an empty string, input will advance
-                                // by 0 bytes.  If the regular expression being used might match
-                                // an empty string, the loop body must check for this case and either
-                                // advance the string or break out of the loop.
-                                //
                                 if(todo_str.length() == 0) break; // end of search for this string
 
                                 if((todo_str.data() == tmp_piece.data()) &&
@@ -548,7 +567,7 @@ SEXP cpp_match(vector<string>& input,
                             }   // else while
                             if(cnt == 0){ // no one match, all NA return
                                 *listi = R_NilValue;
-                            } else {
+                            } else { // generate CharacterMatrix
                                 auto rows = groups_name.size();
                                 CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
 
@@ -562,17 +581,18 @@ SEXP cpp_match(vector<string>& input,
                                     }
                                     bump_count(rowi, coli, rows);
                                 }
-                                // generate CharacterMatrix
+
                                 colnames(res) = wrap(groups_name);
                                 *listi = res;
                             }
                             listi+=1; //bump times_n !n
                         }
-                    } // end else
+                    } // end else generate CharacterMatrix
 
                     return wrap(listres);
 
-            }
+            } // tolist == true
+
         } // all == true
 
         // unique_ptr go out of scrope
