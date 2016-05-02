@@ -64,6 +64,22 @@ inline string numbertostring ( T Number )
     return ss.str();
 }
 
+CharacterMatrix optstring_to_charmat(const optstring& res){
+
+    CharacterMatrix resv(res.size(), 1);
+    colnames(resv) = CharacterVector::create("?nocapture");
+    auto it = resv.begin();
+    for(auto dd : res){
+        if (bool(dd)) {
+            *it = dd.value();
+        } else{
+            *it = NA_STRING;
+        }
+        it++;
+    }
+    return resv;
+}
+
 map<int,string> get_groups_name(RE2* pattern, int cap_nums){
     auto groups_name = pattern->CapturingGroupNames();
 
@@ -227,6 +243,31 @@ struct BoolP : public Worker
     }
 };
 
+struct NoCaptureP : public Worker
+{
+    const vector<string>& input;
+    optstring& output;
+    RE2* tt;
+    const RE2::Anchor anchor_type;
+
+    NoCaptureP (const vector<string>&  input_, optstring& output_, RE2* tt_, const RE2::Anchor&  anchor_type_)
+        : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        std::transform(input.begin() + begin,
+                       input.begin() + end,
+                       output.begin() + begin,
+                       [this](const string& x) -> tr2::optional<string>{
+                           if (tt->Match(x, 0, (int) x.length(),
+                                            anchor_type, nullptr, 0)){
+                               return tr2::make_optional(x);
+                           } else {
+                               return tr2::nullopt;
+                           };
+                       });
+    }
+};
+
 #define CHECK_RESULT                                             \
     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();   \
     if(todo_str.length() == 0) break;                            \
@@ -238,6 +279,7 @@ struct BoolP : public Worker
     }                                                            \
                                                                  \
     tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
+
 
 // [[Rcpp::export]]
 SEXP cpp_match(vector<string>& input,
@@ -272,23 +314,30 @@ SEXP cpp_match(vector<string>& input,
         auto cap_nums = pattern->NumberOfCapturingGroups();
 
         if ( cap_nums == 0){
-            CharacterVector res(input.size());
-            auto ip = input.begin();
-            for(auto it = res.begin(); it!= res.end(); it++){
-                if(pattern->Match(*ip,0,(int) ip->length(),
-                                  anchor_type, nullptr, 0)){
-                    *it = *ip;
-                } else {
-                    *it = NA_STRING;
+            if (!parallel){
+                CharacterMatrix res(input.size(),1);
+                auto ip = input.begin();
+                for(auto it = res.begin(); it!= res.end(); it++){
+                    if(pattern->Match(*ip,0,(int) ip->length(),
+                                      anchor_type, nullptr, 0)){
+                        *it = *ip;
+                    } else {
+                        *it = NA_STRING;
+                    }
+                    ip++;
                 }
-                ip++;
-            }
-            res.attr("dim") = Dimension(input.size(),1);
-            CharacterMatrix mat_res = wrap(res);
+                colnames(res) = CharacterVector::create("?nocapture");
+                return wrap(res);
+                // no capture group return
+            } else {
+                optstring res(input.size());
+                NoCaptureP pobj(input, res, pattern, anchor_type);
+                parallelFor(0, input.size(), pobj);
 
-            colnames(mat_res) = CharacterVector::create("?nocapture");
-            return wrap(mat_res);
-            // no capture group return
+                CharacterMatrix resm = optstring_to_charmat(res);
+
+                return resm;
+            }
         }
 
         // at least one capture group, return a data.frame
@@ -347,20 +396,22 @@ SEXP cpp_match(vector<string>& input,
                 groups_number.push_back(it->first);
                 groups_name.push_back(it->second);
             }
-
-            CharacterMatrix res(input.size(),groups_name.size()); // will be constructed as Matrix
+            CharacterMatrix res(input.size(), groups_name.size());
             const auto rows = groups_name.size();
             size_t rowi = 0;
             size_t coli = 0;
+
             switch(anchor_type){
             case RE2::UNANCHORED:
-                for(const string& ind : input){
-                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                    for(const string& ind : input){
+                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
-                    fill_res(cap_nums,
-                             piece_ptr, res, rowi, coli, rows,
-                             RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
-                }
+                        fill_res(cap_nums,
+                                 piece_ptr, res, rowi, coli, rows,
+                                 RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
+                    }
+
+
                 break;
             default:
                 for(const string& ind : input){
@@ -372,7 +423,6 @@ SEXP cpp_match(vector<string>& input,
                     break;
                 }
             }
-
 
             // generate CharacterMatrix
             colnames(res) = wrap(groups_name);
