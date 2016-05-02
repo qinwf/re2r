@@ -213,6 +213,27 @@ struct ReplaceP : public Worker
                        [this](string& x){ tt->Replace(&x, *tt, rewrite);});
     }
 };
+
+struct ReplaceGlobalP : public Worker
+{
+    vector<string>& input;
+    vector<size_t>& count;
+    RE2* tt;
+    string& rewrite;
+
+    ReplaceGlobalP(vector<string>&  input_,vector<size_t>& count_, RE2* tt_,string& rewrite_)
+        : input(input_), count(count_), tt(tt_), rewrite(rewrite_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        std::transform(input.begin() + begin,
+                       input.begin() + end,
+                       count.begin() + begin,
+                      [this](string& x){ return tt->GlobalReplace(&x, *tt, rewrite);});
+    }
+};
+
+
+
 // [[Rcpp::export]]
 CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel){
     string errmsg;
@@ -234,8 +255,16 @@ CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& re
     }
     else {
         vector<size_t> count;
-        count.reserve(input.size());
-        for(string& ind : input) count.push_back(ptr->GlobalReplace(&ind,*ptr,rewrite));
+        if (!parallel){
+            count.reserve(input.size());
+            for(string& ind : input) count.push_back(ptr->GlobalReplace(&ind,*ptr,rewrite));
+        } else {
+            count.resize(input.size());
+            ReplaceGlobalP pobj(input, count, ptr, rewrite);
+            parallelFor(0, input.size(), pobj);
+            return wrap(input);
+        }
+
         CharacterVector res = wrap(input);
         res.attr("count") = count;
         return res;
