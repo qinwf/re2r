@@ -14,7 +14,7 @@ library(devtools)
 install_github("qinwf/re2r", build_vignettes = T)
 ```
 
-To learn how to use, you can check out the [vignettes](vignettes/re2r-intro.Rmd).
+To learn how to use, you can check out the [vignettes](https://qinwenfeng.com/re2r_doc/).
 
 ## Related Work
 
