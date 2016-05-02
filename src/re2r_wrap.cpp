@@ -29,6 +29,12 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../inst/include/re2r.h"
+#include "../inst/include/optional.hpp"
+
+namespace tr2 = std::experimental;
+
+typedef vector<tr2::optional<string>> optstring;
+
 
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
@@ -271,21 +277,70 @@ CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& re
     }
 }
 
+struct ExtractP : public Worker
+{
+    vector<string>& input;
+    optstring& output;
+    RE2* tt;
+    string& rewrite;
+
+    ExtractP(vector<string>&  input_, optstring& output_, RE2* tt_,string& rewrite_)
+        : input(input_), output(output_), tt(tt_), rewrite(rewrite_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        std::transform(input.begin() + begin,
+                       input.begin() + end,
+                       output.begin() + begin,
+                       [this](string& x) -> tr2::optional<string>{
+                           string tmpres;
+                           if (! tt->Extract(x,*tt ,rewrite,&tmpres)) {
+                               return tr2::nullopt;
+                           } else {
+                               return tr2::make_optional(tmpres);
+                           }
+
+                           });
+    }
+};
+
 // [[Rcpp::export]]
-CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite){
+CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool parallel){
     string errmsg;
 
     if(!regexp->CheckRewriteString(rewrite, &errmsg)){
         throw ErrorRewriteString(errmsg);
     }
-    vector<string> res(input.size());
-    auto res_iter = res.begin();
-    for(const string& ind : input) {
-        if (! regexp->Extract(ind,*regexp,rewrite,&(*res_iter))) *res_iter="";
-        res_iter+=1;
-    }
+    auto ptr = regexp.checked_get();
+    if (! parallel){
+        CharacterVector res(input.size());
+        auto res_iter = res.begin();
+        string tmpres;
+        for(const string& ind : input) {
+            if (! ptr->Extract(ind,*ptr ,rewrite,&tmpres)) {
+                *res_iter= NA_STRING;
+            } else {
+                *res_iter= tmpres;
+            }
+            res_iter+=1;
+        }
+        return wrap(res);
+    } else{
+        optstring res(input.size());
+        ExtractP pobj(input, res, ptr,rewrite);
+        parallelFor(0, input.size(), pobj);
 
-    return wrap(res);
+        CharacterVector resv(input.size());
+        auto it = resv.begin();
+        for(auto dd : res){
+            if (bool(dd)) {
+                *it = dd.value();
+            } else{
+                *it = NA_STRING;
+            }
+            it++;
+        }
+        return resv;
+    }
 }
 
 template <typename T>

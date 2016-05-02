@@ -56,8 +56,8 @@ cpp_replace <- function(input, regexp, rewrite, global_, parallel) {
     .Call('re2r_cpp_replace', PACKAGE = 're2r', input, regexp, rewrite, global_, parallel)
 }
 
-cpp_extract <- function(input, regexp, rewrite) {
-    .Call('re2r_cpp_extract', PACKAGE = 're2r', input, regexp, rewrite)
+cpp_extract <- function(input, regexp, rewrite, parallel) {
+    .Call('re2r_cpp_extract', PACKAGE = 're2r', input, regexp, rewrite, parallel)
 }
 
 cpp_get_program_fanout <- function(regexp) {

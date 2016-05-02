@@ -44,9 +44,9 @@
 #' re2_extract("yabba dabba doo", "(.)")
 #' re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 #' @export
-re2_extract = function(input, pattern, rewrite = "\\1", ...) {
+re2_extract = function(input, pattern, rewrite = "\\1", parallel = FALSE, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite))
+    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), parallel)
 }
