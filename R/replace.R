@@ -41,6 +41,7 @@
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
 #' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
+#' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @return a character vector
 #' @examples

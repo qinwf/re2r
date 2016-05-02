@@ -4,7 +4,7 @@
 \alias{re2_extract}
 \title{Extract one matched patterns in a string.}
 \usage{
-re2_extract(input, pattern, rewrite = "\\\\1", ...)
+re2_extract(input, pattern, rewrite = "\\\\1", parallel = FALSE, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -12,6 +12,8 @@ re2_extract(input, pattern, rewrite = "\\\\1", ...)
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{rewrite}{replace the first match of "pattern" in "input" with "rewrite"}
+
+\item{parallel}{multithreading support}
 
 \item{...}{further arguments passed to or from other methods.}
 }

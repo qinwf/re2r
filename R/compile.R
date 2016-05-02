@@ -173,6 +173,7 @@ get_named_groups = function(regexp) {
 #'           1\\.5\-2\\.0
 #'
 #' @param unquoted unquoted string
+#' @param parallel multithreading support
 #' @examples
 #' quote_meta(c("1.2","abc"))
 #' @return quoted string

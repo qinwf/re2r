@@ -39,6 +39,7 @@
 #' @param pattern a pre-compiled regular expression or a string
 #' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
+#' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_extract("yabba dabba doo", "(.)")
