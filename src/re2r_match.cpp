@@ -64,6 +64,15 @@ inline string numbertostring ( T Number )
     return ss.str();
 }
 
+
+void bump_count(size_t& rowi,size_t& coli, size_t rows){
+    rowi++;
+    if (rowi== rows){
+        rowi = 0;
+        coli++;
+    }
+}
+
 CharacterMatrix optstring_to_charmat(const optstring& res){
 
     CharacterMatrix resv(res.size(), 1);
@@ -76,6 +85,25 @@ CharacterMatrix optstring_to_charmat(const optstring& res){
             *it = NA_STRING;
         }
         it++;
+    }
+    return resv;
+}
+
+CharacterMatrix vec_optstring_to_charmat(const vector<optstring>& res, int cap_nums){
+
+    CharacterMatrix resv(res.size(), cap_nums);
+    auto rowi = 0;
+    auto coli = 0;
+    for(auto dd : res){
+        for (auto ee : dd){
+            if (bool(ee)) {
+                resv(rowi, coli) = ee.value();
+            } else{
+                resv(rowi, coli) = NA_STRING;
+            }
+        }
+        rowi +=1;
+        coli = 0;
     }
     return resv;
 }
@@ -182,14 +210,27 @@ void fill_list_res(string& times_n,
     }
 }
 
-
-void bump_count(size_t& rowi,size_t& coli, size_t rows){
-    rowi++;
-    if (rowi== rows){
-        rowi = 0;
-        coli++;
+optstring fill_opt_res(int cap_nums, StringPiece* piece, bool matched){
+    optstring res(cap_nums);
+    if(matched){
+        auto it = res.begin();
+        for(auto i = 0; i != cap_nums; ++i) {
+            if((piece[i]).data() != NULL){
+                *it = tr2::make_optional(piece[i].as_string());
+            } else{
+                *it = tr2::nullopt;
+            }
+            it++;
+        }
+    }else{
+        for(auto it = res.begin(); it != res.end(); ++it) {
+            *it =tr2::nullopt ;
+        }
     }
+    return res;
 }
+
+
 
 void fill_res(int cap_nums,
               StringPiece* piece,
@@ -267,6 +308,75 @@ struct NoCaptureP : public Worker
                        });
     }
 };
+
+#define INIT_ARGS_PTR                                          \
+auto cap_nums = tt->NumberOfCapturingGroups();                 \
+auto argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);   \
+auto args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]); \
+auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]); \
+auto piece_ptr = piece.get();                                  \
+auto args_ptr = args.get();                                    \
+auto argv_ptr = argv.get();                                    \
+                                                               \
+for (int nn = 0; nn != cap_nums; nn++){                        \
+    args_ptr[nn] = &argv_ptr[nn];                              \
+    argv_ptr[nn] = &piece_ptr[nn];                             \
+}                                                              \
+
+
+struct UnValue : public Worker{
+    const vector<string>& input;
+    vector<optstring>& output;
+    RE2* tt;
+    const RE2::Anchor& anchor_type;
+
+    UnValue(const vector<string>&  input_, vector<optstring>& output_, RE2* tt_,const RE2::Anchor& anchor_type_)
+        : input(input_), output(output_), tt(tt_),anchor_type(anchor_type_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        INIT_ARGS_PTR
+
+        if (anchor_type == RE2::ANCHOR_BOTH){
+            std::transform(input.begin() + begin,
+                           input.begin() + end,
+                           output.begin() + begin,
+                           [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{
+                               for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+
+                               return fill_opt_res(cap_nums,
+                                                   piece_ptr,
+                                                   tt->FullMatchN(x, *tt, args_ptr, cap_nums));
+
+                           });
+        } else if (anchor_type == RE2::ANCHOR_START){
+            std::transform(input.begin() + begin,
+                           input.begin() + end,
+                           output.begin() + begin,
+                           [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{
+                               for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                               StringPiece tmpstring(x);
+                               return fill_opt_res(cap_nums,
+                                                   piece_ptr,
+                                                   tt->ConsumeN(&tmpstring, *tt, args_ptr, cap_nums));
+
+                           });
+        } else {
+            std::transform(input.begin() + begin,
+                           input.begin() + end,
+                           output.begin() + begin,
+                           [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{
+                               for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+
+                               return fill_opt_res(cap_nums,
+                                                   piece_ptr,
+                                                   tt->PartialMatchN(x, *tt, args_ptr, cap_nums));
+
+                           });
+        }
+    }
+};
+
+
 
 #define CHECK_RESULT                                             \
     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();   \
@@ -396,13 +506,15 @@ SEXP cpp_match(vector<string>& input,
                 groups_number.push_back(it->first);
                 groups_name.push_back(it->second);
             }
-            CharacterMatrix res(input.size(), groups_name.size());
+            CharacterMatrix res;
             const auto rows = groups_name.size();
             size_t rowi = 0;
             size_t coli = 0;
+            if (!parallel){
+                switch(anchor_type){
+                case RE2::UNANCHORED:
+                    res = CharacterMatrix(input.size(),groups_name.size()); // will be constructed as Matrix
 
-            switch(anchor_type){
-            case RE2::UNANCHORED:
                     for(const string& ind : input){
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
@@ -410,25 +522,35 @@ SEXP cpp_match(vector<string>& input,
                                  piece_ptr, res, rowi, coli, rows,
                                  RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                     }
-                break;
-            case RE2::ANCHOR_START:
-                for(const string& ind : input){
-                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                    StringPiece tmpstring(ind);
-                    fill_res(cap_nums,
-                             piece_ptr, res, rowi, coli, rows,
-                             RE2::ConsumeN(&tmpstring, *pattern, args_ptr, cap_nums));
-                }
-                break;
-            default:
+                    break;
+                case RE2::ANCHOR_START:
+                    res = CharacterMatrix(input.size(),groups_name.size()); // will be constructed as Matrix
+
+                    for(const string& ind : input){
+                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                        StringPiece tmpstring(ind);
+                        fill_res(cap_nums,
+                                 piece_ptr, res, rowi, coli, rows,
+                                 RE2::ConsumeN(&tmpstring, *pattern, args_ptr, cap_nums));
+                    }
+                    break;
+                default:
+                    res = CharacterMatrix(input.size(),groups_name.size()); // will be constructed as Matrix
+
                 for(const string& ind : input){
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
                              piece_ptr, res, rowi, coli, rows,
                              RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
-                    break;
                 }
+                break;
+                }
+            } else {
+                vector<optstring> output(input.size());
+                UnValue pobj(input, output, pattern, anchor_type);
+                parallelFor(0, input.size(), pobj);
+                res = vec_optstring_to_charmat(output,cap_nums);
             }
 
             // generate CharacterMatrix
