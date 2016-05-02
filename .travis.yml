@@ -33,7 +33,7 @@ before_install:
   - ./travis-tool.sh bootstrap
 
 install:
-  - ./travis-tool.sh install_r_binary Rcpp RCurl stringi ggplot2 dplyr curl jsonlite yaml tidyr
+  - ./travis-tool.sh install_r_binary Rcpp RCurl stringi ggplot2 dplyr curl jsonlite yaml tidyr RcppParallel markdown
   - ./travis-tool.sh install_r plotly
   - ./travis-tool.sh install_deps
 
