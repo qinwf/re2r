@@ -410,8 +410,15 @@ SEXP cpp_match(vector<string>& input,
                                  piece_ptr, res, rowi, coli, rows,
                                  RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                     }
-
-
+                break;
+            case RE2::ANCHOR_START:
+                for(const string& ind : input){
+                    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
+                    StringPiece tmpstring(ind);
+                    fill_res(cap_nums,
+                             piece_ptr, res, rowi, coli, rows,
+                             RE2::ConsumeN(&tmpstring, *pattern, args_ptr, cap_nums));
+                }
                 break;
             default:
                 for(const string& ind : input){

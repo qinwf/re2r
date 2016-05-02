@@ -67,3 +67,18 @@ test_that("no capture with value", {
     expect_identical(res1, exp1)
     expect_identical(res1_par, exp1)
 })
+
+test_that("anchor start value not all",{
+    expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 1),
+        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+        )
+    expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 0),
+        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+    expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 2),
+        structure(NA_character_, .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+})
