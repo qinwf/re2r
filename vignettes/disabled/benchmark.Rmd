@@ -31,7 +31,7 @@ for(N in 1:max.N){
   subject <- paste(rep("a", N), collapse="")
   pattern <- paste(rep(c("a?", "a"), each=N), collapse="")
   regexp = re2(pattern)
-  gc()
+  invisible(gc())
   N.times <- microbenchmark(
     ICU = stri_detect_regex(subject, pattern = pattern),
     ICU_value = stri_match(subject, regex = pattern),
@@ -121,7 +121,7 @@ identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_match(letdig, "[0-9]{3,}")
 
 Run on Travis-CI with 2 core CPU.
 
-### quote_meta()
+### Quote
 
 ```{r}
 dd =stri_rand_strings(1000000,10, pattern = "[a-zA-Z0-9\"\']")
@@ -142,14 +142,14 @@ regexp = re2("sd2er3")
 identical(re2_replace(dd, regexp, ""), re2_replace(dd, regexp, "", parallel = T))
 identical(re2_replace(dd, regexp, "", all = T), re2_replace(dd, regexp, "", all = T, parallel = T))
 
-gc()
+invisible(gc())
 microbenchmark(sequential = re2_replace(dd, regexp, ""), parallel = re2_replace(dd, regexp, "", parallel = T) , times = 5)
 
-gc()
+invisible(gc())
 microbenchmark(sequential = re2_replace(dd, regexp, "", all = T), parallel = re2_replace(dd, regexp, "", all = T, parallel = T) , times = 5)
 ```
 
-### extract
+### Extract
 
 ```{r}
 dd =stri_rand_strings(5000000,10, pattern = "[a-zA-Z0-9\"\']")
@@ -158,11 +158,11 @@ regexp = re2("(sd)")
 
 identical(re2_extract(dd, regexp,parallel = T), re2_extract(dd, regexp))
 
-gc()
+invisible(gc())
 microbenchmark(sequential =  re2_extract(dd, regexp), parallel = re2_extract(dd, regexp, parallel = T) ,times = 5)
 ```
 
-### match
+### Match
 
 ```{r}
 dd =stri_rand_strings(5000000,10, pattern = "[a-zA-Z0-9\"\']")
@@ -171,6 +171,6 @@ regexp = re2("sd")
 
 identical(re2_match(dd, regexp, parallel = T), re2_match(dd, regexp))
 
-gc()
+invisible(gc())
 microbenchmark(sequential =  re2_match(dd, regexp), parallel = re2_match(dd, regexp, parallel = T) ,times = 5)
 ```

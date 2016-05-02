@@ -268,7 +268,6 @@ CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& re
             count.resize(input.size());
             ReplaceGlobalP pobj(input, count, ptr, rewrite);
             parallelFor(0, input.size(), pobj);
-            return wrap(input);
         }
 
         CharacterVector res = wrap(input);
