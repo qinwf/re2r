@@ -41,6 +41,7 @@
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
 #' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
+#' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @return a character vector
 #' @examples
@@ -48,9 +49,9 @@
 #' re2_replace("yabba dabba doo", regexp,"d") == "yada dada doo"
 #' re2_replace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
 #' @export
-re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
+re2_replace = function(input, pattern, rewrite,  all = FALSE, parallel = FALSE, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all, parallel)
 }

@@ -7,18 +7,19 @@
 using namespace Rcpp;
 
 // cpp_match
-SEXP cpp_match(vector<string>& input, XPtr<RE2>& pattern, bool value, size_t anchor, bool all, bool tolist);
-RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP patternSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP tolistSEXP) {
+SEXP cpp_match(vector<string>& input, XPtr<RE2>& ptr, bool value, size_t anchor, bool all, bool tolist, bool parallel);
+RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP tolistSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2>& >::type pattern(patternSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
     Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type tolist(tolistSEXP);
-    __result = Rcpp::wrap(cpp_match(input, pattern, value, anchor, all, tolist));
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_match(input, ptr, value, anchor, all, tolist, parallel));
     return __result;
 END_RCPP
 }
@@ -91,19 +92,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_quote_meta
-CharacterVector cpp_quote_meta(vector<string>& input);
-RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP) {
+CharacterVector cpp_quote_meta(vector<string>& input, bool parallel);
+RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
-    __result = Rcpp::wrap(cpp_quote_meta(input));
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_quote_meta(input, parallel));
     return __result;
 END_RCPP
 }
 // cpp_replace
-CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_);
-RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP) {
+CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel);
+RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -111,20 +113,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
     Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);
-    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite, global_));
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite, global_, parallel));
     return __result;
 END_RCPP
 }
 // cpp_extract
-CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite);
-RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP) {
+CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool parallel);
+RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
-    __result = Rcpp::wrap(cpp_extract(input, regexp, rewrite));
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_extract(input, regexp, rewrite, parallel));
     return __result;
 END_RCPP
 }

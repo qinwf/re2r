@@ -4,7 +4,7 @@
 \alias{re2_replace}
 \title{Replace matched patterns in a string.}
 \usage{
-re2_replace(input, pattern, rewrite, all = FALSE, ...)
+re2_replace(input, pattern, rewrite, all = FALSE, parallel = FALSE, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -14,6 +14,8 @@ re2_replace(input, pattern, rewrite, all = FALSE, ...)
 \item{rewrite}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
 
 \item{all}{if it is TRUE, it will replaces successive non-overlapping occurrences}
+
+\item{parallel}{multithreading support}
 
 \item{...}{further arguments passed to or from other methods.}
 }

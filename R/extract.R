@@ -39,14 +39,15 @@
 #' @param pattern a pre-compiled regular expression or a string
 #' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
+#' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_extract("yabba dabba doo", "(.)")
 #' re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 #' @export
-re2_extract = function(input, pattern, rewrite = "\\1", ...) {
+re2_extract = function(input, pattern, rewrite = "\\1", parallel = FALSE, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite))
+    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), parallel)
 }

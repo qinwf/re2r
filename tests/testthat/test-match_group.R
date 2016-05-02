@@ -58,3 +58,27 @@ test_that("simple match",{
         ), .Dimnames = list(NULL, c("?1", "?2", "?3")))
     expect_identical(res1, exp1)
 })
+
+test_that("no capture with value", {
+    test_string = c("this is just one test", "the second test");
+    res1 = re2_match(test_string, "is", value = TRUE)
+    res1_par = re2_match(test_string, "is", value = TRUE, parallel = T)
+    exp1 = structure(c("this is just one test", NA), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?nocapture"))
+    expect_identical(res1, exp1)
+    expect_identical(res1_par, exp1)
+})
+
+test_that("anchor start value not all",{
+    expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 1),
+        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+        )
+    expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 0),
+        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+    expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 2),
+        structure(NA_character_, .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+})
