@@ -20,7 +20,7 @@ re2_match(input, pattern, value = FALSE, anchor = 0, all = FALSE,
 
 \item{tolist}{return a list instead of matrix when all and value is TRUE.}
 
-\item{parallel}{if return value is boolean, or there is no capture group in the returned character matrix, multithreading will be used.}
+\item{parallel}{multithreading support}
 
 \item{...}{further arguments passed to or from other methods.}
 }

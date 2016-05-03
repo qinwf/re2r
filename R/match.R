@@ -38,7 +38,7 @@
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
 #' @param all find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.
 #' @param tolist return a list instead of matrix when all and value is TRUE.
-#' @param parallel if return value is boolean, or there is no capture group in the returned character matrix, multithreading will be used.
+#' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #'
