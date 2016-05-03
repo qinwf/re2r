@@ -74,11 +74,23 @@ test_that("anchor start value not all",{
         structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
         )
     expect_identical(
+        re2_match("dsS","(ds)",value = T,anchor = 1,parallel = T),
+        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+    expect_identical(
         re2_match("dsS","(ds)",value = T,anchor = 0),
         structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
     )
     expect_identical(
-        re2_match("dsS","(ds)",value = T,anchor = 2),
-        structure(NA_character_, .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+        re2_match("dsS","(ds)",value = T,anchor = 0,parallel = T),
+        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+    expect_identical(
+        re2_match(c("dsS","ds"),"(ds)",value = T,anchor = 2),
+        structure(c(NA, "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?1"))
+    )
+    expect_identical(
+        re2_match(c("dsS","ds"),"(ds)",value = T,anchor = 2,parallel = T),
+        structure(c(NA, "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?1"))
     )
 })
