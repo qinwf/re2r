@@ -137,7 +137,7 @@ CharacterMatrix vec_optstring_to_charmat(const vector<optstring>& res, int cap_n
     return resv;
 }
 
-map<int,string> get_groups_name(RE2* pattern, int cap_nums){
+vector<string> get_groups_name(RE2* pattern, int cap_nums){
     auto groups_name = pattern->CapturingGroupNames();
 
     vector<int> alls;
@@ -170,7 +170,14 @@ map<int,string> get_groups_name(RE2* pattern, int cap_nums){
     for(auto ind : diff_nums) {
         groups_name.insert(make_pair(ind, NumberToString(ind)));
     }
-    return groups_name;
+
+    vector<string> res;
+    res.reserve(res.size());
+    for(auto it = groups_name.begin(); it!= groups_name.end(); it++) {
+        res.push_back(it->second);
+    }
+
+    return res;
 }
 
 void fill_all_res(string& times_n,
@@ -207,8 +214,7 @@ void fill_all_res(string& times_n,
     }
 }
 
-void fill_list_res(string& times_n,
-                  int cap_nums,
+void fill_list_res(int cap_nums,
                   StringPiece* piece,
                   optstring& res, size_t cnt,bool matched){
     auto all_na = true;
@@ -353,6 +359,15 @@ for (int nn = 0; nn != cap_nums; nn++){                        \
 }                                                              \
 
 
+#define UNVALUE_BLOCK                                          \
+    std::transform(input.begin() + begin,                      \
+                   input.begin() + end,                        \
+                   output.begin() + begin,                     \
+    [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{\
+        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
+
+
+
 struct UnValue : public Worker{
     const vector<string>& input;
     vector<optstring>& output;
@@ -366,72 +381,112 @@ struct UnValue : public Worker{
         INIT_ARGS_PTR
 
         if (anchor_type == RE2::ANCHOR_BOTH){
-            std::transform(input.begin() + begin,
-                           input.begin() + end,
-                           output.begin() + begin,
-                           [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{
-                               for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-                               return fill_opt_res(cap_nums,
-                                                   piece_ptr,
-                                                   tt->FullMatchN(x, *tt, args_ptr, cap_nums));
+            UNVALUE_BLOCK
+            return fill_opt_res(cap_nums,
+                                piece_ptr,
+                                tt->FullMatchN(x, *tt, args_ptr, cap_nums));
 
                            });
         } else if (anchor_type == RE2::ANCHOR_START){
-            std::transform(input.begin() + begin,
-                           input.begin() + end,
-                           output.begin() + begin,
-                           [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{
-                               for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                               StringPiece tmpstring(x);
-                               return fill_opt_res(cap_nums,
-                                                   piece_ptr,
-                                                   tt->ConsumeN(&tmpstring, *tt, args_ptr, cap_nums));
+           UNVALUE_BLOCK
+           StringPiece tmpstring(x);
+           return fill_opt_res(cap_nums,
+                               piece_ptr,
+                               tt->ConsumeN(&tmpstring, *tt, args_ptr, cap_nums));
 
                            });
-        } else {
-            std::transform(input.begin() + begin,
-                           input.begin() + end,
-                           output.begin() + begin,
-                           [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{
-                               for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-                               return fill_opt_res(cap_nums,
-                                                   piece_ptr,
-                                                   tt->PartialMatchN(x, *tt, args_ptr, cap_nums));
-
+        } else { // RE2::UNANCHORED
+            UNVALUE_BLOCK
+            return fill_opt_res(cap_nums,
+                                piece_ptr,
+                                tt->PartialMatchN(x, *tt, args_ptr, cap_nums));
                            });
         }
     }
 };
 
 
+#define INIT_LISTI                                                       \
+StringPiece todo_str(ind);                                               \
+StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
+for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();               \
+size_t cnt = 0;                                                          \
+optstring optinner;                                                      \
+
+
+#define INIT_CHARM                                                       \
+StringPiece todo_str(ind);                                               \
+StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
+for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();               \
+size_t cnt = 0;                                                \
 
 #define CHECK_RESULT                                             \
-    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();   \
-    if(todo_str.length() == 0) break;                            \
+for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();       \
+if(todo_str.length() == 0) break;                                \
                                                                  \
-    if((todo_str.data() == tmp_piece.data()) &&                  \
-        (todo_str.length() == tmp_piece.length()) &&             \
-        (todo_str.length() !=0) ){                               \
-            todo_str.remove_prefix(1);                           \
-    }                                                            \
+if((todo_str.data() == tmp_piece.data()) &&                      \
+   (todo_str.length() == tmp_piece.length()) &&                  \
+   (todo_str.length() !=0) ){                                    \
+    todo_str.remove_prefix(1);                                   \
+}                                                                \
                                                                  \
-    tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
-
-#define INIT_LISTI                                             \
-    StringPiece todo_str(ind);                                 \
-    StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
-    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
-    size_t cnt = 0;                                            \
-    optstring optinner;                                        \
+tmp_piece = StringPiece(todo_str.data(), todo_str.length());     \
 
 
-#define INIT_CHARM                                             \
-    StringPiece todo_str(ind);                                 \
-    StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
-    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
-    size_t cnt = 0;                                            \
+struct MatValue : public Worker{
+    const vector<string>& input;
+    vector<tr2::optional<optstring>>& output;
+    RE2* tt;
+    const RE2::Anchor& anchor_type;
+
+    MatValue(const vector<string>&  input_, vector<tr2::optional<optstring>>& output_, RE2* tt_,const RE2::Anchor& anchor_type_)
+        : input(input_), output(output_), tt(tt_),anchor_type(anchor_type_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        INIT_ARGS_PTR
+        if (anchor_type == RE2::UNANCHORED){
+            std::transform(input.begin() + begin,
+                           input.begin() + end,
+                           output.begin() + begin,
+                           [this,cap_nums,piece_ptr,args_ptr](const string& ind) -> tr2::optional<optstring>{
+                                INIT_LISTI
+
+                                while (RE2::ConsumeN(&todo_str, *tt, args_ptr, cap_nums)) {
+                                    cnt+=1;
+                                    fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
+
+                                    CHECK_RESULT
+                                        // advanced try next place
+                                }   // else while
+                                if (cnt == 0){
+                                    return tr2::nullopt;
+                                } else {
+                                    return tr2::make_optional(optinner);
+                                }
+            });
+        } else if (anchor_type == RE2::ANCHOR_START){
+            std::transform(input.begin() + begin,
+                           input.begin() + end,
+                           output.begin() + begin,
+                           [this,cap_nums,piece_ptr,args_ptr](const string& ind) -> tr2::optional<optstring>{
+                               INIT_LISTI
+
+                               while (RE2::FindAndConsumeN(&todo_str, *tt, args_ptr, cap_nums)) {
+                                   cnt+=1;
+                                   fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
+
+                                   CHECK_RESULT
+                                       // advanced try next place
+                               }   // else while
+                               if (cnt == 0){
+                                   return tr2::nullopt;
+                               } else {
+                                   return tr2::make_optional(optinner);
+                               }
+                           });
+        }
+    }
+};
 
 // [[Rcpp::export]]
 SEXP cpp_match(vector<string>& input,
@@ -495,12 +550,8 @@ SEXP cpp_match(vector<string>& input,
         // at least one capture group, return a data.frame
 
         // set up the args and stringpiece
-        map<int,string> g_numbers_names = get_groups_name(pattern, cap_nums);
-        vector<string> groups_name;
-        vector<int> groups_number;
-
-
-
+        vector<string>  g_numbers_names = get_groups_name(pattern, cap_nums);
+        vector<string>  groups_name;
         // static when the number of capture group is smaller than 10
         RE2::Arg* args_static[RE2R_STATIC_SIZE];
         RE2::Arg  argv_static[RE2R_STATIC_SIZE];
@@ -543,10 +594,8 @@ SEXP cpp_match(vector<string>& input,
         if (all == false) {
 
             groups_name.reserve(g_numbers_names.size());
-            groups_number.reserve(g_numbers_names.size());
             for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
-                groups_number.push_back(it->first);
-                groups_name.push_back(it->second);
+                groups_name.push_back(*it);
             }
             CharacterMatrix res;
             const auto rows = groups_name.size();
@@ -604,120 +653,121 @@ SEXP cpp_match(vector<string>& input,
             if (!tolist){
                 // each string get at least one group of result
                 groups_name.reserve(g_numbers_names.size()+1);
-                groups_number.reserve(g_numbers_names.size()+1);
                 groups_name.push_back("!n");
-                groups_number.push_back(0);
 
                 for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
-                    groups_number.push_back(it->first);
-                    groups_name.push_back(it->second);
+                    groups_name.push_back(*it);
                 }
 
                 optstring optres;
                 // for each input string, get a !n label.
                 size_t times_n = 1;
 
-                //  FIXME Duplicated Code
-                if (anchor_type == RE2::UNANCHORED){
-                    for(const string& ind : input){
-                        INIT_CHARM
-                        while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                            cnt+=1;
-                            string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
+                if (!parallel){
+                    if (anchor_type == RE2::UNANCHORED){
+                        for(const string& ind : input){
+                            INIT_CHARM
+                            while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                                cnt+=1;
+                                string numstring = numbertostring(times_n);
+                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
-                            // Note that if the
-                            // regular expression matches an empty string, input will advance
-                            // by 0 bytes.  If the regular expression being used might match
-                            // an empty string, the loop body must check for this case and either
-                            // advance the string or break out of the loop.
-                            //
-                            CHECK_RESULT
+                                // Note that if the
+                                // regular expression matches an empty string, input will advance
+                                // by 0 bytes.  If the regular expression being used might match
+                                // an empty string, the loop body must check for this case and either
+                                // advance the string or break out of the loop.
+                                //
+                                CHECK_RESULT
 
-                            // try next place
-                        }   // while
+                                // try next place
+                            }   // while
 
-                        if(cnt == 0){ // no one match, all NA return
-                            string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
+                            if(cnt == 0){ // no one match, all NA return
+                                string numstring = numbertostring(times_n);
+                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
+                            }
+                            times_n+=1; //bump times_n !n
                         }
-                        times_n+=1; //bump times_n !n
-                    }
-                    }
-                else{
-                    for(const string& ind : input){
-                        INIT_CHARM
-                        while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                            cnt+=1;
-                            string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
-
-                            CHECK_RESULT
-
-                            // advanced try next place
-                        }   // else while
-
-                        if(cnt == 0){ // no one match, all NA return
-                            string numstring = numbertostring(times_n);
-                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
                         }
-                        times_n+=1; //bump times_n !n
-                    }
-                } // end else
+                    else{
+                        for(const string& ind : input){
+                            INIT_CHARM
+                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                                cnt+=1;
+                                string numstring = numbertostring(times_n);
+                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
 
-                return optstring_to_list_charmat(optres, groups_name);
+                                CHECK_RESULT
+
+                                // advanced try next place
+                            }   // else while
+
+                            if(cnt == 0){ // no one match, all NA return
+                                string numstring = numbertostring(times_n);
+                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
+                            }
+                            times_n+=1; //bump times_n !n
+                        }
+                    } // end else
+
+                    return optstring_to_list_charmat(optres, groups_name);
+                } // !tolist !parallel
+                else{ // !tolist parallel
+
+                }
             } // tolist == false
             else{ // tolist == true
 
                 // each string get at least one group of result
                 groups_name.reserve(g_numbers_names.size());
-                groups_number.reserve(g_numbers_names.size());
 
                 for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
-                    groups_number.push_back(it->first);
-                    groups_name.push_back(it->second);
+                    groups_name.push_back(*it);
                 }
 
                 List listres(input.size());
-                auto listi = listres.begin();
-                // for each input string, get a !n label.
-                size_t times_n = 1;
 
-                //  FIXME Duplicated Code
-                if (anchor_type == RE2::UNANCHORED){
-                    for(const string& ind : input){
+                if (!parallel){
+                    auto listi = listres.begin();
+                    // for each input string, get a !n label.
 
-                        INIT_LISTI
+                    if (anchor_type == RE2::UNANCHORED){
+                        for(const string& ind : input){
 
-                        while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                            cnt+=1;
-                            string numstring = numbertostring(times_n);
-                            fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
+                            INIT_LISTI
 
-                            CHECK_RESULT
+                            while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                                cnt+=1;
+                                fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
 
-                            // try next place
-                        }   // while
-                        bump_listi(cnt, listi, optinner, groups_name);
+                                CHECK_RESULT
+
+                                    // try next place
+                            }   // while
+                            bump_listi(cnt, listi, optinner, groups_name);
+                        }
                     }
-                    }
-                else{
-                    for(const string& ind : input){
+                    else{
+                        for(const string& ind : input){
 
-                        INIT_LISTI
+                            INIT_LISTI
 
-                        while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                            cnt+=1;
-                            string numstring = numbertostring(times_n);
-                            fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
+                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                                cnt+=1;
+                                fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
 
-                            CHECK_RESULT
+                                CHECK_RESULT
 
-                            // advanced try next place
-                        }   // else while
-                        bump_listi(cnt, listi, optinner, groups_name);
-                    }
+                                    // advanced try next place
+                            }   // else while
+                            bump_listi(cnt, listi, optinner, groups_name);
+                        }
                     } // end else generate CharacterMatrix
+                } else {
+
+                }
+
 
                     return wrap(listres);
 
