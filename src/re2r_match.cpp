@@ -108,6 +108,16 @@ CharacterMatrix optstring_to_list_charmat(const optstring& optinner, const vecto
     return res;
 }
 
+void bump_listi(size_t cnt, List::iterator& listi, const optstring& optinner, const vector<string>& groups_name){
+    if(cnt == 0){ // no one match, all NA return
+        *listi = R_NilValue;
+    } else { // generate CharacterMatrix
+
+        *listi = optstring_to_list_charmat(optinner, groups_name);
+    }
+    listi+=1; //bump times_n !n
+}
+
 CharacterMatrix vec_optstring_to_charmat(const vector<optstring>& res, int cap_nums){
 
     CharacterMatrix resv(res.size(), cap_nums);
@@ -694,13 +704,7 @@ SEXP cpp_match(vector<string>& input,
 
                             // try next place
                         }   // while
-                        if(cnt == 0){ // no one match, NULL return
-                            *listi = R_NilValue;
-                        } else {
-
-                            *listi = optstring_to_list_charmat(optinner, groups_name);
-                        }
-                        listi+=1;
+                        bump_listi(cnt, listi, optinner, groups_name);
                     }}else{
                         for(const string& ind : input){
                             StringPiece todo_str(ind);    // Wrap a StringPiece around it
@@ -717,13 +721,7 @@ SEXP cpp_match(vector<string>& input,
 
                                 // advanced try next place
                             }   // else while
-                            if(cnt == 0){ // no one match, all NA return
-                                *listi = R_NilValue;
-                            } else { // generate CharacterMatrix
-
-                                *listi = optstring_to_list_charmat(optinner, groups_name);
-                            }
-                            listi+=1; //bump times_n !n
+                            bump_listi(cnt, listi, optinner, groups_name);
                         }
                     } // end else generate CharacterMatrix
 
