@@ -419,6 +419,19 @@ struct UnValue : public Worker{
                                                                  \
     tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
 
+#define INIT_LISTI                                             \
+    StringPiece todo_str(ind);                                 \
+    StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
+    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
+    size_t cnt = 0;                                            \
+    optstring optinner;                                        \
+
+
+#define INIT_CHARM                                             \
+    StringPiece todo_str(ind);                                 \
+    StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
+    for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
+    size_t cnt = 0;                                            \
 
 // [[Rcpp::export]]
 SEXP cpp_match(vector<string>& input,
@@ -607,10 +620,7 @@ SEXP cpp_match(vector<string>& input,
                 //  FIXME Duplicated Code
                 if (anchor_type == RE2::UNANCHORED){
                     for(const string& ind : input){
-                        StringPiece todo_str(ind);    // Wrap a StringPiece around it
-                        StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                        size_t cnt = 0;
+                        INIT_CHARM
                         while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                             cnt+=1;
                             string numstring = numbertostring(times_n);
@@ -626,49 +636,36 @@ SEXP cpp_match(vector<string>& input,
 
                             // try next place
                         }   // while
+
                         if(cnt == 0){ // no one match, all NA return
                             string numstring = numbertostring(times_n);
                             fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
                         }
                         times_n+=1; //bump times_n !n
-                    }}else{
-                        for(const string& ind : input){
-                            StringPiece todo_str(ind);    // Wrap a StringPiece around it
-                            StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                            size_t cnt = 0;
-                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                                cnt+=1;
-                                string numstring = numbertostring(times_n);
-                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
-
-                                CHECK_RESULT
-
-                                // advanced try next place
-                            }   // else while
-                            if(cnt == 0){ // no one match, all NA return
-                                string numstring = numbertostring(times_n);
-                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
-                            }
-                            times_n+=1; //bump times_n !n
-                        }
-                    } // end else
-                    auto rows = groups_name.size();
-                    CharacterMatrix res(optres.size() / groups_name.size(), groups_name.size());
-
-                    size_t rowi = 0;
-                    size_t coli = 0;
-                    for(auto dd : optres){
-                        if (bool(dd)) {
-                            res(coli,rowi) = dd.value();
-                        } else{
-                            res(coli,rowi) = NA_STRING;
-                        }
-                        bump_count(rowi, coli, rows);
                     }
-                    // generate CharacterMatrix
-                    colnames(res) = wrap(groups_name);
-                    return wrap(res);
+                    }
+                else{
+                    for(const string& ind : input){
+                        INIT_CHARM
+                        while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                            cnt+=1;
+                            string numstring = numbertostring(times_n);
+                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
+
+                            CHECK_RESULT
+
+                            // advanced try next place
+                        }   // else while
+
+                        if(cnt == 0){ // no one match, all NA return
+                            string numstring = numbertostring(times_n);
+                            fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
+                        }
+                        times_n+=1; //bump times_n !n
+                    }
+                } // end else
+
+                return optstring_to_list_charmat(optres, groups_name);
             } // tolist == false
             else{ // tolist == true
 
@@ -689,11 +686,8 @@ SEXP cpp_match(vector<string>& input,
                 //  FIXME Duplicated Code
                 if (anchor_type == RE2::UNANCHORED){
                     for(const string& ind : input){
-                        StringPiece todo_str(ind);    // Wrap a StringPiece around it
-                        StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                        size_t cnt = 0;
-                        optstring optinner;
+
+                        INIT_LISTI
 
                         while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                             cnt+=1;
@@ -705,24 +699,24 @@ SEXP cpp_match(vector<string>& input,
                             // try next place
                         }   // while
                         bump_listi(cnt, listi, optinner, groups_name);
-                    }}else{
-                        for(const string& ind : input){
-                            StringPiece todo_str(ind);    // Wrap a StringPiece around it
-                            StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());
-                            for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                            size_t cnt = 0;
-                            optstring optinner;
-                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                                cnt+=1;
-                                string numstring = numbertostring(times_n);
-                                fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
+                    }
+                    }
+                else{
+                    for(const string& ind : input){
 
-                                CHECK_RESULT
+                        INIT_LISTI
 
-                                // advanced try next place
-                            }   // else while
-                            bump_listi(cnt, listi, optinner, groups_name);
-                        }
+                        while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
+                            cnt+=1;
+                            string numstring = numbertostring(times_n);
+                            fill_list_res(numstring, cap_nums, piece_ptr, optinner, cnt, true);
+
+                            CHECK_RESULT
+
+                            // advanced try next place
+                        }   // else while
+                        bump_listi(cnt, listi, optinner, groups_name);
+                    }
                     } // end else generate CharacterMatrix
 
                     return wrap(listres);
