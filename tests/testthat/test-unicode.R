@@ -1,5 +1,5 @@
 context("Unicode")
-
+library(stringi)
 test_that("unicode match with native string",{
     letters <- stri_c(stri_enc_fromutf32(list(119L, 120L, 121L, 122L, 324L, 243L)), collapse = "")
     x <- enc2native(letters)
