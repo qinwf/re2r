@@ -444,7 +444,7 @@ struct MatValue : public Worker{
 
     void operator()(std::size_t begin, std::size_t end) {
         INIT_ARGS_PTR
-        if (anchor_type == RE2::UNANCHORED){
+        if (anchor_type != RE2::UNANCHORED){
             std::transform(input.begin() + begin,
                            input.begin() + end,
                            output.begin() + begin,
@@ -464,7 +464,7 @@ struct MatValue : public Worker{
                                     return tr2::make_optional(optinner);
                                 }
             });
-        } else if (anchor_type == RE2::ANCHOR_START){
+        } else{
             std::transform(input.begin() + begin,
                            input.begin() + end,
                            output.begin() + begin,
@@ -714,7 +714,59 @@ SEXP cpp_match(vector<string>& input,
                     return optstring_to_list_charmat(optres, groups_name);
                 } // !tolist !parallel
                 else{ // !tolist parallel
+                    vector<tr2::optional<optstring>> res(input.size());
+                    MatValue pobj(input, res, pattern, anchor_type);
+                    parallelFor(0, input.size(), pobj);
+                    size_t rows = 0;
+                    for (auto it = res.begin(); it != res.end(); it++){
+                        if(bool(*it)){ // no one match, all NA return
+                            rows += it->value().size() / (groups_name.size()-1);
+                        } else {
+                            rows += 1;
+                        }
+                    }
+                    CharacterMatrix resm(rows, groups_name.size());
 
+                    size_t rowi = 0;
+                    size_t coli = 0;
+
+                    for(auto dd : res){
+
+                        if (bool(dd)) {
+                            for (tr2::optional<string>& inner : dd.value()){
+
+                                if (coli == 0){
+                                    resm(rowi,0) = numbertostring(times_n);
+                                    coli++;
+                                }
+
+                                if(bool(inner)){
+                                    resm(rowi,coli) = inner.value();
+                                }else {
+                                    resm(rowi,coli) = NA_STRING;
+                                }
+                                coli++;
+
+                                if(coli == groups_name.size()){
+                                    coli = 0;
+                                    rowi++;
+                                }
+                            }
+
+                        } else{
+                            resm(rowi,coli) = numbertostring(times_n);
+                            coli++;
+                            while(coli!=groups_name.size()){
+                                resm(rowi,coli) = NA_STRING;
+                                coli++;
+                            }
+                            rowi++;
+                        }
+                        times_n++;
+                    }
+
+                    colnames(resm) = wrap(groups_name);
+                    return resm;
                 }
             } // tolist == false
             else{ // tolist == true
@@ -765,10 +817,22 @@ SEXP cpp_match(vector<string>& input,
                         }
                     } // end else generate CharacterMatrix
                 } else {
+                    // parallel compute
+                    vector<tr2::optional<optstring>> res(input.size());
+                    MatValue pobj(input, res, pattern, anchor_type);
+                    parallelFor(0, input.size(), pobj);
 
+                    // fill in result
+                    auto resi = res.begin();
+                    for (auto it = listres.begin(); it != listres.end(); it++){
+                        if(!bool(*resi)){ // no one match, NULL
+                            *it = R_NilValue;
+                        } else {
+                            *it = optstring_to_list_charmat(resi->value(), groups_name);
+                        }
+                        resi+=1;
+                    }
                 }
-
-
                     return wrap(listres);
 
             } // tolist == true

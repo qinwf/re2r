@@ -96,19 +96,33 @@ test_that("anchor start value not all",{
 })
 
 test_that("tolist",{
-    res1 = re2_match(c("this is test",
-                       "this is test, and this is not test",
-                       "they are tests"),
+    str = c("this is test",
+            "this is test, and this is not test",
+            "they are tests")
+    res1 = re2_match(str,
                      pattern = "(?P<testname>this)( is)",
                      value = TRUE, all = T, tolist = T)
+
     exp1 = list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", "?2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", "?2"))), NULL)
+
     expect_identical(res1, exp1)
 
-    res1_mat = re2_match(c("this is test",
-                           "this is test, and this is not test",
-                           "they are tests"),
+
+    res1_p = re2_match(str,
+                     pattern = "(?P<testname>this)( is)",
+                     value = TRUE, all = T, tolist = T)
+
+    expect_identical(res1, res1_p)
+
+    res1_mat = re2_match(str,
                          pattern = "(?P<testname>this)( is)",
                          value = TRUE, all = T)
     exp1_mat = structure(c("1", "2", "2", "3", "this", "this", "this", NA, " is", " is", " is", NA), .Dim = c(4L, 3L), .Dimnames = list(NULL, c("!n", "testname", "?2")))
+
     expect_identical(res1_mat, exp1_mat)
+
+    res1_mat_p = re2_match(str,
+                         pattern = "(?P<testname>this)( is)",
+                         value = TRUE, all = T,parallel = T)
+    expect_identical(res1_mat_p, res1_mat)
 })
