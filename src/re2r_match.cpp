@@ -89,6 +89,25 @@ CharacterMatrix optstring_to_charmat(const optstring& res){
     return resv;
 }
 
+CharacterMatrix optstring_to_list_charmat(const optstring& optinner, const vector<string>& groups_name){
+    auto rows = groups_name.size();
+    CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
+
+    size_t rowi = 0;
+    size_t coli = 0;
+    for(auto dd : optinner){
+        if (bool(dd)) {
+            res(coli,rowi) = dd.value();
+        } else{
+            res(coli,rowi) = NA_STRING;
+        }
+        bump_count(rowi, coli, rows);
+    }
+
+    colnames(res) = wrap(groups_name);
+    return res;
+}
+
 CharacterMatrix vec_optstring_to_charmat(const vector<optstring>& res, int cap_nums){
 
     CharacterMatrix resv(res.size(), cap_nums);
@@ -678,22 +697,8 @@ SEXP cpp_match(vector<string>& input,
                         if(cnt == 0){ // no one match, NULL return
                             *listi = R_NilValue;
                         } else {
-                            auto rows = groups_name.size();
-                            CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
 
-                            size_t rowi = 0;
-                            size_t coli = 0;
-                            for(auto dd : optinner){
-                                if (bool(dd)) {
-                                    res(coli,rowi) = dd.value();
-                                } else{
-                                    res(coli,rowi) = NA_STRING;
-                                }
-                                bump_count(rowi, coli, rows);
-                            }
-                            // generate CharacterMatrix
-                            colnames(res) = wrap(groups_name);
-                            *listi = res;
+                            *listi = optstring_to_list_charmat(optinner, groups_name);
                         }
                         listi+=1;
                     }}else{
@@ -715,22 +720,8 @@ SEXP cpp_match(vector<string>& input,
                             if(cnt == 0){ // no one match, all NA return
                                 *listi = R_NilValue;
                             } else { // generate CharacterMatrix
-                                auto rows = groups_name.size();
-                                CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
 
-                                size_t rowi = 0;
-                                size_t coli = 0;
-                                for(auto dd : optinner){
-                                    if (bool(dd)) {
-                                        res(coli,rowi) = dd.value();
-                                    } else{
-                                        res(coli,rowi) = NA_STRING;
-                                    }
-                                    bump_count(rowi, coli, rows);
-                                }
-
-                                colnames(res) = wrap(groups_name);
-                                *listi = res;
+                                *listi = optstring_to_list_charmat(optinner, groups_name);
                             }
                             listi+=1; //bump times_n !n
                         }
