@@ -94,3 +94,21 @@ test_that("anchor start value not all",{
         structure(c(NA, "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?1"))
     )
 })
+
+test_that("tolist",{
+    res1 = re2_match(c("this is test",
+                       "this is test, and this is not test",
+                       "they are tests"),
+                     pattern = "(?P<testname>this)( is)",
+                     value = TRUE, all = T, tolist = T)
+    exp1 = list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", "?2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", "?2"))), NULL)
+    expect_identical(res1, exp1)
+
+    res1_mat = re2_match(c("this is test",
+                           "this is test, and this is not test",
+                           "they are tests"),
+                         pattern = "(?P<testname>this)( is)",
+                         value = TRUE, all = T)
+    exp1_mat = structure(c("1", "2", "2", "3", "this", "this", "this", NA, " is", " is", " is", NA), .Dim = c(4L, 3L), .Dimnames = list(NULL, c("!n", "testname", "?2")))
+    expect_identical(res1_mat, exp1_mat)
+})
