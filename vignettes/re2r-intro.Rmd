@@ -12,8 +12,6 @@ options( markdown.HTML.template = system.file("misc", "docco-template.html", pac
 library(re2r)
 ```
 
-This Article is derived from [An Introduction to Regular Expressions](http://www.codeproject.com/Articles/939/An-Introduction-to-Regular-Expressions)
-
 ## Table of Content
 
 1. What is Regular Expression
@@ -25,23 +23,11 @@ This Article is derived from [An Introduction to Regular Expressions](http://www
 
 It is a way to search for matches in strings. This is done by searching with "patterns" through the string.
 
-Example:
-
 You probably know the `*` and `?` charachters used in the dir command on the command line. The `*` character means "zero or more arbitrary characters" and the `?` means "one arbitrary character". 
 
-When using a pattern like `text?.*`, it will find files like
+When using a pattern like `text?.*`, it will find files like `textf.txt`, `text1.R`, and `text9.Rmd`.
 
-    textf.txt
-    text1.R
-    text9.Rmd
-
-But it will not find files like
-
-    text.txt
-    text.R
-    text.Rmd
-
-This is exactly the way REs work. While the `*` and `?` are a very limited ways of pattern matching, REs supply a much broader spectrum of describing patterns.
+This is exactly the way RE works, and RE supplies much more patterns.
 
 ## When to use RE
 
