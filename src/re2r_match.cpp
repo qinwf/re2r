@@ -119,16 +119,18 @@ void bump_listi(size_t cnt, List::iterator& listi, const optstring& optinner, co
 }
 
 CharacterMatrix vec_optstring_to_charmat(const vector<optstring>& res, int cap_nums){
+    auto rows = res.size();
+    CharacterMatrix resv( rows, cap_nums);
+    SEXP x = resv;
 
-    CharacterMatrix resv(res.size(), cap_nums);
     auto rowi = 0;
     auto coli = 0;
-    for(auto dd : res){
-        for (auto ee : dd){
-            if (bool(ee)) {
-                resv(rowi, coli) = ee.value();
+    for(auto ind : res){
+        for (const tr2::optional<string>& dd : ind){
+            if (bool(dd)) {
+                SET_STRING_ELT(x, rowi+coli*rows, Rf_mkCharLenCE(dd.value().c_str(),  strlen(dd.value().c_str()) , CE_UTF8));
             } else{
-                resv(rowi, coli) = NA_STRING;
+                SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
             }
         }
         rowi +=1;
@@ -269,20 +271,21 @@ optstring fill_opt_res(int cap_nums, StringPiece* piece, bool matched){
 
 void fill_res(int cap_nums,
               StringPiece* piece,
-              CharacterMatrix& res, size_t& rowi, size_t& coli, size_t rows, bool matched){
+              CharacterMatrix& res, size_t& rowi, size_t& coli, size_t rows, size_t cols, bool matched){
+    SEXP x = res;
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
-                res(coli,rowi) = piece[it].as_string();
+                SET_STRING_ELT(x, rowi+coli*rows, Rf_mkCharLenCE(piece[it].as_string().c_str(),  strlen(piece[it].as_string().c_str()) , CE_UTF8));
             } else{
-                res(coli,rowi) = NA_STRING;
+                SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
             }
-            bump_count(rowi,coli, rows);
+            bump_count(coli,rowi, cols);
         }
     }else{
         for(auto it = 0; it != cap_nums; ++it) {
-            res(coli,rowi) = NA_STRING;
-            bump_count(rowi,coli, rows);
+            SET_STRING_ELT(x, coli+rowi*rows, NA_STRING);
+            bump_count(coli,rowi, cols);
         }
     }
 
@@ -534,7 +537,7 @@ SEXP cpp_match(vector<string>& input,
                     ip++;
                 }
                 colnames(res) = CharacterVector::create("?nocapture");
-                return wrap(res);
+                return res;
                 // no capture group return
             } else {
                 optstring res(input.size());
@@ -598,7 +601,8 @@ SEXP cpp_match(vector<string>& input,
                 groups_name.push_back(*it);
             }
             CharacterMatrix res;
-            const auto rows = groups_name.size();
+            const auto cols = groups_name.size();
+            const auto rows = input.size();
             size_t rowi = 0;
             size_t coli = 0;
             if (!parallel){
@@ -610,7 +614,7 @@ SEXP cpp_match(vector<string>& input,
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                         fill_res(cap_nums,
-                                 piece_ptr, res, rowi, coli, rows,
+                                 piece_ptr, res, rowi, coli, rows, cols,
                                  RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
                     }
                     break;
@@ -621,7 +625,7 @@ SEXP cpp_match(vector<string>& input,
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
                         StringPiece tmpstring(ind);
                         fill_res(cap_nums,
-                                 piece_ptr, res, rowi, coli, rows,
+                                 piece_ptr, res, rowi, coli, rows, cols,
                                  RE2::ConsumeN(&tmpstring, *pattern, args_ptr, cap_nums));
                     }
                     break;
@@ -632,7 +636,7 @@ SEXP cpp_match(vector<string>& input,
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
-                             piece_ptr, res, rowi, coli, rows,
+                             piece_ptr, res, rowi, coli, rows, cols,
                              RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
                 }
                 break;
@@ -645,8 +649,8 @@ SEXP cpp_match(vector<string>& input,
             }
 
             // generate CharacterMatrix
-            colnames(res) = wrap(groups_name);
-            return wrap(res);
+            colnames(res) = vec_string_sexp(groups_name);
+            return res;
 
         } else { // all == true
 
@@ -726,7 +730,7 @@ SEXP cpp_match(vector<string>& input,
                         }
                     }
                     CharacterMatrix resm(rows, groups_name.size());
-
+                    SEXP x = resm;
                     size_t rowi = 0;
                     size_t coli = 0;
 
@@ -741,9 +745,9 @@ SEXP cpp_match(vector<string>& input,
                                 }
 
                                 if(bool(inner)){
-                                    resm(rowi,coli) = inner.value();
+                                    SET_STRING_ELT(x, rowi+coli*rows, Rf_mkCharLenCE(inner.value().c_str(),  strlen(inner.value().c_str()) , CE_UTF8));
                                 }else {
-                                    resm(rowi,coli) = NA_STRING;
+                                    SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
                                 }
                                 coli++;
 
@@ -765,7 +769,7 @@ SEXP cpp_match(vector<string>& input,
                         times_n++;
                     }
 
-                    colnames(resm) = wrap(groups_name);
+                    colnames(resm) = vec_string_sexp(groups_name);
                     return resm;
                 }
             } // tolist == false
@@ -833,7 +837,7 @@ SEXP cpp_match(vector<string>& input,
                         resi+=1;
                     }
                 }
-                    return wrap(listres);
+                    return listres;
 
             } // tolist == true
 
