@@ -29,21 +29,15 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../inst/include/re2r.h"
-#include "../inst/include/optional.hpp"
 
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 using namespace RcppParallel;
 
-
 #include <cstddef>
 
 #include <sstream>
 #include <memory>
-
-namespace tr2 = std::experimental;
-
-typedef vector<tr2::optional<string>> optstring;
 
 #define RE2R_STATIC_SIZE 10
 
@@ -77,15 +71,19 @@ CharacterMatrix optstring_to_charmat(const optstring& res){
 
     CharacterMatrix resv(res.size(), 1);
     colnames(resv) = CharacterVector::create("?nocapture");
-    auto it = resv.begin();
+    SEXP x = resv;
+
+    R_xlen_t index = 0;
+
     for(auto dd : res){
         if (bool(dd)) {
-            *it = dd.value();
+            SET_STRING_ELT(x, index, Rf_mkCharLenCE(dd.value().c_str(),  strlen(dd.value().c_str()) , CE_UTF8));
         } else{
-            *it = NA_STRING;
+            SET_STRING_ELT(x, index, NA_STRING);
         }
-        it++;
+        index++;
     }
+
     return resv;
 }
 

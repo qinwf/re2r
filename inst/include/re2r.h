@@ -40,6 +40,12 @@ using namespace std;
 using re2::RE2;
 using re2::StringPiece;
 
+#include "optional.hpp"
+
+namespace tr2 = std::experimental;
+
+typedef vector<tr2::optional<string>> optstring;
+
 // exception
 
 #define RCPP_EXCEPTION_CLASS(__CLASS__,__WHAT__)                               \
@@ -106,5 +112,10 @@ XPtr<RE2> cpp_re2_compile(const char* pattern,
                           bool perl_classes_value,
                           bool word_boundary_value,
                           int64_t max_mem_value);
+
+
+SEXP optstring_sexp(const optstring& input);
+SEXP vec_string_sexp(const vector<string>& input);
+
 
 #endif

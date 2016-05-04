@@ -29,12 +29,6 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../inst/include/re2r.h"
-#include "../inst/include/optional.hpp"
-
-namespace tr2 = std::experimental;
-
-typedef vector<tr2::optional<string>> optstring;
-
 
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
@@ -182,18 +176,6 @@ struct QuoteMetaP : public Worker
                        tt.QuoteMeta);
     }
 };
-
-SEXP vec_string_sexp(const vector<string>& input){
-    SEXP x;
-    PROTECT(x = Rf_allocVector(STRSXP, input.size()));
-    R_xlen_t index = 0;
-    for(const string& dd : input){
-        SET_STRING_ELT(x, index, Rf_mkCharLenCE(dd.c_str(),  strlen(dd.c_str()) , CE_UTF8));
-        index ++;
-    }
-    UNPROTECT(1);
-    return x;
-}
 
 // [[Rcpp::export]]
 SEXP cpp_quote_meta(vector<string>& input, bool parallel){
@@ -343,23 +325,7 @@ CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& re
         optstring res(input.size());
         ExtractP pobj(input, res, ptr,rewrite);
         parallelFor(0, input.size(), pobj);
-
-        SEXP x;
-        PROTECT(x = Rf_allocVector(STRSXP, input.size()));
-        string tmpres;
-        R_xlen_t index = 0;
-
-        for(auto dd : res){
-            if (bool(dd)) {
-                SET_STRING_ELT(x, index, Rf_mkCharLenCE(dd.value().c_str(),  strlen(dd.value().c_str()) , CE_UTF8));
-            } else{
-                SET_STRING_ELT(x, index, NA_STRING);
-            }
-            index++;
-        }
-        UNPROTECT(1);
-        return x;
-
+        return optstring_sexp(res);
     }
 }
 
