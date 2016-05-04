@@ -183,8 +183,20 @@ struct QuoteMetaP : public Worker
     }
 };
 
+SEXP vec_string_sexp(const vector<string>& input){
+    SEXP x;
+    PROTECT(x = Rf_allocVector(STRSXP, input.size()));
+    R_xlen_t index = 0;
+    for(const string& dd : input){
+        SET_STRING_ELT(x, index, Rf_mkCharLenCE(dd.c_str(),  strlen(dd.c_str()) , CE_UTF8));
+        index ++;
+    }
+    UNPROTECT(1);
+    return x;
+}
+
 // [[Rcpp::export]]
-CharacterVector cpp_quote_meta(vector<string>& input, bool parallel){
+SEXP cpp_quote_meta(vector<string>& input, bool parallel){
 
     vector<string> res(input.size());
 
@@ -195,12 +207,13 @@ CharacterVector cpp_quote_meta(vector<string>& input, bool parallel){
             *it = tt.QuoteMeta(ind);
             it++;
         }
-        return wrap(res);
+
+        return vec_string_sexp(res);
     }
     else{
         QuoteMetaP pobj(input, res);
         parallelFor(0, input.size(), pobj);
-        return wrap(res);
+        return vec_string_sexp(res);
     }
 }
 
@@ -241,7 +254,7 @@ struct ReplaceGlobalP : public Worker
 
 
 // [[Rcpp::export]]
-CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel){
+SEXP cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel){
     string errmsg;
 
     if(!regexp->CheckRewriteString(rewrite, &errmsg)){
@@ -252,11 +265,11 @@ CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& re
     if(!global_) {
         if (!parallel){
             for(string& ind : input) ptr->Replace(&ind,*ptr,rewrite);
-            return wrap(input);
+            return vec_string_sexp(input);
         } else{
             ReplaceP pobj(input, ptr, rewrite);
             parallelFor(0, input.size(), pobj);
-            return wrap(input);
+            return  vec_string_sexp(input);
         }
     }
     else {
@@ -270,7 +283,7 @@ CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& re
             parallelFor(0, input.size(), pobj);
         }
 
-        CharacterVector res = wrap(input);
+        CharacterVector res = vec_string_sexp(input);
         res.attr("count") = count;
         return res;
     }
@@ -302,6 +315,7 @@ struct ExtractP : public Worker
     }
 };
 
+
 // [[Rcpp::export]]
 CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool parallel){
     string errmsg;
@@ -311,34 +325,41 @@ CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& re
     }
     auto ptr = regexp.checked_get();
     if (! parallel){
-        CharacterVector res(input.size());
-        auto res_iter = res.begin();
+        SEXP x;
+        PROTECT(x = Rf_allocVector(STRSXP, input.size()));
         string tmpres;
-        for(const string& ind : input) {
-            if (! ptr->Extract(ind,*ptr ,rewrite,&tmpres)) {
-                *res_iter= NA_STRING;
+        R_xlen_t index = 0;
+        for(const string& dd : input){
+            if (! ptr->Extract(dd,*ptr ,rewrite,&tmpres)) {
+                SET_STRING_ELT(x, index, NA_STRING);
             } else {
-                *res_iter= tmpres;
+                SET_STRING_ELT(x, index, Rf_mkCharLenCE(tmpres.c_str(),  strlen(tmpres.c_str()) , CE_UTF8));
             }
-            res_iter+=1;
+            index ++;
         }
-        return wrap(res);
+        UNPROTECT(1);
+        return x;
     } else{
         optstring res(input.size());
         ExtractP pobj(input, res, ptr,rewrite);
         parallelFor(0, input.size(), pobj);
 
-        CharacterVector resv(input.size());
-        auto it = resv.begin();
+        SEXP x;
+        PROTECT(x = Rf_allocVector(STRSXP, input.size()));
+        string tmpres;
+        R_xlen_t index = 0;
+
         for(auto dd : res){
             if (bool(dd)) {
-                *it = dd.value();
+                SET_STRING_ELT(x, index, Rf_mkCharLenCE(dd.value().c_str(),  strlen(dd.value().c_str()) , CE_UTF8));
             } else{
-                *it = NA_STRING;
+                SET_STRING_ELT(x, index, NA_STRING);
             }
-            it++;
+            index++;
         }
-        return resv;
+        UNPROTECT(1);
+        return x;
+
     }
 }
 

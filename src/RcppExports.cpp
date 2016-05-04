@@ -92,7 +92,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_quote_meta
-CharacterVector cpp_quote_meta(vector<string>& input, bool parallel);
+SEXP cpp_quote_meta(vector<string>& input, bool parallel);
 RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
@@ -104,7 +104,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_replace
-CharacterVector cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel);
+SEXP cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel);
 RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
