@@ -34,7 +34,7 @@ before_install:
 
 install:
   - ./travis-tool.sh install_r_binary Rcpp RCurl stringi ggplot2 dplyr curl jsonlite yaml tidyr RcppParallel markdown
-  - ./travis-tool.sh install_r plotly
+  - ./travis-tool.sh install_r plotly covr
   - ./travis-tool.sh install_deps
 
 before_script:
@@ -56,7 +56,7 @@ after_success:
   - git checkout -b gh-pages
   - git add --all
   - git -c user.name='travis' -c user.email='travis@travis.travis' commit -m "update re2r gh-pages"
-  - if [ "${RUN_RE2R_BENCHMARK}" = "TRUE" ] && [ "${OS}" = "Linux" ] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; then git push --force --quiet "https://qinwf:$GITHUB_API_KEY@github.com/qinwf/re2r_doc.git" gh-pages > /dev/null 2>&1 ; fi;
+  - if [ "${RUN_RE2R_BENCHMARK}" = "TRUE" ] && [ "${OS}" = "Linux" ] && [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; then git push --force --quiet "https://qinwf:$GITHUB_API_KEY@github.com/qinwf/re2r_doc.git" gh-pages > /dev/null 2>&1 ; Rscript -e 'library("covr");codecov()'; fi;
 
 notifications:
   email:
