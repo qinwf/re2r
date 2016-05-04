@@ -59,11 +59,11 @@ inline string numbertostring ( T Number )
 }
 
 
-void bump_count(size_t& rowi,size_t& coli, size_t rows){
-    rowi++;
-    if (rowi== rows){
-        rowi = 0;
-        coli++;
+void bump_count(size_t& coli,size_t& rowi, size_t cols){
+    coli++;
+    if (coli== cols){
+        coli = 0;
+        rowi++;
     }
 }
 
@@ -88,21 +88,23 @@ CharacterMatrix optstring_to_charmat(const optstring& res){
 }
 
 CharacterMatrix optstring_to_list_charmat(const optstring& optinner, const vector<string>& groups_name){
-    auto rows = groups_name.size();
-    CharacterMatrix res(optinner.size() / groups_name.size(), groups_name.size());
+    auto cols = groups_name.size();
+    auto rows = optinner.size() / groups_name.size();
+    CharacterMatrix res( rows, cols);
+    SEXP x = res;
 
     size_t rowi = 0;
     size_t coli = 0;
     for(auto dd : optinner){
         if (bool(dd)) {
-            res(coli,rowi) = dd.value();
+            SET_STRING_ELT(x, rowi+coli*rows, Rf_mkCharLenCE(dd.value().c_str(),  strlen(dd.value().c_str()) , CE_UTF8));
         } else{
-            res(coli,rowi) = NA_STRING;
+            SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
         }
-        bump_count(rowi, coli, rows);
+        bump_count(coli, rowi, cols);
     }
 
-    colnames(res) = wrap(groups_name);
+    colnames(res) = vec_string_sexp(groups_name);
     return res;
 }
 
