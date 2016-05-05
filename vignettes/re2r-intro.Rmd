@@ -100,7 +100,7 @@ str(res)
 `re2_match_all()` will return the all of patterns in a string instead of just the first one.
 
 ```{r}
-(res = re2_match_all("this is just one test", "(is)", value = TRUE, all = TRUE))
+(res = re2_match_all("this is just one test", "(is)"))
 str(res)
 ```
 

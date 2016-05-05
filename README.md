@@ -84,7 +84,7 @@ test_string = c("this is just one test", "the second test");
 `re2_match_all()` will return the all of patterns in a string instead of just the first one.
 
 ```r
-(res = re2_match_all(test_string, "(is)", value = TRUE, all = TRUE))
+(res = re2_match_all(test_string, "(is)"))
 ```
 
 ```r
@@ -97,7 +97,7 @@ test_string = c("this is just one test", "the second test");
 
 ```r
 test_string = c("this is just one test", "the second test");
-(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+(res = re2_match_all(test_string, "(is)"))
 ```
 
 ```r
