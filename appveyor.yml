@@ -15,10 +15,10 @@ install:
 environment:
 
   matrix:
-  - R_VERSION: devel
+  - R_VERSION: 3.3.0rc
     GCC_PATH: mingw_32
 
-  - R_VERSION: devel
+  - R_VERSION: 3.3.0rc
     R_ARCH: x64
     GCC_PATH: mingw_64
 
