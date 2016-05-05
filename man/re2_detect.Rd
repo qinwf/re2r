@@ -2,7 +2,7 @@
 % Please edit documentation in R/match.R
 \name{re2_detect}
 \alias{re2_detect}
-\title{Match a pattern in strings, and return boolean.}
+\title{Test a pattern in strings, and return boolean.}
 \usage{
 re2_detect(input, pattern, anchor = 0, ...)
 }
@@ -18,7 +18,7 @@ re2_detect(input, pattern, anchor = 0, ...)
 \item{parallel}{multithreading support}
 }
 \description{
-Match a pattern in strings, and return boolean.
+Test a pattern in strings, and return boolean.
 }
 \examples{
 

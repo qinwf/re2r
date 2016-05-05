@@ -2,127 +2,131 @@ context("check match group")
 
 test_that("check match group 1", {
     # from re2_test.cc
-    pattern = re2("\\s*(\\w+)")
-    res1 = re2_match("   aaa b!@#$@#$cccc", pattern, value = TRUE, anchor = 1, all = TRUE)
-    exp1 = structure(c("1", "1", "aaa", "b"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
-    expect_identical(res1, exp1)
 
-    res1_tolist = re2_match(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), pattern, value = TRUE, anchor = 1, all = TRUE,tolist = T)
+    expect_identical(
+    re2_match_all("   aaa b!@#$@#$cccc", "\\s*(\\w+)", 1),
+    structure(c("1", "1", "aaa", "b"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
+    )
 
-    exp1_tolist = list(structure(c("aaa", "b"), .Dim = c(2L, 1L), .Dimnames = list(
-        NULL, "?1")), structure(c("aaa", "bb", "cccc"), .Dim = c(3L,
-                                                                 1L), .Dimnames = list(NULL, "?1")))
+    expect_identical(
+    re2_match_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), "\\s*(\\w+)", anchor = 1),
+    list(structure(c("aaa", "b"), .Dim = c(2L, 1L), .Dimnames = list( NULL, "?1")), structure(c("aaa", "bb", "cccc"), .Dim = c(3L,1L), .Dimnames = list(NULL, "?1")))
 
-    expect_identical(res1_tolist, exp1_tolist)
+    )
 
-    res2 = re2_match("   aaa b!@#$@#$cccc", pattern, value = TRUE, anchor = 0, all = TRUE)
-    exp2 = structure(c("1", "1", "1", "aaa", "b", "cccc"), .Dim = c(3L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
-    expect_identical(res2, exp2)
+    expect_identical(
+    re2_match("   aaa b!@#$@#$cccc", "\\s*(\\w+)", value = TRUE, anchor = 0, all = TRUE),
+    structure(c("1", "1", "1", "aaa", "b", "cccc"), .Dim = c(3L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
+    )
 
-    res3 = re2_match(" one two three 4", "(\\w+)", value = TRUE, anchor = 0, all = TRUE)
-    exp3 = structure(c("1", "1", "1", "1", "one", "two", "three", "4"), .Dim = c(4L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
-    expect_identical(res3, exp3)
+    expect_identical(
+    re2_match(" one two three 4", "(\\w+)", value = TRUE, anchor = 0, all = TRUE),
+    structure(c("1", "1", "1", "1", "one", "two", "three", "4"), .Dim = c(4L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
+    )
 
 })
 
 test_that("Test Match Number Peculiarity",{
-    pattern = re2("(foo)|(bar)|(baz)")
+    p = re2("(foo)|(bar)|(baz)")
 
-    res1 = re2_match("foo", pattern, value = TRUE)
-    exp1 = structure(c("foo", NA, NA), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
-    expect_identical(res1, exp1)
+    expect_identical(
+    re2_match("foo", p),
+    structure(c("foo", NA, NA), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
+    )
 
-    res2 = re2_match("baz", pattern, value = TRUE)
-    exp2 = structure(c(NA, NA, "baz"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
-    expect_identical(res2, exp2)
+    expect_identical(
+    re2_match("baz", p),
+    structure(c(NA, NA, "baz"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
+    )
 
-    res3 = re2_match("bar", pattern, value = TRUE)
-    exp3 = structure(c(NA, "bar", NA), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
-    expect_identical(res3, exp3)
+    expect_identical(
+    re2_match("bar", p),
+    structure(c(NA, "bar", NA), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
+    )
 
-    res4 = re2_match("f", pattern, value = TRUE)
-    exp4 = structure(c(NA_character_, NA_character_, NA_character_), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
-    expect_identical(res4, exp4)
+    expect_identical(
+    re2_match("f", p),
+    structure(c(NA_character_, NA_character_, NA_character_), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("?1", "?2", "?3")))
+    )
 
-    res5 = re2_match("hello", "(foo)|hello", value = TRUE, anchor = 1)
-    exp5 = structure(NA_character_, .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
-    expect_identical(res5, exp5)
+    expect_identical(
+    re2_match("hello", "(foo)|hello", anchor = 1),
+    structure(NA_character_, .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+    )
 
 })
 
 test_that("simple match",{
-    pattern = re2("((\\w+):([0-9]+))")
-    expect_false("zyzzyva" %=~% pattern)
-    res1 = re2_match("a chrisr:9000 here", pattern, value = TRUE)
-    exp1 = structure(c("chrisr:9000", "chrisr", "9000"), .Dim = c(1L, 3L
+    p = re2("((\\w+):([0-9]+))")
+
+    expect_false("zyzzyva" %=~% p)
+
+    expect_identical(
+    re2_match("a chrisr:9000 here", p),
+    structure(c("chrisr:9000", "chrisr", "9000"), .Dim = c(1L, 3L
         ), .Dimnames = list(NULL, c("?1", "?2", "?3")))
-    expect_identical(res1, exp1)
+    )
 })
 
 test_that("no capture with value", {
-    test_string = c("this is just one test", "the second test");
-    res1 = re2_match(test_string, "is", value = TRUE)
-    res1_par = re2_match(test_string, "is", value = TRUE, parallel = T)
-    exp1 = structure(c("this is just one test", NA), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?nocapture"))
-    expect_identical(res1, exp1)
-    expect_identical(res1_par, exp1)
+    s = c("this is just one test", "the second test");
+    expect_identical(re2_match(s, "is"),
+                     structure(c("this is just one test", NA), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?nocapture")))
+
+    expect_identical(re2_pmatch(s, "is"), re2_match(s, "is"))
 })
 
 test_that("anchor start value not all",{
     expect_identical(
-        re2_match("dsS","(ds)",value = T,anchor = 1),
+        re2_match("dsS","(ds)", anchor = 1),
         structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
         )
     expect_identical(
-        re2_match("dsS","(ds)",value = T,anchor = 1,parallel = T),
+        re2_pmatch("dsS","(ds)",anchor = 1),
+        re2_match("dsS","(ds)", anchor = 1))
+
+
+    expect_identical(
+        re2_match("dsS","(ds)"),
         structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
     )
+
     expect_identical(
-        re2_match("dsS","(ds)",value = T,anchor = 0),
-        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
+        re2_pmatch("dsS","(ds)"),
+        re2_match("dsS","(ds)")
     )
+
     expect_identical(
-        re2_match("dsS","(ds)",value = T,anchor = 0,parallel = T),
-        structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, "?1"))
-    )
-    expect_identical(
-        re2_match(c("dsS","ds"),"(ds)",value = T,anchor = 2),
+        re2_match(c("dsS","ds"),"(ds)", anchor = 2),
         structure(c(NA, "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?1"))
     )
     expect_identical(
-        re2_match(c("dsS","ds"),"(ds)",value = T,anchor = 2,parallel = T),
-        structure(c(NA, "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?1"))
-    )
+        re2_pmatch(c("dsS","ds"),"(ds)", anchor = 2),
+        re2_match(c("dsS","ds"),"(ds)", anchor = 2))
+
 })
 
 test_that("tolist",{
     str = c("this is test",
             "this is test, and this is not test",
             "they are tests")
-    res1 = re2_match(str,
-                     pattern = "(?P<testname>this)( is)",
-                     value = TRUE, all = T, tolist = T)
 
-    exp1 = list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", "?2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", "?2"))), NULL)
+    expect_identical(
+        re2_match_list(str, "(?P<testname>this)( is)"),
 
-    expect_identical(res1, exp1)
+        list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", "?2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", "?2"))), NULL))
 
+    expect_identical(
+        re2_match_list(str, "(?P<testname>this)( is)"),
+        re2_pmatch_list(str,"(?P<testname>this)( is)")
+        )
 
-    res1_p = re2_match(str,
-                     pattern = "(?P<testname>this)( is)",
-                     value = TRUE, all = T, tolist = T)
+    res1_mat = re2_match_all(str, "(?P<testname>this)( is)")
 
-    expect_identical(res1, res1_p)
-
-    res1_mat = re2_match(str,
-                         pattern = "(?P<testname>this)( is)",
-                         value = TRUE, all = T)
     exp1_mat = structure(c("1", "2", "2", "3", "this", "this", "this", NA, " is", " is", " is", NA), .Dim = c(4L, 3L), .Dimnames = list(NULL, c("!n", "testname", "?2")))
 
     expect_identical(res1_mat, exp1_mat)
 
-    res1_mat_p = re2_match(str,
-                         pattern = "(?P<testname>this)( is)",
-                         value = TRUE, all = T,parallel = T)
+    res1_mat_p = re2_pmatch_all(str, "(?P<testname>this)( is)")
     expect_identical(res1_mat_p, res1_mat)
 })

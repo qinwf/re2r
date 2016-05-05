@@ -46,7 +46,7 @@
     eval(call("<-", lhs, re2(rhss)), parent, parent)
 }
 
-#' Check strings with a regular expression
+#' Test strings with a regular expression
 #'
 #' return re2_match(pattern, string)
 #'

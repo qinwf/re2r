@@ -2,7 +2,7 @@
 % Please edit documentation in R/match.R
 \name{re2_pdetect}
 \alias{re2_pdetect}
-\title{Match a pattern in strings with multithread, and return boolean.}
+\title{Test a pattern in strings with multithread, and return boolean.}
 \usage{
 re2_pdetect(input, pattern, anchor = 0, ...)
 }
@@ -16,7 +16,7 @@ re2_pdetect(input, pattern, anchor = 0, ...)
 \item{...}{further arguments passed to or from other methods.}
 }
 \description{
-Match a pattern in strings with multithread, and return boolean.
+Test a pattern in strings with multithread, and return boolean.
 }
 \examples{
 

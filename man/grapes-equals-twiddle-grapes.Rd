@@ -3,7 +3,7 @@
 \name{\%=~\%}
 \alias{\%!~\%}
 \alias{\%=~\%}
-\title{Check strings with a regular expression}
+\title{Test strings with a regular expression}
 \usage{
 string \%=~\% pattern
 

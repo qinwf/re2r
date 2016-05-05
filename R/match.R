@@ -79,7 +79,7 @@ re2_match = function(input,
     cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all, tolist, parallel)
 }
 
-#' Match a pattern in strings, and return boolean.
+#' Test a pattern in strings, and return boolean.
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
@@ -97,7 +97,7 @@ re2_detect = function(input,
 }
 
 
-#' Match a pattern in strings with multithread, and return boolean.
+#' Test a pattern in strings with multithread, and return boolean.
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
