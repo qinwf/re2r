@@ -84,33 +84,7 @@ test_string = c("this is just one test", "the second test");
 `re2_match_all()` will return the all of patterns in a string instead of just the first one.
 
 ```r
-(res = re2_match_all(test_string, "(is)"))
-```
-
-```r
-##      !n  ?1  
-## [1,] "1" "is"
-## [2,] "1" "is"
-```
-
-`!n` is the index of the input string. We can provide a character vector to a pattern.
-
-```r
-test_string = c("this is just one test", "the second test");
-(res = re2_match_all(test_string, "(is)"))
-```
-
-```r
-##      !n  ?1  
-## [1,] "1" "is"
-## [2,] "1" "is"
-## [3,] "2" NA  
-```
-
-`re2_match_list()` works like `re2_match_all()`, but the result will be a list.
-
-```r
-re2_match(c("this is test", 
+re2_match_all(c("this is test", 
             "this is test, and this is not test", 
             "they are tests"), 
           pattern = "(?P<testname>this)( is)")

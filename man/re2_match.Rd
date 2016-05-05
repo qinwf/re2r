@@ -3,15 +3,12 @@
 \name{re2_match}
 \alias{re2_match}
 \alias{re2_match_all}
-\alias{re2_match_list}
 \title{Find matched groups from strings.}
 \usage{
 re2_match(input, pattern, anchor = 0, value = TRUE, all = FALSE,
-  tolist = FALSE, parallel = FALSE, ...)
+  parallel = FALSE, ...)
 
 re2_match_all(input, pattern, anchor = 0, ...)
-
-re2_match_list(input, pattern, anchor = 0, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -23,8 +20,6 @@ re2_match_list(input, pattern, anchor = 0, ...)
 \item{value}{return value instead of bool result}
 
 \item{all}{find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.}
-
-\item{tolist}{return a list instead of matrix when all and value is TRUE.}
 
 \item{parallel}{multithreading support}
 
@@ -55,7 +50,5 @@ test_string = c("this is just one test", "the second test")
 regexp = re2("test",case_sensitive = FALSE)
 re2_match("TEST", regexp)
 
-re2_match_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
- "\\\\s*(\\\\w+)")
 }
 

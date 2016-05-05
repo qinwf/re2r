@@ -417,6 +417,7 @@ size_t cnt = 0;                                                          \
 optstring optinner;                                                      \
 
 
+
 #define INIT_CHARM                                                       \
 StringPiece todo_str(ind);                                               \
 StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
@@ -497,7 +498,6 @@ SEXP cpp_match(vector<string>& input,
                bool value,
                size_t anchor,
                bool all,
-               bool tolist,
                bool parallel){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
@@ -654,126 +654,6 @@ SEXP cpp_match(vector<string>& input,
 
         } else { // all == true
 
-            if (!tolist){
-                // each string get at least one group of result
-                groups_name.reserve(g_numbers_names.size()+1);
-                groups_name.push_back("!n");
-
-                for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
-                    groups_name.push_back(*it);
-                }
-
-                optstring optres;
-                // for each input string, get a !n label.
-                size_t times_n = 1;
-
-                if (!parallel){
-                    if (anchor_type == RE2::UNANCHORED){
-                        for(const string& ind : input){
-                            INIT_CHARM
-                            while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                                cnt+=1;
-                                string numstring = numbertostring(times_n);
-                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
-
-                                // Note that if the
-                                // regular expression matches an empty string, input will advance
-                                // by 0 bytes.  If the regular expression being used might match
-                                // an empty string, the loop body must check for this case and either
-                                // advance the string or break out of the loop.
-                                //
-                                CHECK_RESULT
-
-                                // try next place
-                            }   // while
-
-                            if(cnt == 0){ // no one match, all NA return
-                                string numstring = numbertostring(times_n);
-                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
-                            }
-                            times_n+=1; //bump times_n !n
-                        }
-                        }
-                    else{
-                        for(const string& ind : input){
-                            INIT_CHARM
-                            while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-                                cnt+=1;
-                                string numstring = numbertostring(times_n);
-                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, true);
-
-                                CHECK_RESULT
-
-                                // advanced try next place
-                            }   // else while
-
-                            if(cnt == 0){ // no one match, all NA return
-                                string numstring = numbertostring(times_n);
-                                fill_all_res(numstring, cap_nums, piece_ptr, optres, cnt, false);
-                            }
-                            times_n+=1; //bump times_n !n
-                        }
-                    } // end else
-
-                    return optstring_to_list_charmat(optres, groups_name);
-                } // !tolist !parallel
-                else{ // !tolist parallel
-                    vector<tr2::optional<optstring>> res(input.size());
-                    MatValue pobj(input, res, pattern, anchor_type);
-                    parallelFor(0, input.size(), pobj);
-                    size_t rows = 0;
-                    for (auto it = res.begin(); it != res.end(); it++){
-                        if(bool(*it)){ // no one match, all NA return
-                            rows += it->value().size() / (groups_name.size()-1);
-                        } else {
-                            rows += 1;
-                        }
-                    }
-                    CharacterMatrix resm(rows, groups_name.size());
-                    SEXP x = resm;
-                    size_t rowi = 0;
-                    size_t coli = 0;
-
-                    for(auto dd : res){
-
-                        if (bool(dd)) {
-                            for (tr2::optional<string>& inner : dd.value()){
-
-                                if (coli == 0){
-                                    resm(rowi,0) = numbertostring(times_n);
-                                    coli++;
-                                }
-
-                                if(bool(inner)){
-                                    SET_STRING_ELT(x, rowi+coli*rows, Rf_mkCharLenCE(inner.value().c_str(),  strlen(inner.value().c_str()) , CE_UTF8));
-                                }else {
-                                    SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
-                                }
-                                coli++;
-
-                                if(coli == groups_name.size()){
-                                    coli = 0;
-                                    rowi++;
-                                }
-                            }
-
-                        } else{
-                            resm(rowi,coli) = numbertostring(times_n);
-                            coli++;
-                            while(coli!=groups_name.size()){
-                                resm(rowi,coli) = NA_STRING;
-                                coli++;
-                            }
-                            rowi++;
-                        }
-                        times_n++;
-                    }
-
-                    colnames(resm) = vec_string_sexp(groups_name);
-                    return resm;
-                }
-            } // tolist == false
-            else{ // tolist == true
 
                 // each string get at least one group of result
                 groups_name.reserve(g_numbers_names.size());
@@ -797,6 +677,12 @@ SEXP cpp_match(vector<string>& input,
                                 cnt+=1;
                                 fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
 
+                                // Note that if the
+                                // regular expression matches an empty string, input will advance
+                                // by 0 bytes.  If the regular expression being used might match
+                                // an empty string, the loop body must check for this case and either
+                                // advance the string or break out of the loop.
+                                //
                                 CHECK_RESULT
 
                                     // try next place
@@ -838,8 +724,6 @@ SEXP cpp_match(vector<string>& input,
                     }
                 }
                     return listres;
-
-            } // tolist == true
 
         } // all == true
 

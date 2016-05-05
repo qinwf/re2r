@@ -100,22 +100,7 @@ str(res)
 `re2_match_all()` will return the all of patterns in a string instead of just the first one.
 
 ```{r}
-(res = re2_match_all("this is just one test", "(is)"))
-str(res)
-```
-
-`!n` is the index of the input string. We can provide a character vector to a pattern.
-
-```{r}
-test_string = c("this is just one test", "the second test");
-(res = re2_match_all(test_string, "(is)"))
-str(res)
-```
-
-`re2_match_list()` works like `re2_match_all()`, but the result will be a list.
-
-```{r}
-re2_match_list(
+re2_match_all(
             input = c("this is test", 
                       "this is test, and this is not test", 
                       "they are tests"), 

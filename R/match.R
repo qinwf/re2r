@@ -37,7 +37,6 @@
 #' @param value return value instead of bool result
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
 #' @param all find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.
-#' @param tolist return a list instead of matrix when all and value is TRUE.
 #' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @examples
@@ -62,21 +61,18 @@
 #' regexp = re2("test",case_sensitive = FALSE)
 #' re2_match("TEST", regexp)
 #'
-#' re2_match_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
-#'  "\\s*(\\w+)")
 #' @export
 re2_match = function(input,
                      pattern,
                      anchor = 0,
                      value = TRUE,
                      all = FALSE,
-                     tolist = FALSE,
                      parallel = FALSE,
                      ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_match(stri_enc_toutf8(input), pattern,   value, anchor, all, tolist, parallel)
+    cpp_match(stri_enc_toutf8(input), pattern,   value, anchor, all, parallel)
 }
 
 #' Test a pattern in strings, and return boolean.
@@ -92,7 +88,7 @@ re2_detect = function(input,
                       pattern,
                       anchor = 0,
                       ...) {
-    re2_match(input, pattern, anchor, FALSE, FALSE, FALSE, FALSE, ...)
+    re2_match(input, pattern, anchor = anchor, value = FALSE, all = FALSE, parallel = FALSE,  ...)
 }
 
 
@@ -109,7 +105,7 @@ re2_pdetect = function(input,
                       pattern,
                       anchor = 0,
                       ...) {
-    re2_match(input, pattern, anchor, FALSE, FALSE, FALSE, TRUE, ...)
+    re2_match(input, pattern, anchor = anchor, value = FALSE, all = FALSE, parallel = TRUE,  ...)
 }
 
 #' Find matched groups from strings with multithread.
@@ -140,14 +136,12 @@ re2_pdetect = function(input,
 #' regexp = re2("test",case_sensitive = FALSE)
 #' re2_pmatch("TEST", regexp)
 #'
-#' re2_pmatch_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
-#'  "\\s*(\\w+)", anchor = 1)
 #' @export
 re2_pmatch = function(input,
                        pattern,
                        anchor = 0,
                        ...) {
-    re2_match(input, pattern, anchor, TRUE, FALSE, FALSE, TRUE, ...)
+        re2_match(input, pattern, anchor = anchor, value = TRUE, all = FALSE, parallel = TRUE, ...)
 }
 
 #' @export
@@ -156,17 +150,9 @@ re2_match_all = function(input,
                       pattern,
                       anchor = 0,
                       ...) {
-    re2_match(input, pattern, anchor, TRUE, TRUE, FALSE, FALSE, ...)
+    re2_match(input, pattern, anchor = anchor, value = TRUE, all = TRUE, parallel = FALSE, ...)
 }
 
-#' @export
-#' @rdname re2_match
-re2_match_list = function(input,
-                           pattern,
-                           anchor = 0,
-                           ...) {
-    re2_match(input, pattern, anchor,  TRUE, TRUE, TRUE, FALSE, ...)
-}
 
 #' @export
 #' @rdname re2_pmatch
@@ -174,14 +160,6 @@ re2_pmatch_all = function(input,
                            pattern,
                            anchor = 0,
                            ...) {
-    re2_match(input, pattern, anchor, TRUE, TRUE, FALSE, TRUE, ...)
+    re2_match(input, pattern, anchor = anchor, value = TRUE, all = TRUE, parallel = FALSE, ...)
 }
 
-#' @export
-#' @rdname re2_pmatch
-re2_pmatch_list = function(input,
-                            pattern,
-                            anchor = 0,
-                            ...) {
-    re2_match(input, pattern, anchor, TRUE, TRUE, TRUE, TRUE, ...)
-}

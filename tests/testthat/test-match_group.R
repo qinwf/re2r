@@ -4,24 +4,20 @@ test_that("check match group 1", {
     # from re2_test.cc
 
     expect_identical(
-    re2_match_all("   aaa b!@#$@#$cccc", "\\s*(\\w+)", 1),
-    structure(c("1", "1", "aaa", "b"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
-    )
-
-    expect_identical(
-    re2_match_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), "\\s*(\\w+)", anchor = 1),
+    re2_match_all(c("   aaa b!@#$@#$cccc","   aaa bb cccc"), "\\s*(\\w+)", anchor = 1),
     list(structure(c("aaa", "b"), .Dim = c(2L, 1L), .Dimnames = list( NULL, "?1")), structure(c("aaa", "bb", "cccc"), .Dim = c(3L,1L), .Dimnames = list(NULL, "?1")))
 
     )
 
     expect_identical(
-    re2_match("   aaa b!@#$@#$cccc", "\\s*(\\w+)", value = TRUE, anchor = 0, all = TRUE),
-    structure(c("1", "1", "1", "aaa", "b", "cccc"), .Dim = c(3L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
+    re2_match_all("   aaa b!@#$@#$cccc", "\\s*(\\w+)"),
+    list(structure(c("aaa", "b", "cccc"), .Dim = c(3L, 1L), .Dimnames = list(NULL, "?1")))
     )
 
+
     expect_identical(
-    re2_match(" one two three 4", "(\\w+)", value = TRUE, anchor = 0, all = TRUE),
-    structure(c("1", "1", "1", "1", "one", "two", "three", "4"), .Dim = c(4L, 2L), .Dimnames = list(NULL, c("!n", "?1")))
+    re2_match_all(" one two three 4", "(\\w+)"),
+    list(structure(c("one", "two", "three", "4"), .Dim = c(4L, 1L), .Dimnames = list(NULL, "?1")))
     )
 
 })
@@ -112,21 +108,12 @@ test_that("tolist",{
             "they are tests")
 
     expect_identical(
-        re2_match_list(str, "(?P<testname>this)( is)"),
+        re2_match_all(str, "(?P<testname>this)( is)"),
 
         list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", "?2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", "?2"))), NULL))
 
     expect_identical(
-        re2_match_list(str, "(?P<testname>this)( is)"),
-        re2_pmatch_list(str,"(?P<testname>this)( is)")
+        re2_match_all(str, "(?P<testname>this)( is)"),
+        re2_pmatch_all(str,"(?P<testname>this)( is)")
         )
-
-    res1_mat = re2_match_all(str, "(?P<testname>this)( is)")
-
-    exp1_mat = structure(c("1", "2", "2", "3", "this", "this", "this", NA, " is", " is", " is", NA), .Dim = c(4L, 3L), .Dimnames = list(NULL, c("!n", "testname", "?2")))
-
-    expect_identical(res1_mat, exp1_mat)
-
-    res1_mat_p = re2_pmatch_all(str, "(?P<testname>this)( is)")
-    expect_identical(res1_mat_p, res1_mat)
 })

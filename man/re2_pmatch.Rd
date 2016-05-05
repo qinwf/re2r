@@ -3,14 +3,11 @@
 \name{re2_pmatch}
 \alias{re2_pmatch}
 \alias{re2_pmatch_all}
-\alias{re2_pmatch_list}
 \title{Find matched groups from strings with multithread.}
 \usage{
 re2_pmatch(input, pattern, anchor = 0, ...)
 
 re2_pmatch_all(input, pattern, anchor = 0, ...)
-
-re2_pmatch_list(input, pattern, anchor = 0, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -46,7 +43,5 @@ test_string = c("this is just one test", "the second test")
 regexp = re2("test",case_sensitive = FALSE)
 re2_pmatch("TEST", regexp)
 
-re2_pmatch_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
- "\\\\s*(\\\\w+)", anchor = 1)
 }
 
