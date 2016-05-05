@@ -6,10 +6,9 @@
 \alias{re2_pmatch_list}
 \title{Find matched groups from strings with multithread.}
 \usage{
-re2_pmatch(input, pattern, value = TRUE, anchor = 0, all = FALSE,
-  tolist = FALSE, ...)
+re2_pmatch(input, pattern, anchor = 0, ...)
 
-re2_pmatch_all(input, pattern, anchor = 0, tolist = FALSE, ...)
+re2_pmatch_all(input, pattern, anchor = 0, ...)
 
 re2_pmatch_list(input, pattern, anchor = 0, ...)
 }
@@ -18,17 +17,9 @@ re2_pmatch_list(input, pattern, anchor = 0, ...)
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{value}{return value instead of bool result}
-
 \item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
 
-\item{all}{find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.}
-
-\item{tolist}{return a list instead of matrix when all and value is TRUE.}
-
 \item{...}{further arguments passed to or from other methods.}
-
-\item{parallel}{multithreading support}
 }
 \description{
 Find matched groups from strings with multithread.
@@ -36,26 +27,26 @@ Find matched groups from strings with multithread.
 \examples{
 
 test_string = "this is just one test";
-re2_pmatch(test_string, "(o.e)")
+re2_pdetect(test_string, "(o.e)")
 
-(res = re2_pmatch(test_string, "(o.e)", value = TRUE))
+(res = re2_pmatch(test_string, "(o.e)"))
 str(res)
 
-(res = re2_pmatch(test_string, "(?P<testname>this)( is)", value = TRUE))
+(res = re2_pmatch(test_string, "(?P<testname>this)( is)"))
 str(res)
 
-(res = re2_pmatch(test_string, "(is)", value = TRUE, all = TRUE))
+(res = re2_pmatch_all(test_string, "(is)"))
 
 test_string = c("this is just one test", "the second test");
-(res = re2_pmatch(test_string, "(is)", value = TRUE, all = TRUE))
+(res = re2_pmatch_all(test_string, "(is)"))
 
 test_string = c("this is just one test", "the second test")
-(res = re2_pmatch(test_string, "is", value = TRUE))
+(res = re2_pmatch_all(test_string, "is"))
 
 regexp = re2("test",case_sensitive = FALSE)
 re2_pmatch("TEST", regexp)
 
-re2_pmatch(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
- "\\\\s*(\\\\w+)", value = TRUE, anchor = 1, all = TRUE, tolist = TRUE)
+re2_pmatch_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
+ "\\\\s*(\\\\w+)", anchor = 1)
 }
 

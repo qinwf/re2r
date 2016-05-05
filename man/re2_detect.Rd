@@ -14,13 +14,11 @@ re2_detect(input, pattern, anchor = 0, ...)
 \item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
 
 \item{...}{further arguments passed to or from other methods.}
-
-\item{parallel}{multithreading support}
 }
 \description{
 Test a pattern in strings, and return boolean.
 }
 \examples{
-
+re2_detect(test_string, "(o.e)")
 }
 

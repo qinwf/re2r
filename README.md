@@ -23,12 +23,11 @@ To learn how to use, you can check out the [vignettes](https://qinwenfeng.com/re
 
 ### 1. Search a string for a pattern
 
-```r
-## Sys.setlocale(locale = "English") ## for Windows users with non-UTF8 locale
-## re2_match(string, pattern)
+`re2_detect(string, pattern)` will check a pattern in a string vector.
 
+```r
 test_string = "this is just one test";
-re2_match(test_string, "(o.e)")
+re2_detect(test_string, "(o.e)")
 ```
 
 ```r
@@ -37,10 +36,10 @@ re2_match(test_string, "(o.e)")
 
 Searches the string expression for the occurence(s) of a substring that matches 'pattern' and returns boolean result.
 
-With `value = TRUE` option, function will return the capture groups with `()`.
+`re2_match(string, pattern)` will return the capture groups with `()`.
 
 ```r
-(res = re2_match(test_string, "(o.e)", value = TRUE))
+(res = re2_match(test_string, "(o.e)"))
 
 ##      ?1   
 ## [1,] "one"
@@ -58,7 +57,7 @@ The return result is a character matrix. `?1` is the first capture group and it 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
 ```r
-(res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
+(res = re2_match(test_string, "(?P<testname>this)( is)")
 
 ##      testname ?2   
 ## [1,] "this"   " is"
@@ -68,10 +67,24 @@ str(res)
 ## [1] "matrix"
 ```
 
-With `all = TRUE` option, function will return the all of patterns in a string instead of just the first one.
+
+If there is no capture group, the matched origin strings will be returned.
 
 ```r
-(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+test_string = c("this is just one test", "the second test");
+(res = re2_match(test_string, "is"))
+```
+
+```r
+##      ?nocapture             
+## [1,] "this is just one test"
+## [2,] NA    
+```
+
+`re2_match_all()` will return the all of patterns in a string instead of just the first one.
+
+```r
+(res = re2_match_all(test_string, "(is)", value = TRUE, all = TRUE))
 ```
 
 ```r
@@ -94,27 +107,13 @@ test_string = c("this is just one test", "the second test");
 ## [3,] "2" NA  
 ```
 
-If there is no capture group, and `value = TRUE`, the matched origin strings will be returned.
-
-```r
-test_string = c("this is just one test", "the second test");
-(res = re2_match(test_string, "is", value = TRUE))
-```
-
-```r
-##      ?nocapture             
-## [1,] "this is just one test"
-## [2,] NA    
-```
-
-If `tolist = TRUE`, the result will be a list.
+`re2_match_list()` works like `re2_match_all()`, but the result will be a list.
 
 ```r
 re2_match(c("this is test", 
             "this is test, and this is not test", 
             "they are tests"), 
-          pattern = "(?P<testname>this)( is)", 
-          value = TRUE, all = T, tolist = T)
+          pattern = "(?P<testname>this)( is)")
 ```
 
 ```r
@@ -222,3 +221,17 @@ If you come from a `Perl` world, you may be insterested in `%=~%`  `%!~%`.
 "TEST" %!~% regexp
 ## [1] FALSE
 ```
+
+### 5. Multithread
+
+There are functions that will use multithread to test the strings.
+
+```r
+re2_pmatch()
+re2_pdetect()
+re2_preplace()
+re2_pextract()
+```
+
+See R package help page for more detail. 
+

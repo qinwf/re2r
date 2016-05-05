@@ -19,6 +19,6 @@ re2_pdetect(input, pattern, anchor = 0, ...)
 Test a pattern in strings with multithread, and return boolean.
 }
 \examples{
-
+re2_pdetect(test_string, "(o.e)")
 }
 

@@ -6,10 +6,10 @@
 \alias{re2_match_list}
 \title{Find matched groups from strings.}
 \usage{
-re2_match(input, pattern, value = TRUE, anchor = 0, all = FALSE,
+re2_match(input, pattern, anchor = 0, value = TRUE, all = FALSE,
   tolist = FALSE, parallel = FALSE, ...)
 
-re2_match_all(input, pattern, anchor = 0, tolist = FALSE, ...)
+re2_match_all(input, pattern, anchor = 0, ...)
 
 re2_match_list(input, pattern, anchor = 0, ...)
 }
@@ -18,9 +18,9 @@ re2_match_list(input, pattern, anchor = 0, ...)
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{value}{return value instead of bool result}
-
 \item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
+
+\item{value}{return value instead of bool result}
 
 \item{all}{find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.}
 
@@ -38,24 +38,24 @@ Find matched groups from strings.
 test_string = "this is just one test";
 re2_match(test_string, "(o.e)")
 
-(res = re2_match(test_string, "(o.e)", value = TRUE))
+(res = re2_match(test_string, "(o.e)"))
 str(res)
 
-(res = re2_match(test_string, "(?P<testname>this)( is)", value = TRUE))
+(res = re2_match(test_string, "(?P<testname>this)( is)"))
 str(res)
 
-(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+(res = re2_match_all(test_string, "(is)"))
 
 test_string = c("this is just one test", "the second test");
-(res = re2_match(test_string, "(is)", value = TRUE, all = TRUE))
+(res = re2_match_all(test_string, "(is)"))
 
 test_string = c("this is just one test", "the second test")
-(res = re2_match(test_string, "is", value = TRUE))
+(res = re2_match(test_string, "is"))
 
 regexp = re2("test",case_sensitive = FALSE)
 re2_match("TEST", regexp)
 
-re2_match(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
- "\\\\s*(\\\\w+)", value = TRUE, anchor = 1, all = TRUE, tolist = TRUE)
+re2_match_list(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
+ "\\\\s*(\\\\w+)")
 }
 
