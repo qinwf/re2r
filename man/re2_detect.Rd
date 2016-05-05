@@ -19,6 +19,6 @@ re2_detect(input, pattern, anchor = 0, ...)
 Test a pattern in strings, and return boolean.
 }
 \examples{
-re2_detect(test_string, "(o.e)")
+re2_detect("one", "(o.e)")
 }
 

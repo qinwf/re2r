@@ -86,7 +86,7 @@ re2_match = function(input,
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
-#' re2_detect(test_string, "(o.e)")
+#' re2_detect("one", "(o.e)")
 #' @export
 re2_detect = function(input,
                       pattern,
@@ -103,7 +103,7 @@ re2_detect = function(input,
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
-#' re2_pdetect(test_string, "(o.e)")
+#' re2_pdetect("one", "(o.e)")
 #' @export
 re2_pdetect = function(input,
                       pattern,
