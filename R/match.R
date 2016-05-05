@@ -30,7 +30,7 @@
 
 
 
-#' Match patterns in a string.
+#' Find matched groups from strings.
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
@@ -67,7 +67,7 @@
 #' @export
 re2_match = function(input,
                      pattern,
-                     value = FALSE,
+                     value = TRUE,
                      anchor = 0,
                      all = FALSE,
                      tolist = FALSE,
@@ -77,4 +77,121 @@ re2_match = function(input,
         pattern = re2(pattern, ...)
     }
     cpp_match(stri_enc_toutf8(input), pattern, value, anchor, all, tolist, parallel)
+}
+
+#' Match a pattern in strings, and return boolean.
+#'
+#' @param pattern a pre-compiled regular expression or a string
+#' @param input a character vector
+#' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
+#' @param parallel multithreading support
+#' @param ... further arguments passed to or from other methods.
+#' @examples
+#'
+#' @export
+re2_detect = function(input,
+                      pattern,
+                      anchor = 0,
+                      ...) {
+    re2_match(input, pattern, FALSE, anchor, FALSE, FALSE, FALSE, ...)
+}
+
+
+#' Match a pattern in strings with multithread, and return boolean.
+#'
+#' @param pattern a pre-compiled regular expression or a string
+#' @param input a character vector
+#' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
+#' @param ... further arguments passed to or from other methods.
+#' @examples
+#'
+#' @export
+re2_pdetect = function(input,
+                      pattern,
+                      anchor = 0,
+                      ...) {
+    re2_match(input, pattern, FALSE, anchor, FALSE, FALSE, TRUE, ...)
+}
+
+#' Find matched groups from strings with multithread.
+#'
+#' @param pattern a pre-compiled regular expression or a string
+#' @param input a character vector
+#' @param value return value instead of bool result
+#' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
+#' @param all find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.
+#' @param tolist return a list instead of matrix when all and value is TRUE.
+#' @param parallel multithreading support
+#' @param ... further arguments passed to or from other methods.
+#' @examples
+#'
+#' test_string = "this is just one test";
+#' re2_pmatch(test_string, "(o.e)")
+#'
+#' (res = re2_pmatch(test_string, "(o.e)", value = TRUE))
+#' str(res)
+#'
+#' (res = re2_pmatch(test_string, "(?P<testname>this)( is)", value = TRUE))
+#' str(res)
+#'
+#' (res = re2_pmatch(test_string, "(is)", value = TRUE, all = TRUE))
+#'
+#' test_string = c("this is just one test", "the second test");
+#' (res = re2_pmatch(test_string, "(is)", value = TRUE, all = TRUE))
+#'
+#' test_string = c("this is just one test", "the second test")
+#' (res = re2_pmatch(test_string, "is", value = TRUE))
+#'
+#' regexp = re2("test",case_sensitive = FALSE)
+#' re2_pmatch("TEST", regexp)
+#'
+#' re2_pmatch(c("   aaa b!@#$@#$cccc","   aaa bb cccc"),
+#'  "\\s*(\\w+)", value = TRUE, anchor = 1, all = TRUE, tolist = TRUE)
+#' @export
+re2_pmatch = function(input,
+                       pattern,
+                       value = TRUE,
+                       anchor = 0,
+                       all = FALSE,
+                       tolist = FALSE,
+                       ...) {
+    re2_match(input, pattern, value, anchor, all, tolist, TRUE, ...)
+}
+
+#' @export
+#' @rdname re2_match
+re2_match_all = function(input,
+                      pattern,
+                      anchor = 0,
+                      tolist = FALSE,
+                      ...) {
+    re2_match(input, pattern, TRUE, anchor, TRUE, tolist, FALSE, ...)
+}
+
+#' @export
+#' @rdname re2_match
+re2_match_list = function(input,
+                           pattern,
+                           anchor = 0,
+                           ...) {
+    re2_match(input, pattern, TRUE, anchor, TRUE, TRUE, FALSE, ...)
+}
+
+#' @export
+#' @rdname re2_pmatch
+re2_pmatch_all = function(input,
+                           pattern,
+                           anchor = 0,
+                           tolist = FALSE,
+                           ...) {
+    re2_match(input, pattern, TRUE, anchor, TRUE, tolist, TRUE, ...)
+}
+
+#' @export
+#' @rdname re2_pmatch
+re2_pmatch_list = function(input,
+                            pattern,
+                            anchor = 0,
+                            ...) {
+    re2_match(input, pattern, TRUE, anchor, TRUE, TRUE, TRUE, ...)
 }

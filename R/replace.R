@@ -29,7 +29,7 @@
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#' Replace matched patterns in a string.
+#' Replace a pattern in strings.
 #'
 #' Replace the first match of "pattern" in "str" with "rewrite".
 #' Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
@@ -41,7 +41,6 @@
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
 #' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
-#' @param parallel multithreading support
 #' @param ... further arguments passed to or from other methods.
 #' @return a character vector
 #' @examples
@@ -49,9 +48,35 @@
 #' re2_replace("yabba dabba doo", regexp,"d") == "yada dada doo"
 #' re2_replace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
 #' @export
-re2_replace = function(input, pattern, rewrite,  all = FALSE, parallel = FALSE, ...) {
+re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all, parallel)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all, FALSE)
+}
+
+#' Replace a pattern in strings with multithread.
+#'
+#' Replace the first match of "pattern" in "str" with "rewrite".
+#' Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
+#' used to insert text matching corresponding parenthesized group
+#' from the pattern.  \\0 in "rewrite" refers to the entire matching
+#' text.
+#'
+#' @param pattern a pre-compiled regular expression or a string
+#' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
+#' @param input a character vector
+#' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
+#' @param ... further arguments passed to or from other methods.
+#' @return a character vector
+#' @examples
+#' regexp = re2("b+")
+#' re2_preplace("yabba dabba doo", regexp,"d") == "yada dada doo"
+#' re2_preplace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
+#' @export
+re2_preplace = function(input, pattern, rewrite,  all = FALSE , ...) {
+    if (is.character(pattern)) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all, TRUE)
 }
