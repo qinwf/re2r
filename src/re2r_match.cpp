@@ -283,8 +283,8 @@ optstring fill_opt_res(int cap_nums, StringPiece* piece, bool matched){
 
 void fill_res(int cap_nums,
               StringPiece* piece,
-              SEXP res, size_t& rowi, size_t& coli, size_t rows, size_t cols, bool matched){
-    SEXP x = res;
+              SEXP x, size_t& rowi, size_t& coli, size_t rows, size_t cols, bool matched){
+
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
@@ -292,15 +292,15 @@ void fill_res(int cap_nums,
             } else{
                 SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
             }
+
             bump_count(coli,rowi, cols);
         }
     }else{
-        for(auto it = 0; it != cap_nums; ++it) {
-            SET_STRING_ELT(x, coli+rowi*rows, NA_STRING);
+        for(size_t it = 0; it != cols; ++it) {
+            SET_STRING_ELT(x, rowi+coli*rows, NA_STRING);
             bump_count(coli,rowi, cols);
         }
     }
-
 }
 
 RE2::Anchor get_anchor_type(size_t anchor){
@@ -505,7 +505,7 @@ struct MatValue : public Worker{
 };
 
 // [[Rcpp::export]]
-SEXP cpp_match(vector<string>& input,
+SEXP cpp_match(CharacterVector input,
                XPtr<RE2>& ptr,
                bool value,
                size_t anchor,
@@ -514,19 +514,21 @@ SEXP cpp_match(vector<string>& input,
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
     auto pattern = ptr.checked_get();
-
+    SEXP inputx = input;
     if (value == false){
         vector<bool> res;
 
         if (!parallel){
             res.reserve(input.size());
-            for(const string& ind : input){
-                res.push_back(pattern->Match(ind,0,(int) ind.length(),
+            for(auto it = 0; it != input.size(); it++){
+                auto r_char = R_CHAR(STRING_ELT(inputx, it));
+                res.push_back(pattern->Match( r_char ,0, strlen(r_char),
                                              anchor_type, nullptr, 0));
             }
         } else {
             res.resize(input.size());
-            BoolP pobj(input, res, pattern, anchor_type);
+            vector<string> inputv = as<vector<string>>(input);
+            BoolP pobj(inputv, res, pattern, anchor_type);
             parallelFor(0, input.size(), pobj);
         }
 
@@ -540,10 +542,12 @@ SEXP cpp_match(vector<string>& input,
                 Shield<SEXP> ress(Rf_allocMatrix(STRSXP,input.size(),1));
                 SEXP res = ress;
                 auto ip = 0;
-                for(auto it = input.begin(); it!= input.end(); it++){
-                    if(pattern->Match(*it,0,(int) it->length(),
+                for(auto it = 0; it!= input.size(); it++){
+                    auto r_char = R_CHAR(STRING_ELT(inputx, it));
+
+                    if(pattern->Match(r_char,0, strlen(r_char),
                                       anchor_type, nullptr, 0)){
-                        SET_STRING_ELT(res, ip, Rf_mkCharLenCE(it->c_str(),  strlen(it->c_str()) , CE_UTF8));
+                        SET_STRING_ELT(res, ip, STRING_ELT(inputx, it));
                     } else {
                         SET_STRING_ELT(res, ip, NA_STRING);
                     }
@@ -558,8 +562,10 @@ SEXP cpp_match(vector<string>& input,
                 // no capture group return
             } else {
                 optstring res(input.size());
-                NoCaptureP pobj(input, res, pattern, anchor_type);
-                parallelFor(0, input.size(), pobj);
+                vector<string> inputv = as<vector<string>>(input);
+
+                NoCaptureP pobj(inputv, res, pattern, anchor_type);
+                parallelFor(0, inputv.size(), pobj);
 
                 return toprotect_optstring_to_charmat(res);
             }
@@ -621,24 +627,28 @@ SEXP cpp_match(vector<string>& input,
             size_t rowi = 0;
             size_t coli = 0;
             if (!parallel){
-                Shield<SEXP> ress(Rf_allocMatrix(STRSXP, input.size(),groups_name.size())); // will be constructed as Matrix
+                Shield<SEXP> ress(Rf_allocMatrix(STRSXP, input.size(), groups_name.size())); // will be constructed as Matrix
                 SEXP res = ress;
                 switch(anchor_type){
                 case RE2::UNANCHORED:
 
-                    for(const string& ind : input){
+                    for(auto it = 0; it!= input.size(); it++){
+                        auto r_char = R_CHAR(STRING_ELT(inputx, it));
+
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                         fill_res(cap_nums,
                                  piece_ptr, res, rowi, coli, rows, cols,
-                                 RE2::PartialMatchN(ind, *pattern, args_ptr, cap_nums));
+                                 RE2::PartialMatchN(r_char, *pattern, args_ptr, cap_nums));
                     }
                     break;
                 case RE2::ANCHOR_START:
 
-                    for(const string& ind : input){
+                    for(auto it = 0; it!= input.size(); it++){
+                        auto r_char = R_CHAR(STRING_ELT(inputx, it));
+
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-                        StringPiece tmpstring(ind);
+                        StringPiece tmpstring(r_char);
                         fill_res(cap_nums,
                                  piece_ptr, res, rowi, coli, rows, cols,
                                  RE2::ConsumeN(&tmpstring, *pattern, args_ptr, cap_nums));
@@ -646,12 +656,14 @@ SEXP cpp_match(vector<string>& input,
                     break;
                 default:
 
-                for(const string& ind : input){
+                for(auto it = 0; it!= input.size(); it++){
+                    auto r_char = R_CHAR(STRING_ELT(inputx, it));
+
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
 
                     fill_res(cap_nums,
                              piece_ptr, res, rowi, coli, rows, cols,
-                             RE2::FullMatchN(ind, *pattern, args_ptr, cap_nums));
+                             RE2::FullMatchN(r_char, *pattern, args_ptr, cap_nums));
                 }
                 break;
                 }
@@ -665,7 +677,9 @@ SEXP cpp_match(vector<string>& input,
 
             } else {
                 vector<optstring> output(input.size());
-                UnValue pobj(input, output, pattern, anchor_type);
+                vector<string> inputv = as<vector<string>>(input);
+
+                UnValue pobj(inputv, output, pattern, anchor_type);
                 parallelFor(0, input.size(), pobj);
                 Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output,cap_nums));
 
@@ -679,7 +693,6 @@ SEXP cpp_match(vector<string>& input,
 
 
         } else { // all == true
-
 
                 // each string get at least one group of result
                 groups_name.reserve(g_numbers_names.size());
@@ -696,7 +709,9 @@ SEXP cpp_match(vector<string>& input,
                     SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
 
                     if (anchor_type == RE2::UNANCHORED){
-                        for(const string& ind : input){
+                        for(auto it = 0; it!= input.size(); it++){
+                            auto ind = R_CHAR(STRING_ELT(inputx, it));
+
                             INIT_LISTI
                             while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                                 cnt+=1;
@@ -716,7 +731,8 @@ SEXP cpp_match(vector<string>& input,
                         }
                     }
                     else{
-                        for(const string& ind : input){
+                        for(auto it = 0; it!= input.size(); it++){
+                            auto ind = R_CHAR(STRING_ELT(inputx, it));
 
                             INIT_LISTI
 
@@ -734,7 +750,9 @@ SEXP cpp_match(vector<string>& input,
                 } else {
                     // parallel compute
                     vector<tr2::optional<optstring>> res(input.size());
-                    MatValue pobj(input, res, pattern, anchor_type);
+                    vector<string> inputv = as<vector<string>>(input);
+
+                    MatValue pobj(inputv, res, pattern, anchor_type);
                     parallelFor(0, input.size(), pobj);
 
                     Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));

@@ -7,12 +7,12 @@
 using namespace Rcpp;
 
 // cpp_match
-SEXP cpp_match(vector<string>& input, XPtr<RE2>& ptr, bool value, size_t anchor, bool all, bool parallel);
+SEXP cpp_match(CharacterVector input, XPtr<RE2>& ptr, bool value, size_t anchor, bool all, bool parallel);
 RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
     Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
