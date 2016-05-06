@@ -114,8 +114,8 @@ XPtr<RE2> cpp_re2_compile(const char* pattern,
                           int64_t max_mem_value);
 
 
-SEXP optstring_sexp(const optstring& input);
-SEXP vec_string_sexp(const vector<string>& input);
+SEXP toprotect_optstring_sexp(const optstring& input);
+SEXP toprotect_vec_string_sexp(const vector<string>& input);
 
 
 #endif

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-SEXP vec_string_sexp(const vector<string>& input){
+SEXP toprotect_vec_string_sexp(const vector<string>& input){
     SEXP x;
     PROTECT(x = Rf_allocVector(STRSXP, input.size()));
     R_xlen_t index = 0;
@@ -14,7 +14,7 @@ SEXP vec_string_sexp(const vector<string>& input){
     return x;
 }
 
-SEXP optstring_sexp(const optstring& input){
+SEXP toprotect_optstring_sexp(const optstring& input){
     SEXP x;
     PROTECT(x = Rf_allocVector(STRSXP, input.size()));
     string tmpres;

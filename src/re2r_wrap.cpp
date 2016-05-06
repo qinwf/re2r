@@ -190,12 +190,12 @@ SEXP cpp_quote_meta(vector<string>& input, bool parallel){
             it++;
         }
 
-        return vec_string_sexp(res);
+        return toprotect_vec_string_sexp(res);
     }
     else{
         QuoteMetaP pobj(input, res);
         parallelFor(0, input.size(), pobj);
-        return vec_string_sexp(res);
+        return toprotect_vec_string_sexp(res);
     }
 }
 
@@ -247,11 +247,11 @@ SEXP cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool
     if(!global_) {
         if (!parallel){
             for(string& ind : input) ptr->Replace(&ind,*ptr,rewrite);
-            return vec_string_sexp(input);
+            return toprotect_vec_string_sexp(input);
         } else{
             ReplaceP pobj(input, ptr, rewrite);
             parallelFor(0, input.size(), pobj);
-            return  vec_string_sexp(input);
+            return  toprotect_vec_string_sexp(input);
         }
     }
     else {
@@ -265,7 +265,7 @@ SEXP cpp_replace(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool
             parallelFor(0, input.size(), pobj);
         }
 
-        CharacterVector res = vec_string_sexp(input);
+        CharacterVector res(toprotect_vec_string_sexp(input));
         res.attr("count") = count;
         return res;
     }
@@ -325,7 +325,7 @@ CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& re
         optstring res(input.size());
         ExtractP pobj(input, res, ptr,rewrite);
         parallelFor(0, input.size(), pobj);
-        return optstring_sexp(res);
+        return toprotect_optstring_sexp(res);
     }
 }
 

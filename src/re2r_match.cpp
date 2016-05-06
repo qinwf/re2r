@@ -67,10 +67,20 @@ void bump_count(size_t& coli,size_t& rowi, size_t cols){
     }
 }
 
-CharacterMatrix optstring_to_charmat(const optstring& res){
+void set_colnames(SEXP res, SEXP names){
 
-    CharacterMatrix resv(res.size(), 1);
-    colnames(resv) = CharacterVector::create("?nocapture");
+    Rf_setAttrib(res, R_DimNamesSymbol, names);
+}
+
+SEXP toprotect_optstring_to_charmat(const optstring& res){
+
+    Shield<SEXP>  resv(Rf_allocMatrix(STRSXP, res.size(), 1));
+    SEXP dims = Rf_getAttrib(resv, R_DimSymbol);
+    SEXP new_dimnames = Shield<SEXP>((Rf_allocVector(VECSXP, Rf_length(dims))));
+    SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create("?nocapture"));
+    set_colnames(resv, new_dimnames );
+
+
     SEXP x = resv;
 
     R_xlen_t index = 0;
@@ -87,10 +97,10 @@ CharacterMatrix optstring_to_charmat(const optstring& res){
     return resv;
 }
 
-CharacterMatrix optstring_to_list_charmat(const optstring& optinner, const vector<string>& groups_name){
-    auto cols = groups_name.size();
-    auto rows = optinner.size() / groups_name.size();
-    CharacterMatrix res( rows, cols);
+SEXP toprotect_optstring_to_list_charmat(const optstring& optinner,  size_t cols, SEXP groups_name){
+
+    auto rows = optinner.size() / cols;
+    Shield<SEXP> res( Rf_allocMatrix(STRSXP,rows, cols));
     SEXP x = res;
 
     size_t rowi = 0;
@@ -104,23 +114,25 @@ CharacterMatrix optstring_to_list_charmat(const optstring& optinner, const vecto
         bump_count(coli, rowi, cols);
     }
 
-    colnames(res) = vec_string_sexp(groups_name);
+    set_colnames(res, groups_name);
+
     return res;
 }
 
-void bump_listi(size_t cnt, List::iterator& listi, const optstring& optinner, const vector<string>& groups_name){
+
+void bump_listi(size_t cnt, List::iterator& listi, const optstring& optinner, size_t cols, SEXP groups_name){
     if(cnt == 0){ // no one match, all NA return
         *listi = R_NilValue;
     } else { // generate CharacterMatrix
 
-        *listi = optstring_to_list_charmat(optinner, groups_name);
+        *listi = Shield<SEXP>(toprotect_optstring_to_list_charmat(optinner, cols, groups_name));
     }
     listi+=1; //bump times_n !n
 }
 
-CharacterMatrix vec_optstring_to_charmat(const vector<optstring>& res, int cap_nums){
+SEXP toprotect_vec_optstring_to_charmat(const vector<optstring>& res, int cap_nums){
     auto rows = res.size();
-    CharacterMatrix resv( rows, cap_nums);
+    Shield<SEXP> resv( Rf_allocMatrix(STRSXP, rows, cap_nums));
     SEXP x = resv;
 
     auto rowi = 0;
@@ -271,7 +283,7 @@ optstring fill_opt_res(int cap_nums, StringPiece* piece, bool matched){
 
 void fill_res(int cap_nums,
               StringPiece* piece,
-              CharacterMatrix& res, size_t& rowi, size_t& coli, size_t rows, size_t cols, bool matched){
+              SEXP res, size_t& rowi, size_t& coli, size_t rows, size_t cols, bool matched){
     SEXP x = res;
     if(matched){
         for(auto it = 0; it != cap_nums; ++it) {
@@ -303,19 +315,19 @@ RE2::Anchor get_anchor_type(size_t anchor){
 
 struct BoolP : public Worker
 {
-    const vector<string>& input;
+    vector<string>& input;
     vector<bool>& output;
     RE2* tt;
     const RE2::Anchor anchor_type;
 
-    BoolP (const vector<string>&  input_,vector<bool>& output_, RE2* tt_, const RE2::Anchor&  anchor_type_)
+    BoolP (vector<string>&  input_,vector<bool>& output_, RE2* tt_, const RE2::Anchor&  anchor_type_)
         : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this](const string& x){
+                       [this](string& x){
                            return tt->Match(x, 0, (int) x.length(),
                                                  anchor_type, nullptr, 0);
                            });
@@ -525,18 +537,23 @@ SEXP cpp_match(vector<string>& input,
 
         if ( cap_nums == 0){
             if (!parallel){
-                CharacterMatrix res(input.size(),1);
-                auto ip = input.begin();
-                for(auto it = res.begin(); it!= res.end(); it++){
-                    if(pattern->Match(*ip,0,(int) ip->length(),
+                Shield<SEXP> ress(Rf_allocMatrix(STRSXP,input.size(),1));
+                SEXP res = ress;
+                auto ip = 0;
+                for(auto it = input.begin(); it!= input.end(); it++){
+                    if(pattern->Match(*it,0,(int) it->length(),
                                       anchor_type, nullptr, 0)){
-                        *it = *ip;
+                        SET_STRING_ELT(res, ip, Rf_mkCharLenCE(it->c_str(),  strlen(it->c_str()) , CE_UTF8));
                     } else {
-                        *it = NA_STRING;
+                        SET_STRING_ELT(res, ip, NA_STRING);
                     }
                     ip++;
                 }
-                colnames(res) = CharacterVector::create("?nocapture");
+                SEXP dims = Rf_getAttrib(res, R_DimSymbol);
+                Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
+                SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create("?nocapture"));
+                set_colnames(res, new_dimnames );
+
                 return res;
                 // no capture group return
             } else {
@@ -544,9 +561,7 @@ SEXP cpp_match(vector<string>& input,
                 NoCaptureP pobj(input, res, pattern, anchor_type);
                 parallelFor(0, input.size(), pobj);
 
-                CharacterMatrix resm = optstring_to_charmat(res);
-
-                return resm;
+                return toprotect_optstring_to_charmat(res);
             }
         }
 
@@ -600,15 +615,16 @@ SEXP cpp_match(vector<string>& input,
             for(auto it = g_numbers_names.begin(); it!= g_numbers_names.end(); it++) {
                 groups_name.push_back(*it);
             }
-            CharacterMatrix res;
+
             const auto cols = groups_name.size();
             const auto rows = input.size();
             size_t rowi = 0;
             size_t coli = 0;
             if (!parallel){
+                Shield<SEXP> ress(Rf_allocMatrix(STRSXP, input.size(),groups_name.size())); // will be constructed as Matrix
+                SEXP res = ress;
                 switch(anchor_type){
                 case RE2::UNANCHORED:
-                    res = CharacterMatrix(input.size(),groups_name.size()); // will be constructed as Matrix
 
                     for(const string& ind : input){
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
@@ -619,7 +635,6 @@ SEXP cpp_match(vector<string>& input,
                     }
                     break;
                 case RE2::ANCHOR_START:
-                    res = CharacterMatrix(input.size(),groups_name.size()); // will be constructed as Matrix
 
                     for(const string& ind : input){
                         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
@@ -630,7 +645,6 @@ SEXP cpp_match(vector<string>& input,
                     }
                     break;
                 default:
-                    res = CharacterMatrix(input.size(),groups_name.size()); // will be constructed as Matrix
 
                 for(const string& ind : input){
                     for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
@@ -641,16 +655,28 @@ SEXP cpp_match(vector<string>& input,
                 }
                 break;
                 }
+
+                // generate CharacterMatrix
+                SEXP dims = Rf_getAttrib(res, R_DimSymbol);
+                Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
+                SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
+                set_colnames(res, new_dimnames );
+                return res;
+
             } else {
                 vector<optstring> output(input.size());
                 UnValue pobj(input, output, pattern, anchor_type);
                 parallelFor(0, input.size(), pobj);
-                res = vec_optstring_to_charmat(output,cap_nums);
+                Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output,cap_nums));
+
+                // generate CharacterMatrix
+                SEXP dims = Rf_getAttrib(res, R_DimSymbol);
+                Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
+                SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
+                set_colnames(res, new_dimnames );
+                return res;
             }
 
-            // generate CharacterMatrix
-            colnames(res) = vec_string_sexp(groups_name);
-            return res;
 
         } else { // all == true
 
@@ -663,16 +689,15 @@ SEXP cpp_match(vector<string>& input,
                 }
 
                 List listres(input.size());
-
                 if (!parallel){
                     auto listi = listres.begin();
                     // for each input string, get a !n label.
+                    Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));
+                    SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
 
                     if (anchor_type == RE2::UNANCHORED){
                         for(const string& ind : input){
-
                             INIT_LISTI
-
                             while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                                 cnt+=1;
                                 fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
@@ -687,7 +712,7 @@ SEXP cpp_match(vector<string>& input,
 
                                     // try next place
                             }   // while
-                            bump_listi(cnt, listi, optinner, groups_name);
+                            bump_listi(cnt, listi, optinner, groups_name.size(), new_dimnames);
                         }
                     }
                     else{
@@ -703,7 +728,7 @@ SEXP cpp_match(vector<string>& input,
 
                                     // advanced try next place
                             }   // else while
-                            bump_listi(cnt, listi, optinner, groups_name);
+                            bump_listi(cnt, listi, optinner, groups_name.size(), new_dimnames);
                         }
                     } // end else generate CharacterMatrix
                 } else {
@@ -712,13 +737,16 @@ SEXP cpp_match(vector<string>& input,
                     MatValue pobj(input, res, pattern, anchor_type);
                     parallelFor(0, input.size(), pobj);
 
+                    Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));
+                    SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
+
                     // fill in result
                     auto resi = res.begin();
                     for (auto it = listres.begin(); it != listres.end(); it++){
                         if(!bool(*resi)){ // no one match, NULL
                             *it = R_NilValue;
                         } else {
-                            *it = optstring_to_list_charmat(resi->value(), groups_name);
+                            *it = Shield<SEXP>(toprotect_optstring_to_list_charmat(resi->value(), groups_name.size(), new_dimnames));
                         }
                         resi+=1;
                     }

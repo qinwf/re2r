@@ -14,6 +14,7 @@ test_that("long string", {
 
 test_that("long vector", {
     if (memory.limit() > 300) {
+        #for ( x in 1:100) { print(x);dd <<-re2_pdetect(r300, "x"); if(!all(dd)){break;} }
         r300 = replicate(2 ^ 21, "x")
         expect_true(all(re2_detect(r300, "x")))
         expect_true(all(re2_pdetect(r300, "x")))

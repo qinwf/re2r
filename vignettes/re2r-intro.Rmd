@@ -124,14 +124,14 @@ re2_replace(input_string, "(o.e)", new_string)
 ### 3. Extract a substring
 
 ```{r, eval=FALSE, include=TRUE}
-re2_extract(input, pattern, rewrite = optional)
+re2_extract(input, pattern)
 ```
 
 Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and return the found substrings with "rewrite text".
 
 ```{r}
-re2_extract("yabba dabba doo", "(.)")
-re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
+re2_extract("yabba dabba doo")
+re2_extract("test@me.com", "(.*)@([^.]*)")
 ```
 
 `\\1` and `\\2` are the first and second capture groups.
