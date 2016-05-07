@@ -22,6 +22,21 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_split
+SEXP cpp_split(CharacterVector input, XPtr<RE2>& ptr, NumericVector part, bool fixed, bool parallel);
+RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP ptrSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type part(partSEXP);
+    Rcpp::traits::input_parameter< bool >::type fixed(fixedSEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_split(input, ptr, part, fixed, parallel));
+    return __result;
+END_RCPP
+}
 // cpp_re2_compile
 XPtr<RE2> cpp_re2_compile(const char * pattern, bool log_errors_value, bool utf_8_value, bool posix_syntax_value, bool case_sensitive_value, bool dot_nl_value, bool literal_value, bool longest_match_value, bool never_nl_value, bool never_capture_value, bool one_line_value, bool perl_classes_value, bool word_boundary_value, int64_t max_mem_value);
 RcppExport SEXP re2r_cpp_re2_compile(SEXP patternSEXP, SEXP log_errors_valueSEXP, SEXP utf_8_valueSEXP, SEXP posix_syntax_valueSEXP, SEXP case_sensitive_valueSEXP, SEXP dot_nl_valueSEXP, SEXP literal_valueSEXP, SEXP longest_match_valueSEXP, SEXP never_nl_valueSEXP, SEXP never_capture_valueSEXP, SEXP one_line_valueSEXP, SEXP perl_classes_valueSEXP, SEXP word_boundary_valueSEXP, SEXP max_mem_valueSEXP) {
