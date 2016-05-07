@@ -39,7 +39,7 @@
 #' @examples
 #' re2_split("yabba dabba doo", " ")
 #' @export
-re2_split = function(input, pattern, part, ...) {
+re2_split = function(input, pattern, part = Inf, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
@@ -48,7 +48,7 @@ re2_split = function(input, pattern, part, ...) {
 
 #' @rdname re2_split
 #' @export
-re2_split_fixed = function(input, pattern, part, ...) {
+re2_split_fixed = function(input, pattern, part = Inf, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
@@ -64,9 +64,9 @@ re2_split_fixed = function(input, pattern, part, ...) {
 #' @param part number of pieces to return. Default (Inf) uses all possible split positions.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
-#' re2_split("yabba dabba doo", " ")
+#' re2_psplit("yabba dabba doo", " ")
 #' @export
-re2_psplit = function(input, pattern, part, ...) {
+re2_psplit = function(input, pattern, part = Inf, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
@@ -75,7 +75,7 @@ re2_psplit = function(input, pattern, part, ...) {
 
 #' @rdname re2_psplit
 #' @export
-re2_psplit_fixed = function(input, pattern, part, ...) {
+re2_psplit_fixed = function(input, pattern, part = Inf, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }

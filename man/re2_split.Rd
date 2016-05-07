@@ -5,9 +5,9 @@
 \alias{re2_split_fixed}
 \title{Split strings with a pattern.}
 \usage{
-re2_split(input, pattern, part, ...)
+re2_split(input, pattern, part = Inf, ...)
 
-re2_split_fixed(input, pattern, part, ...)
+re2_split_fixed(input, pattern, part = Inf, ...)
 }
 \arguments{
 \item{input}{a character vector}

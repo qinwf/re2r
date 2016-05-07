@@ -5,9 +5,9 @@
 \alias{re2_psplit_fixed}
 \title{Split strings with a pattern with multithread.}
 \usage{
-re2_psplit(input, pattern, part, ...)
+re2_psplit(input, pattern, part = Inf, ...)
 
-re2_psplit_fixed(input, pattern, part, ...)
+re2_psplit_fixed(input, pattern, part = Inf, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -22,6 +22,6 @@ re2_psplit_fixed(input, pattern, part, ...)
 Split up a string into pieces.
 }
 \examples{
-re2_split("yabba dabba doo", " ")
+re2_psplit("yabba dabba doo", " ")
 }
 
