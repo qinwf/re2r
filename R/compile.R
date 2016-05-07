@@ -103,10 +103,10 @@ re2 = function(pattern,
                perl_classes = FALSE,
                word_boundary = FALSE,
                max_mem = 8388608) {
-    # if ( .Platform$OS.type %==% "windows" &&
-    #    Encoding(pattern[1]) %!==% "UTF-8" ) {
-    #     pattern = enc2utf8(pattern)
-    # }
+
+    if(is.null(pattern) || is.na(pattern[1])){
+        stop("pattern is NA or NULL, please use a string a pattern.")
+    }
     regexp = cpp_re2_compile(
         stri_enc_toutf8(pattern),
         log_errors_value = FALSE,

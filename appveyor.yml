@@ -14,10 +14,6 @@ install:
 
 environment:
 
-  matrix:
-  - R_VERSION: devel
-    GCC_PATH: mingw_32
-
   - R_VERSION: release
     GCC_PATH: mingw_32
 
