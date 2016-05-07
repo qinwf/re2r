@@ -74,14 +74,14 @@ test_that("re2_replace", {
 
     for (ind in replace_list) {
 
-        expect_identical(re2_replace(ind[3], ind[1], ind[2], all = FALSE), ind[4])
-        expect_identical(re2_preplace(ind[3], ind[1], ind[2], all = FALSE), ind[4])
+        expect_identical(re2_replace(ind[3], ind[1], ind[2]), ind[4])
+        expect_identical(re2_preplace(ind[3], ind[1], ind[2]), ind[4])
 
-        res = re2_replace(ind[3], ind[1],ind[2], all = TRUE)
+        res = re2_replace_all(ind[3], ind[1],ind[2])
         expect_identical(as.character(res), ind[5])
         expect_identical(attr(res, "count"), as.numeric(ind[6]))
 
-        pres = re2_preplace(ind[3], ind[1],ind[2], all = TRUE)
+        pres = re2_preplace_all(ind[3], ind[1],ind[2])
         expect_identical(as.character(pres), ind[5])
         expect_identical(attr(pres, "count"), as.numeric(ind[6]))
 

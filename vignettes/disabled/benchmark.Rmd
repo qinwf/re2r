@@ -37,10 +37,10 @@ for(N in 1:max.N){
     ICU_value = stri_match(subject, regex = pattern),
     PCRE = regexpr(pattern, subject, perl = TRUE),
     TRE = regexpr(pattern, subject, perl = FALSE),
-    RE2n_value = re2_match(subject, pattern, value = T),
-    RE2c_value = re2_match(subject, regexp, value = T),
-    RE2n = re2_match(subject, pattern),
-    RE2c = re2_match(subject, regexp),
+    RE2n_value = re2_match(subject, pattern),
+    RE2c_value = re2_match(subject, regexp),
+    RE2n = re2_detect(subject, pattern),
+    RE2c = re2_detect(subject, regexp),
     times = 10)
   times.list[[N]] <- data.frame(N, N.times)
 }
@@ -102,8 +102,8 @@ for(N in c(1,5,10,15,20,25)){
       TRE = grepl(pattern, letdig),
       PCRE = grepl(pattern, letdig, perl=TRUE),
       ICU = stri_detect_regex(letdig, pattern),
-      RE2n =  re2_match(letdig, pattern),
-      RE2c = re2_match(letdig, regexp),
+      RE2n =  re2_detect(letdig, pattern),
+      RE2c = re2_detect(letdig, regexp),
       times = 10
     )
   times.list[[N]] <- data.frame(N, times_N)
@@ -113,8 +113,8 @@ times <- do.call(rbind, times.list)
 ggplotly(linear.legend(times))
 
 identical(grepl("[0-9]{3,}", letdig) , re2_match(letdig, "[0-9]{3,}"))
-identical(grepl("[0-9]{3,}", letdig, perl = TRUE), re2_match(letdig, "[0-9]{3,}"))
-identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_match(letdig, "[0-9]{3,}"))
+identical(grepl("[0-9]{3,}", letdig, perl = TRUE), re2_detect(letdig, "[0-9]{3,}"))
+identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_detect(letdig, "[0-9]{3,}"))
 ```
 
 ## Parallel
@@ -140,13 +140,13 @@ head(dd)
 regexp = re2("sd2er3")
 
 identical(re2_replace(dd, regexp, ""), re2_replace(dd, regexp, "", parallel = T))
-identical(re2_replace(dd, regexp, "", all = T), re2_replace(dd, regexp, "", all = T, parallel = T))
+identical(re2_replace_all(dd, regexp, ""), re2_preplace_all(dd, regexp, ""))
 
 invisible(gc())
-microbenchmark(sequential = re2_replace(dd, regexp, ""), parallel = re2_replace(dd, regexp, "", parallel = T) , times = 5)
+microbenchmark(sequential = re2_replace(dd, regexp, ""), parallel = re2_preplace(dd, regexp, "") , times = 5)
 
 invisible(gc())
-microbenchmark(sequential = re2_replace(dd, regexp, "", all = T), parallel = re2_replace(dd, regexp, "", all = T, parallel = T) , times = 5)
+microbenchmark(sequential = re2_replace_all(dd, regexp, ""), parallel = re2_preplace_all(dd, regexp, "") , times = 5)
 ```
 
 ### Extract
@@ -156,10 +156,15 @@ dd =stri_rand_strings(5000000,10, pattern = "[a-zA-Z0-9\"\']")
 head(dd)
 regexp = re2("(sd)")
 
-identical(re2_extract(dd, regexp,parallel = T), re2_extract(dd, regexp))
+identical(re2_pextract(dd, regexp), re2_extract(dd, regexp))
+identical(re2_pextract_all(dd, regexp), re2_extract_all(dd, regexp))
 
 invisible(gc())
-microbenchmark(sequential =  re2_extract(dd, regexp), parallel = re2_extract(dd, regexp, parallel = T) ,times = 5)
+microbenchmark(sequential =  re2_extract(dd, regexp), parallel = re2_pextract(dd, regexp) ,times = 5)
+
+
+invisible(gc())
+microbenchmark(sequential =  re2_extract_all(dd, regexp), parallel = re2_pextract_all(dd, regexp) ,times = 5)
 ```
 
 ### Match

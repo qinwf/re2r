@@ -118,16 +118,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_extract
-CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool parallel);
-RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP parallelSEXP) {
+SEXP cpp_extract(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel);
+RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
-    Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
+    Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_extract(input, regexp, rewrite, parallel));
+    __result = Rcpp::wrap(cpp_extract(input, regexp, all, parallel));
     return __result;
 END_RCPP
 }

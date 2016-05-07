@@ -139,11 +139,11 @@ re2_extract("yabba dabba doo", "(.)")
 ```
 
 ```r
-re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
+re2_extract("test@me.com", "(.*)@([^.]*)")
 ```
 
 ```r
-## [1] "me!test"
+## [1] "test@me"
 ```
 
 `\\1` and `\\2` are the first and second capture groups.

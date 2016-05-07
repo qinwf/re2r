@@ -40,19 +40,27 @@
 #' @param pattern a pre-compiled regular expression or a string
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
-#' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
 #' @param ... further arguments passed to or from other methods.
 #' @return a character vector
 #' @examples
 #' regexp = re2("b+")
-#' re2_replace("yabba dabba doo", regexp,"d") == "yada dada doo"
-#' re2_replace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
+#' re2_replace_all("yabba dabba doo", regexp,"d") == "yada dada doo"
+#' re2_replace("yabba dabba doo", "b+","d") == "yada dabba doo"
 #' @export
-re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
+re2_replace = function(input, pattern, rewrite, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all, FALSE)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  FALSE, FALSE)
+}
+
+#' @rdname re2_replace
+#' @export
+re2_replace_all = function(input, pattern, rewrite, ...) {
+    if (is.character(pattern)) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), TRUE, FALSE)
 }
 
 #' Replace a pattern in strings with multithread.
@@ -66,17 +74,25 @@ re2_replace = function(input, pattern, rewrite,  all = FALSE, ...) {
 #' @param pattern a pre-compiled regular expression or a string
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
-#' @param all if it is TRUE, it will replaces successive non-overlapping occurrences
 #' @param ... further arguments passed to or from other methods.
 #' @return a character vector
 #' @examples
 #' regexp = re2("b+")
-#' re2_preplace("yabba dabba doo", regexp,"d") == "yada dada doo"
-#' re2_preplace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
+#' re2_preplace_all("yabba dabba doo", regexp,"d") == "yada dada doo"
+#' re2_preplace("yabba dabba doo", "b+","d") == "yada dabba doo"
 #' @export
-re2_preplace = function(input, pattern, rewrite,  all = FALSE , ...) {
+re2_preplace = function(input, pattern, rewrite , ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  all, TRUE)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  FALSE, TRUE)
+}
+
+#' @rdname re2_preplace
+#' @export
+re2_preplace_all = function(input, pattern, rewrite,  ...) {
+    if (is.character(pattern)) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  TRUE, TRUE)
 }

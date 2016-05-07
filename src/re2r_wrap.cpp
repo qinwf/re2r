@@ -29,6 +29,7 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../inst/include/re2r.h"
+#include <memory>
 
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
@@ -276,21 +277,21 @@ struct ExtractP : public Worker
     vector<string>& input;
     optstring& output;
     RE2* tt;
-    string& rewrite;
 
-    ExtractP(vector<string>&  input_, optstring& output_, RE2* tt_,string& rewrite_)
-        : input(input_), output(output_), tt(tt_), rewrite(rewrite_){}
+    ExtractP(vector<string>&  input_, optstring& output_, RE2* tt_)
+        : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
                        [this](string& x) -> tr2::optional<string>{
-                           string tmpres;
-                           if (! tt->Extract(x,*tt ,rewrite,&tmpres)) {
+
+                           StringPiece match;
+                           if (! tt->Match( x, 0 , x.length(), RE2::UNANCHORED, &match, 1)) {
                                return tr2::nullopt;
                            } else {
-                               return tr2::make_optional(tmpres);
+                               return tr2::make_optional(match.as_string());
                            }
 
                            });
@@ -298,34 +299,123 @@ struct ExtractP : public Worker
 };
 
 
+struct ExtractAllP : public Worker
+{
+    vector<string>& input;
+    vector<vector<string>>& output;
+    RE2* tt;
+
+    ExtractAllP(vector<string>&  input_, vector<vector<string>>& output_, RE2* tt_)
+        : input(input_), output(output_), tt(tt_){}
+
+    void operator()(std::size_t begin, std::size_t end) {
+        std::transform(input.begin() + begin,
+                       input.begin() + end,
+                       output.begin() + begin,
+                       [this](string& x) -> vector<string>{
+
+                           StringPiece match;
+                           vector<string> res;
+
+                           StringPiece str(x);
+                           size_t lastIndex = 0;
+
+                           while (tt->Match(str, lastIndex , x.length(), RE2::UNANCHORED, &match, 1)){
+                               lastIndex = match.data() - str.data() + match.size();
+                               res.push_back(match.as_string());
+                           }
+
+                            return res;
+                       });
+    }
+};
+
 // [[Rcpp::export]]
-CharacterVector cpp_extract(vector<string>& input, XPtr<RE2>& regexp, string& rewrite, bool parallel){
+SEXP cpp_extract(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel){
     string errmsg;
 
-    if(!regexp->CheckRewriteString(rewrite, &errmsg)){
-        throw ErrorRewriteString(errmsg);
-    }
     auto ptr = regexp.checked_get();
+    SEXP inputx = input;
+
     if (! parallel){
-        SEXP x;
-        PROTECT(x = Rf_allocVector(STRSXP, input.size()));
-        string tmpres;
+
         R_xlen_t index = 0;
-        for(const string& dd : input){
-            if (! ptr->Extract(dd,*ptr ,rewrite,&tmpres)) {
-                SET_STRING_ELT(x, index, NA_STRING);
-            } else {
-                SET_STRING_ELT(x, index, Rf_mkCharLenCE(tmpres.c_str(),  strlen(tmpres.c_str()) , CE_UTF8));
+
+        StringPiece match;
+
+        if (!all){
+
+            Shield<SEXP>  xs(Rf_allocVector(STRSXP, input.size()));
+            SEXP x = xs;
+
+            for(auto it = 0; it!= input.size(); it++){
+                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
+                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+                size_t lastIndex = 0;
+                if (! ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
+                    SET_STRING_ELT(x, index, NA_STRING);
+                } else {
+                    string mstring = match.as_string();
+                    SET_STRING_ELT(x, index, Rf_mkCharLenCE(mstring.c_str(),  strlen(mstring.c_str()) , CE_UTF8));
+                }
+                index++;
             }
-            index ++;
+            return x;
+        } else {
+            Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
+            SEXP x = xs;
+
+            for(auto it = 0; it!= input.size(); it++){
+                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
+                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+                size_t lastIndex = 0;
+                vector<string> res;
+
+                while (ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
+                    lastIndex = match.data() - str.data() + match.size();
+                    res.push_back(match.as_string());
+                }
+
+                if (res.empty()) {
+                    SET_VECTOR_ELT(x, index, R_NilValue);
+                }else{
+                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(res)));
+                }
+
+                index++;
+            }
+            return x;
         }
-        UNPROTECT(1);
-        return x;
-    } else{
-        optstring res(input.size());
-        ExtractP pobj(input, res, ptr,rewrite);
-        parallelFor(0, input.size(), pobj);
-        return toprotect_optstring_sexp(res);
+    } else{ // parallel
+        vector<string> inputv = as<vector<string>>(input);
+        if (!all){
+            optstring res(input.size());
+
+            ExtractP pobj(inputv, res, ptr);
+            parallelFor(0, input.size(), pobj);
+            return toprotect_optstring_sexp(res);
+        } else {
+            vector<vector<string>> res(input.size());
+
+            ExtractAllP pobj(inputv, res, ptr);
+            parallelFor(0, input.size(), pobj);
+
+            Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
+            SEXP x = xs;
+
+            R_xlen_t index = 0;
+
+            for (auto resi : res){
+                if (resi.empty()) {
+                    SET_VECTOR_ELT(x, index, R_NilValue);
+                }else{
+                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(resi)));
+                }
+                index ++;
+            }
+            return x;
+        }
+
     }
 }
 

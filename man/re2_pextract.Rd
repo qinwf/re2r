@@ -2,29 +2,27 @@
 % Please edit documentation in R/extract.R
 \name{re2_pextract}
 \alias{re2_pextract}
+\alias{re2_pextract_all}
 \title{Extract a pattern in strings with multithread.}
 \usage{
-re2_pextract(input, pattern, rewrite = "\\\\1", ...)
+re2_pextract(input, pattern, all = FALSE, ...)
+
+re2_pextract_all(input, pattern, ...)
 }
 \arguments{
 \item{input}{a character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{rewrite}{replace the first match of "pattern" in "input" with "rewrite"}
+\item{all}{extract all patterns}
 
 \item{...}{further arguments passed to or from other methods.}
 }
 \description{
-Like re2_preplace, except that if the pattern matches, "rewrite"
-is copied into "out" with substitutions.  The non-matching
+Like re2_preplace, except that if the pattern matches, substring is copied into the result. The non-matching
 portions of "text" are ignored.
-}
-\details{
-Returns true iff a match occurred and the extraction happened
 }
 \examples{
 re2_pextract("yabba dabba doo", "(.)")
-re2_pextract("test@me.com", "(.*)@([^.]*)", "\\\\2!\\\\1")
 }
 

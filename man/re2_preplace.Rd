@@ -2,9 +2,12 @@
 % Please edit documentation in R/replace.R
 \name{re2_preplace}
 \alias{re2_preplace}
+\alias{re2_preplace_all}
 \title{Replace a pattern in strings with multithread.}
 \usage{
-re2_preplace(input, pattern, rewrite, all = FALSE, ...)
+re2_preplace(input, pattern, rewrite, ...)
+
+re2_preplace_all(input, pattern, rewrite, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -12,8 +15,6 @@ re2_preplace(input, pattern, rewrite, all = FALSE, ...)
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{rewrite}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
-
-\item{all}{if it is TRUE, it will replaces successive non-overlapping occurrences}
 
 \item{...}{further arguments passed to or from other methods.}
 }
@@ -29,7 +30,7 @@ text.
 }
 \examples{
 regexp = re2("b+")
-re2_preplace("yabba dabba doo", regexp,"d") == "yada dada doo"
-re2_preplace("yabba dabba doo", "b+","d", all = FALSE) == "yada dabba doo"
+re2_preplace_all("yabba dabba doo", regexp,"d") == "yada dada doo"
+re2_preplace("yabba dabba doo", "b+","d") == "yada dabba doo"
 }
 

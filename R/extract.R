@@ -31,44 +31,55 @@
 
 #' Extract a pattern in strings.
 #'
-#' Like re2_replace, except that if the pattern matches, "rewrite"
-#' is copied into "out" with substitutions.  The non-matching
+#' Like re2_replace, except that if the pattern matches, substring is copied into the result. The non-matching
 #' portions of "text" are ignored.
 #'
-#' Returns true iff a match occurred and the extraction happened
 #' @param pattern a pre-compiled regular expression or a string
-#' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_extract("yabba dabba doo", "(.)")
-#' re2_extract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 #' @export
-re2_extract = function(input, pattern, rewrite = "\\1", ...) {
+re2_extract = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), TRUE)
+    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE)
+}
+
+#' @rdname re2_extract
+#' @export
+re2_extract_all = function(input, pattern, ...) {
+    if (is.character(pattern)) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE)
 }
 
 #' Extract a pattern in strings with multithread.
 #'
-#' Like re2_preplace, except that if the pattern matches, "rewrite"
-#' is copied into "out" with substitutions.  The non-matching
+#' Like re2_preplace, except that if the pattern matches, substring is copied into the result. The non-matching
 #' portions of "text" are ignored.
 #'
-#' Returns true iff a match occurred and the extraction happened
 #' @param pattern a pre-compiled regular expression or a string
-#' @param rewrite replace the first match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
+#' @param all extract all patterns
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_pextract("yabba dabba doo", "(.)")
-#' re2_pextract("test@me.com", "(.*)@([^.]*)", "\\2!\\1")
 #' @export
-re2_pextract = function(input, pattern, rewrite = "\\1", ...) {
+re2_pextract = function(input, pattern, all = FALSE, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), TRUE)
+    cpp_extract(stri_enc_toutf8(input), pattern, all, TRUE)
+}
+
+#' @rdname re2_pextract
+#' @export
+re2_pextract_all = function(input, pattern, ...) {
+    if (is.character(pattern)) {
+        pattern = re2(pattern, ...)
+    }
+    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, TRUE)
 }
