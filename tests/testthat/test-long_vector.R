@@ -4,11 +4,13 @@ test_that("long string", {
     if (memory.limit() > 300) {
         r = stri_c(stringi::stri_dup("x", 2 ^ 28 - 1), "y")
         expect_true(re2_detect(r, "y"))
+        rm(r)
     }
     if (memory.limit() > 4500 &&
         Sys.getenv("RE2R_LONG_TEST") == "TRUE") {
         r = stri_c(stringi::stri_dup("x", 2 ^ 31 - 3), "y")
         expect_true(re2_detect(r, "y"))
+        rm(r)
     }
 })
 

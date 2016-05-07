@@ -6,6 +6,20 @@
 
 using namespace Rcpp;
 
+// cpp_locate
+SEXP cpp_locate(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel);
+RcppExport SEXP re2r_cpp_locate(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< bool >::type all(allSEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    __result = Rcpp::wrap(cpp_locate(input, regexp, all, parallel));
+    return __result;
+END_RCPP
+}
 // cpp_match
 SEXP cpp_match(CharacterVector input, XPtr<RE2>& ptr, bool value, size_t anchor, bool all, bool parallel);
 RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP parallelSEXP) {

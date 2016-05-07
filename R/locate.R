@@ -29,34 +29,33 @@
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#' Extract a pattern in strings.
+#' Locate a pattern in strings.
 #'
-#' Like re2_replace, except that if the pattern matches, substring is copied into the result. The non-matching
-#' portions of "text" are ignored.
+#' If the match is of length 0, (e.g. from a special match like $) end will be one character less than start.
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
 #' @param ... further arguments passed to or from other methods.
 #' @examples
-#' re2_extract("yabba dabba doo", "(.)")
+#' re2_locate("yabba dabba doo", "d")
 #' @export
-re2_extract = function(input, pattern, ...) {
+re2_locate = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE)
+    cpp_locate(stri_enc_toutf8(input), pattern, FALSE, FALSE)
 }
 
-#' @rdname re2_extract
+#' @rdname re2_locate
 #' @export
-re2_extract_all = function(input, pattern, ...) {
+re2_locate_all = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE)
+    cpp_locate(stri_enc_toutf8(input), pattern, TRUE, FALSE)
 }
 
-#' Extract a pattern in strings with multithread.
+#' Locate a pattern in strings with multithread.
 #'
 #' Like re2_preplace, except that if the pattern matches, substring is copied into the result. The non-matching
 #' portions of "text" are ignored.
@@ -65,20 +64,20 @@ re2_extract_all = function(input, pattern, ...) {
 #' @param input a character vector
 #' @param ... further arguments passed to or from other methods.
 #' @examples
-#' re2_pextract("yabba dabba doo", "(.)")
+#' re2_plocate("yabba dabba doo", "(d)")
 #' @export
-re2_pextract = function(input, pattern, ...) {
+re2_plocate = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, TRUE)
+    cpp_locate(stri_enc_toutf8(input), pattern, FALSE, TRUE)
 }
 
 #' @rdname re2_pextract
 #' @export
-re2_pextract_all = function(input, pattern, ...) {
+re2_plocate_all = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, TRUE)
+    cpp_locate(stri_enc_toutf8(input), pattern, TRUE, TRUE)
 }
