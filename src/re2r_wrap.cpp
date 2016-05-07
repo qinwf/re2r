@@ -131,8 +131,12 @@ int get_expression_size(XPtr<RE2>& regexp){
 }
 
 // [[Rcpp::export]]
-string cpp_get_pattern(XPtr<RE2>& regexp){
-    return regexp->pattern();
+SEXP cpp_get_pattern(XPtr<RE2>& regexp){
+    SEXP res = PROTECT( Rf_allocVector(STRSXP,1));
+    string ress = regexp->pattern();
+    SET_STRING_ELT(res, 0, Rf_mkCharLenCE( ress.c_str(),  strlen(ress.c_str()), CE_UTF8));
+    UNPROTECT(1);
+    return res;
 }
 
 //' Return the number of capturing subpatterns
