@@ -138,9 +138,6 @@ re2 = function(pattern,
 #' @export
 get_pattern = function(regexp) {
     res = cpp_get_pattern(regexp)
-    # if (.Platform$OS.type %==% "windows") {
-    #     Encoding(res) = "UTF-8"
-    # }
     res
 }
 
@@ -156,9 +153,6 @@ get_pattern = function(regexp) {
 #' @export
 get_named_groups = function(regexp) {
     res = cpp_get_named_groups(regexp)
-    # if (.Platform$OS.type %==% "windows") {
-    #     Encoding(names(res)) = "UTF-8"
-    # }
     res
 }
 
@@ -180,8 +174,5 @@ get_named_groups = function(regexp) {
 #' @export
 quote_meta = function(unquoted, parallel = FALSE) {
     res = cpp_quote_meta(stri_enc_toutf8(unquoted), parallel)
-    # if (update_windows_strings()) {
-    #     Encoding(res) = "UTF-8"
-    # }
     res
 }
