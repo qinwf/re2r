@@ -13,7 +13,8 @@ install:
   ps: Bootstrap
 
 environment:
-
+  
+  matrix:
   - R_VERSION: release
     GCC_PATH: mingw_32
 
