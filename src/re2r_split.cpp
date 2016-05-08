@@ -158,7 +158,7 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
     if (part.size() == 0){
         stop("need the number of pieces.");
     }
-    size_t limit = numeric_limits<size_t>::max();
+    size_t limit = numeric_limits<R_xlen_t>::max();
 
     if (R_finite(part[0])){
         limit = as<size_t>(part);
@@ -261,7 +261,7 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
 
 
             SplitP pobj(inputv, res, *pattern, *(ptr->options), limit);
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, 150000);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;
@@ -280,7 +280,7 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
         } else {
 
             SplitFixP pobj(inputv, res, *pattern, *(ptr->options), limit);
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj,250000);
             Shield<SEXP>  xs(Rf_allocMatrix(STRSXP, input.size(),limit));
             SEXP x = xs;
 

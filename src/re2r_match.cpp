@@ -541,7 +541,7 @@ SEXP cpp_match(CharacterVector input,
             RVector<int> res(reso);
             vector<string> inputv = as<vector<string>>(input);
             BoolP pobj(inputv, res, *pattern, *(ptr->options),anchor_type);
-            parallelFor(0, input.size(), pobj, 10000000);
+            parallelFor(0, input.size(), pobj, 1000000);
             return wrap(reso);
         }
 
@@ -576,7 +576,7 @@ SEXP cpp_match(CharacterVector input,
                 vector<string> inputv = as<vector<string>>(input);
 
                 NoCaptureP pobj(inputv, res, *pattern, *(ptr->options), anchor_type);
-                parallelFor(0, inputv.size(), pobj, 10000000);
+                parallelFor(0, inputv.size(), pobj, 3000000);
 
                 return toprotect_optstring_to_charmat(res);
             }
@@ -691,7 +691,7 @@ SEXP cpp_match(CharacterVector input,
                 vector<string> inputv = as<vector<string>>(input);
 
                 UnValue pobj(inputv, output, *pattern, *(ptr->options),anchor_type);
-                parallelFor(0, input.size(), pobj);
+                parallelFor(0, input.size(), pobj, 2400000);
                 Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output,cap_nums));
 
                 // generate CharacterMatrix
@@ -764,7 +764,7 @@ SEXP cpp_match(CharacterVector input,
                     vector<string> inputv = as<vector<string>>(input);
 
                     MatValue pobj(inputv, res, *pattern, *(ptr->options), anchor_type);
-                    parallelFor(0, input.size(), pobj);
+                    parallelFor(0, input.size(), pobj,2400000);
 
                     Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));
                     SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));

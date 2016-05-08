@@ -313,13 +313,13 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
             vector<tuple<size_t,size_t>> res(input.size());
 
             LocateP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj , 1000000);
             return toprotect_loc_matrix(res);
         } else {
             vector<vector<tuple<size_t,size_t>>> res(input.size());
 
             LocateAllP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, 200000);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;
