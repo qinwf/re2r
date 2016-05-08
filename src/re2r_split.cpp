@@ -41,13 +41,13 @@ inline size_t getUtf8CharSize(char ch) {
 
 struct SplitP : public Worker
 {
-    vector<string>& input;
-    vector<vector<string>>& output;
+    optstring& input;
+    vector<tr2::optional<vector<string>>>& output;
     RE2& tt;
     RE2::Options& opt;
     size_t limit;
 
-    SplitP(vector<string>&  input_, vector<vector<string>>& output_, RE2& tt_, RE2::Options& opt_, size_t limit_)
+    SplitP(optstring&  input_, vector<tr2::optional<vector<string>>>& output_, RE2& tt_, RE2::Options& opt_, size_t limit_)
         : input(input_), output(output_), tt(tt_), opt(opt_),limit(limit_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -55,9 +55,12 @@ struct SplitP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](string& x) -> vector<string>{
-                           StringPiece str(x);
-                           auto str_size = x.length();
+                       [this,&pattern](tr2::optional<string>& x) -> tr2::optional<vector<string>>{
+                           if(!bool(x)){
+                               return tr2::nullopt;
+                           }
+                           StringPiece str(x.value());
+                           auto str_size = x.value().length();
                            size_t lastIndex = 0;
                            StringPiece match;
                            vector<string> pieces;
@@ -84,20 +87,21 @@ struct SplitP : public Worker
                            if ( pieces.size() < limit && (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
                                pieces.push_back(StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string());
                            }
-                           return pieces;
+                           return tr2::make_optional(pieces);
                        });
     }
 };
 
 struct SplitFixP : public Worker
 {
-    vector<string>& input;
-    vector<vector<string>>& output;
+    optstring& input;
+    vector<tr2::optional<vector<string>>>& output;
     RE2& tt;
     RE2::Options& opt;
     size_t limit;
 
-    SplitFixP(vector<string>&  input_, vector<vector<string>>& output_, RE2& tt_, RE2::Options& opt_,size_t limit_)
+    SplitFixP(optstring&  input_, vector<tr2::optional<vector<string>>>& output_,
+              RE2& tt_, RE2::Options& opt_,size_t limit_)
         : input(input_), output(output_), tt(tt_), opt(opt_),limit(limit_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -105,9 +109,12 @@ struct SplitFixP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](string& x) -> vector<string>{
-                           StringPiece str(x);
-                           auto str_size = x.length();
+                       [this,&pattern](tr2::optional<string>& x) -> tr2::optional<vector<string>>{
+                           if(!bool(x)){
+                               return tr2::nullopt;
+                           }
+                           StringPiece str(x.value());
+                           auto str_size = x.value().length();
                            size_t lastIndex = 0;
                            StringPiece match;
                            vector<string> pieces;
@@ -144,7 +151,7 @@ struct SplitFixP : public Worker
                                split_n++;
                            }
 
-                           return pieces;
+                           return tr2::make_optional(pieces);
                        });
     }
 };
@@ -157,8 +164,15 @@ SEXP cpp_split_not_fixed(CharacterVector& input,RE2* pattern,size_t limit){
     SEXP res = ress;
 
     for(auto it = 0; it != input.size(); it++){
-        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        auto rstr = STRING_ELT(inputx, it);
+        if (rstr == NA_STRING){
+            Shield<SEXP> na_string(Rf_allocVector(STRSXP,1));
+            SET_STRING_ELT(na_string , 0 ,NA_STRING);
+            SET_VECTOR_ELT(res, it,  na_string);
+            continue;
+        }
+        StringPiece str(R_CHAR(rstr));
+        auto str_size = strlen(R_CHAR(rstr));
         size_t lastIndex = 0;
         StringPiece match;
         vector<string> pieces;
@@ -192,14 +206,23 @@ SEXP cpp_split_not_fixed(CharacterVector& input,RE2* pattern,size_t limit){
     return res;
 }
 
-SEXP cpp_split_fixed(CharacterVector& input,RE2* pattern,size_t limit){
+SEXP cpp_split_fixed(CharacterVector input,RE2* pattern,size_t limit){
     SEXP inputx = input;
     Shield<SEXP> ress( Rf_allocMatrix(STRSXP, (R_xlen_t) input.size(), (R_xlen_t) limit));
     SEXP res = ress;
     auto empstring = Rf_mkCharLenCE( "",  strlen("") , CE_UTF8);
     for(auto it = 0; it != input.size(); it++){
-        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        auto rstr = STRING_ELT(inputx, it);
+        if (rstr == NA_STRING){
+            size_t coli = 0;
+            while(coli < limit){
+                SET_STRING_ELT(res, it + coli* input.size(), empstring);
+                coli++;
+            }
+            continue;
+        }
+        StringPiece str(R_CHAR(rstr));
+        auto str_size = strlen(R_CHAR(rstr));
         size_t lastIndex = 0;
         StringPiece match;
         size_t split_n = 0;
@@ -265,12 +288,10 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
 
     }
     else{
-        vector<string> inputv = as<vector<string>>(input);
-        vector<vector<string>> res(input.size());
+        auto inputv = as_vec_opt_string(input);
+        vector<tr2::optional<vector<string>>> res(input.size());
 
         if (!fixed){
-
-
             SplitP pobj(inputv, res, *pattern, *(ptr->options), limit);
             parallelFor(0, input.size(), pobj, 150000);
 
@@ -279,11 +300,16 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
 
             R_xlen_t index = 0;
 
-            for (auto resi : res){
-                if (resi.empty()) {
-                    SET_VECTOR_ELT(x, index, R_NilValue);
-                }else{
-                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(resi)));
+            for (tr2::optional<vector<string>>& resi : res){
+                if ( !bool(resi)) {
+                    Shield<SEXP> na_string(Rf_allocVector(STRSXP,1));
+                    SET_STRING_ELT(na_string , 0 ,NA_STRING);
+                    SET_VECTOR_ELT(x, index,  na_string);
+                } else if(resi.value().empty()){
+                    SET_VECTOR_ELT(x, index, Shield<SEXP>(Rf_allocVector(STRSXP,0)));
+                }
+                else{
+                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(resi.value())));
                 }
                 index ++;
             }
@@ -297,9 +323,17 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
 
             R_xlen_t rowi = 0;
             R_xlen_t coli = 0;
+            auto empstring = Rf_mkCharLenCE( "",  strlen("") , CE_UTF8);
+            for (tr2::optional<vector<string>>& resi : res){
+                if ( !bool(resi) || resi.value().empty()) {
+                    while(coli < limit){
+                        SET_STRING_ELT(x, rowi+ coli*input.size(), empstring);
+                        coli++;
+                    }
+                    continue;
+                }
 
-            for (auto resi : res){
-                for(string& cell : resi){
+                for(string& cell : resi.value()){
                     SET_STRING_ELT(x, rowi+ coli*input.size(), Rf_mkCharLenCE(cell.c_str(),  strlen(cell.c_str()) , CE_UTF8));
                     coli++;
                 }

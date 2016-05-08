@@ -776,7 +776,6 @@ SEXP cpp_match(CharacterVector input,
             }
         }
 
-
         // at least one capture group, return a matrix
         // set up the args and stringpiece
         vector<string>  g_numbers_names = get_groups_name(pattern, cap_nums);
@@ -802,8 +801,6 @@ SEXP cpp_match(CharacterVector input,
 
         } else{
             // not parallel, value, all
-
-
             // static when the number of capture group is smaller than 10
             RE2::Arg* args_static[RE2R_STATIC_SIZE];
             RE2::Arg  argv_static[RE2R_STATIC_SIZE];
@@ -842,7 +839,6 @@ SEXP cpp_match(CharacterVector input,
                 args_ptr[nn] = &argv_ptr[nn];
                 argv_ptr[nn] = &piece_ptr[nn];
             }
-
 
             // do the work
 
