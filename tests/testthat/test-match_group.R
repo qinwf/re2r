@@ -117,3 +117,17 @@ test_that("tolist",{
         re2_pmatch_all(str,"(?P<testname>this)( is)")
         )
 })
+
+library(stringi)
+
+test_that("match NA",{
+    expect_identical(structure(c(NA, "sd"), .Dim = c(2L, 1L), .Dimnames = list(NULL, "?nocapture")), re2_match(c(NA,"sd"),"sd"))
+    expect_identical(re2_match(c(NA,"sd"),"sd"),re2_pmatch(c(NA,"sd"),"sd"))
+
+    expect_identical(c(NA,TRUE), re2_detect(c(NA,"sd"),"sd"))
+    expect_identical(c(NA, FALSE), re2_detect(c(NA,"sd"),"NA"))
+
+    expect_identical(re2_detect(c(NA,"sd"),"NA"),re2_pdetect(c(NA,"sd"),"NA"))
+    expect_identical(re2_detect(c(NA,"sd"),"sd"),re2_pdetect(c(NA,"sd"),"sd"))
+
+})

@@ -329,7 +329,12 @@ SEXP cpp_detect(CharacterVector& input,
     LogicalVector res(input.size());
     auto resi  = res.begin();
     for(auto it = 0; it != input.size(); it++, resi ++){
-        auto r_char = R_CHAR(STRING_ELT(inputx, it));
+        auto rstr = STRING_ELT(inputx, it);
+        if (rstr == NA_STRING){
+            *resi = NA_LOGICAL;
+            continue;
+        }
+        auto r_char = R_CHAR(rstr);
         *resi = pattern->Match( r_char ,0, strlen(r_char),
                                 anchor_type, nullptr, 0);
     }
@@ -338,13 +343,13 @@ SEXP cpp_detect(CharacterVector& input,
 
 struct BoolP : public Worker
 {
-    vector<string>& input;
+    vector<tr2::optional<string>>& input;
     RVector<int> output;
     RE2& tt;
     RE2::Options& opt;
     const RE2::Anchor anchor_type;
 
-    BoolP (vector<string>&  input_,RVector<int> output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor&  anchor_type_)
+    BoolP (vector<tr2::optional<string>>&  input_,RVector<int> output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor&  anchor_type_)
         : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -352,8 +357,11 @@ struct BoolP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](string& x)->int{
-                           return pattern.Match(x, 0, (int) x.length(),
+                       [this,&pattern](tr2::optional<string>& x)->int{
+                           if (!bool(x)){
+                                return NA_LOGICAL;
+                           }
+                           return pattern.Match(x.value(), 0, (int) x.value().length(),
                                                 anchor_type, nullptr, 0);
                        });
     }
@@ -366,7 +374,7 @@ SEXP cpp_detect_parallel(CharacterVector& input,
                 RE2::Anchor anchor_type){
     LogicalVector reso(input.size());
     RVector<int> res(reso);
-    vector<string> inputv = as<vector<string>>(input);
+    auto inputv = as_vec_opt_string(input);
     BoolP pobj(inputv, res, *pattern, opt, anchor_type);
     parallelFor(0, input.size(), pobj, 1000000);
     return wrap(reso);
