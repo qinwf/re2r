@@ -186,129 +186,146 @@ struct LocateAllP : public Worker
     }
 };
 
+SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
+    SEXP inputx = input;
+
+    R_xlen_t index = 0;
+
+    StringPiece match;
+
+    Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, input.size(),2));
+    SEXP x = xs;
+
+    string headstr ;
+
+    for(auto it = 0; it!= input.size(); it++){
+        size_t headn = 0;
+        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
+        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        size_t lastIndex = 0;
+        if (! ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
+            INTEGER(x)[it + input.size() *0] = NA_INTEGER;
+            INTEGER(x)[it + input.size() *1] = NA_INTEGER;
+        } else {
+            if(match.size()){
+
+                string mstring = match.as_string();
+                size_t len_mstring = utf8_length(mstring.c_str());
+                string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
+
+                size_t len_head = utf8_length(headz.c_str());
+                headn += len_head;
+
+                INTEGER(x)[it + input.size()*0] = headn+1 ;
+                headn += len_mstring;
+
+                INTEGER(x)[it + input.size()*1] = headn;
+            } else {
+
+                string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
+                size_t len_head = utf8_length(headz.c_str());
+                headn += len_head;
+
+                INTEGER(x)[it + input.size()*0] =  headn+1 ;
+
+                INTEGER(x)[it + input.size()*1] =  headn;
+            }
+
+        }
+    }
+    return x;
+}
+
+SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
+    SEXP inputx = input;
+
+    R_xlen_t index = 0;
+
+    StringPiece match;
+    Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
+    SEXP x = xs;
+
+    Shield<SEXP>  na_matrixx(Rf_allocMatrix(INTSXP, 1,2));
+    SEXP na_matrix = na_matrixx;
+    INTEGER(na_matrix)[0] = NA_INTEGER;
+    INTEGER(na_matrix)[1] = NA_INTEGER;
+
+    string headstr ;
+    for(auto it = 0; it!= input.size(); it++){
+
+
+        size_t headn = 0;
+        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
+        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        size_t lastIndex = 0;
+
+        vector<tuple<size_t,size_t>> res;
+
+        while (lastIndex < str_size && ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
+
+            if (match.size()){
+                string mstring = match.as_string();
+                size_t len_mstring = utf8_length(mstring.c_str());
+
+                string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
+
+                size_t len_head = utf8_length(headz.c_str());
+                headn += len_head;
+
+                size_t head_s = (size_t) headn+1 ;
+                headn += len_mstring;
+
+                size_t tail_s = (size_t) headn;
+
+                res.push_back(make_tuple(head_s, tail_s));
+
+                lastIndex = match.data() - str.data() + match.size();
+            } else {
+
+                string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
+                size_t len_head = utf8_length(headz.c_str());
+                headn += len_head;
+                res.push_back(make_tuple(headn, headn-1));
+
+                lastIndex = match.data() - str.data() + match.size();
+                size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+                headn+=1;
+                lastIndex += sym_size;
+            }
+
+
+        }
+
+        if (res.empty()) {
+            SET_VECTOR_ELT(x, index, na_matrix);
+        }else{
+            SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_loc_matrix(res)));
+        }
+
+        index++;
+    }
+    return x;
+
+}
+
 // [[Rcpp::export]]
 SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel){
     string errmsg;
 
     RE2* ptr = &(regexp->regexp);
-    SEXP inputx = input;
+
 
     if (! parallel){
-
-        R_xlen_t index = 0;
-
-        StringPiece match;
-
         if (!all){
-
-            Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, input.size(),2));
-            SEXP x = xs;
-
-            string headstr ;
-
-            for(auto it = 0; it!= input.size(); it++){
-                size_t headn = 0;
-                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
-                size_t lastIndex = 0;
-                if (! ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
-                    INTEGER(x)[it + input.size() *0] = NA_INTEGER;
-                    INTEGER(x)[it + input.size() *1] = NA_INTEGER;
-                } else {
-                    if(match.size()){
-
-                        string mstring = match.as_string();
-                        size_t len_mstring = utf8_length(mstring.c_str());
-                        string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
-
-                        size_t len_head = utf8_length(headz.c_str());
-                        headn += len_head;
-
-                        INTEGER(x)[it + input.size()*0] = headn+1 ;
-                        headn += len_mstring;
-
-                        INTEGER(x)[it + input.size()*1] = headn;
-                    } else {
-
-                        string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
-                        size_t len_head = utf8_length(headz.c_str());
-                        headn += len_head;
-
-                        INTEGER(x)[it + input.size()*0] =  headn+1 ;
-
-                        INTEGER(x)[it + input.size()*1] =  headn;
-                    }
-
-                }
-            }
-            return x;
+            return cpp_locate_not_all(input, ptr);
         } else { // not parallel ,all
-            Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
-            SEXP x = xs;
-
-            Shield<SEXP>  na_matrixx(Rf_allocMatrix(INTSXP, 1,2));
-            SEXP na_matrix = na_matrixx;
-            INTEGER(na_matrix)[0] = NA_INTEGER;
-            INTEGER(na_matrix)[1] = NA_INTEGER;
-
-            string headstr ;
-            for(auto it = 0; it!= input.size(); it++){
-
-
-                size_t headn = 0;
-                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
-                size_t lastIndex = 0;
-
-                vector<tuple<size_t,size_t>> res;
-
-                while (lastIndex < str_size && ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
-
-                    if (match.size()){
-                        string mstring = match.as_string();
-                        size_t len_mstring = utf8_length(mstring.c_str());
-
-                        string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
-
-                        size_t len_head = utf8_length(headz.c_str());
-                        headn += len_head;
-
-                        size_t head_s = (size_t) headn+1 ;
-                        headn += len_mstring;
-
-                        size_t tail_s = (size_t) headn;
-
-                        res.push_back(make_tuple(head_s, tail_s));
-
-                        lastIndex = match.data() - str.data() + match.size();
-                    } else {
-
-                        string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
-                        size_t len_head = utf8_length(headz.c_str());
-                        headn += len_head;
-                        res.push_back(make_tuple(headn, headn-1));
-
-                        lastIndex = match.data() - str.data() + match.size();
-                        size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-                        headn+=1;
-                        lastIndex += sym_size;
-                    }
-
-
-                }
-
-                if (res.empty()) {
-                    SET_VECTOR_ELT(x, index, na_matrix);
-                }else{
-                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_loc_matrix(res)));
-                }
-
-                index++;
-            }
-            return x;
+            return cpp_locate_all(input, ptr);
         }
-    } else{ // parallel
+    } else{
+        // parallel
+
         vector<string> inputv = as<vector<string>>(input);
+
         if (!all){
             vector<tuple<size_t,size_t>> res(input.size());
 

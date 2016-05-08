@@ -150,6 +150,98 @@ struct SplitFixP : public Worker
 };
 
 
+SEXP cpp_split_not_fixed(CharacterVector& input,RE2* pattern,size_t limit){
+    SEXP inputx = input;
+    R_xlen_t index = 0;
+    Shield<SEXP> ress(Rf_allocVector(VECSXP,input.size()));
+    SEXP res = ress;
+
+    for(auto it = 0; it != input.size(); it++){
+        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
+        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        size_t lastIndex = 0;
+        StringPiece match;
+        vector<string> pieces;
+
+        while (lastIndex < str_size &&
+               pattern->Match(str, lastIndex, str_size, RE2::UNANCHORED,
+                              &match, 1)) {
+
+            if (pieces.size() >= limit-1) {
+                break;
+            }
+            if (match.size()) {
+                if (match.data() == str.data() || match.data() - str.data() > lastIndex) {
+                    pieces.push_back(StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string());
+                }
+                lastIndex = match.data() - str.data() + match.size();
+            } else {
+                size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+                pieces.push_back( StringPiece(str.data() + lastIndex, sym_size).as_string());
+                lastIndex += sym_size;
+            }
+
+        }
+        if ( pieces.size() < limit && (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
+            pieces.push_back(StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string());
+        }
+        SET_VECTOR_ELT(res, index, Shield<SEXP>(toprotect_vec_string_sexp(pieces)));
+        index++;
+    }
+
+    return res;
+}
+
+SEXP cpp_split_fixed(CharacterVector& input,RE2* pattern,size_t limit){
+    SEXP inputx = input;
+    Shield<SEXP> ress( Rf_allocMatrix(STRSXP, (R_xlen_t) input.size(), (R_xlen_t) limit));
+    SEXP res = ress;
+    auto empstring = Rf_mkCharLenCE( "",  strlen("") , CE_UTF8);
+    for(auto it = 0; it != input.size(); it++){
+        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
+        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        size_t lastIndex = 0;
+        StringPiece match;
+        size_t split_n = 0;
+        while (lastIndex < str_size &&
+               pattern->Match(str, lastIndex, str_size, RE2::UNANCHORED,
+                              &match, 1)) {
+
+            if (split_n >= limit-1) {
+                break;
+            }
+            if (match.size()) {
+                if (match.data() == str.data() || match.data() - str.data() > lastIndex) {
+                    string tmpstring = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
+                    SET_STRING_ELT(res, it + split_n * input.size(),Rf_mkCharLenCE(tmpstring.c_str(),  strlen(tmpstring.c_str()) , CE_UTF8));
+                    split_n++;
+                }
+                lastIndex = match.data() - str.data() + match.size();
+            } else {
+                size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+                string tmpstring = StringPiece(str.data() + lastIndex, sym_size).as_string();
+                SET_STRING_ELT(res, it + split_n * input.size(),Rf_mkCharLenCE(tmpstring.c_str(),  strlen(tmpstring.c_str()) , CE_UTF8));
+                lastIndex += sym_size;
+                split_n++;
+            }
+
+        }
+        if ( split_n < limit && (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
+            string tmpstring = StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string();
+            SET_STRING_ELT(res, it + split_n * input.size(),Rf_mkCharLenCE(tmpstring.c_str(),  strlen(tmpstring.c_str()) , CE_UTF8));
+            split_n++;
+        }
+        while (split_n < limit){
+            SET_STRING_ELT(res, it + split_n * input.size(),empstring);
+            split_n++;
+        }
+    }
+
+    return res;
+
+
+}
+
 // [[Rcpp::export]]
 SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel){
     RE2* pattern = &(ptr->regexp);
@@ -166,91 +258,10 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
     }
     if (!parallel){
         if (!fixed){
-            R_xlen_t index = 0;
-            Shield<SEXP> ress(Rf_allocVector(VECSXP,input.size()));
-            SEXP res = ress;
-
-            for(auto it = 0; it != input.size(); it++){
-                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
-                size_t lastIndex = 0;
-                StringPiece match;
-                vector<string> pieces;
-
-                while (lastIndex < str_size &&
-                       pattern->Match(str, lastIndex, str_size, RE2::UNANCHORED,
-                                      &match, 1)) {
-
-                    if (pieces.size() >= limit-1) {
-                        break;
-                    }
-                    if (match.size()) {
-                        if (match.data() == str.data() || match.data() - str.data() > lastIndex) {
-                            pieces.push_back(StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string());
-                        }
-                        lastIndex = match.data() - str.data() + match.size();
-                    } else {
-                        size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-                        pieces.push_back( StringPiece(str.data() + lastIndex, sym_size).as_string());
-                        lastIndex += sym_size;
-                    }
-
-                }
-                if ( pieces.size() < limit && (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
-                    pieces.push_back(StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string());
-                }
-                SET_VECTOR_ELT(res, index, Shield<SEXP>(toprotect_vec_string_sexp(pieces)));
-                index++;
-            }
-
-            return res;
+            return cpp_split_not_fixed(input, pattern, limit);
         } else {
-            Shield<SEXP> ress( Rf_allocMatrix(STRSXP, (R_xlen_t) input.size(), (R_xlen_t) limit));
-            SEXP res = ress;
-            auto empstring = Rf_mkCharLenCE( "",  strlen("") , CE_UTF8);
-            for(auto it = 0; it != input.size(); it++){
-                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
-                size_t lastIndex = 0;
-                StringPiece match;
-                size_t split_n = 0;
-                while (lastIndex < str_size &&
-                       pattern->Match(str, lastIndex, str_size, RE2::UNANCHORED,
-                                      &match, 1)) {
-
-                    if (split_n >= limit-1) {
-                        break;
-                    }
-                    if (match.size()) {
-                        if (match.data() == str.data() || match.data() - str.data() > lastIndex) {
-                            string tmpstring = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
-                            SET_STRING_ELT(res, it + split_n * input.size(),Rf_mkCharLenCE(tmpstring.c_str(),  strlen(tmpstring.c_str()) , CE_UTF8));
-                            split_n++;
-                        }
-                        lastIndex = match.data() - str.data() + match.size();
-                    } else {
-                        size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-                        string tmpstring = StringPiece(str.data() + lastIndex, sym_size).as_string();
-                        SET_STRING_ELT(res, it + split_n * input.size(),Rf_mkCharLenCE(tmpstring.c_str(),  strlen(tmpstring.c_str()) , CE_UTF8));
-                        lastIndex += sym_size;
-                        split_n++;
-                    }
-
-                }
-                if ( split_n < limit && (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
-                    string tmpstring = StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string();
-                    SET_STRING_ELT(res, it + split_n * input.size(),Rf_mkCharLenCE(tmpstring.c_str(),  strlen(tmpstring.c_str()) , CE_UTF8));
-                    split_n++;
-                }
-                while (split_n < limit){
-                    SET_STRING_ELT(res, it + split_n * input.size(),empstring);
-                    split_n++;
-                }
-            }
-
-            return res;
-
-        }
+            return cpp_split_fixed(input, pattern, limit);
+       }
 
     }
     else{
