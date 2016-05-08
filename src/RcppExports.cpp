@@ -120,24 +120,24 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_quote_meta
-SEXP cpp_quote_meta(vector<string>& input, bool parallel);
+SEXP cpp_quote_meta(CharacterVector input, bool parallel);
 RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     __result = Rcpp::wrap(cpp_quote_meta(input, parallel));
     return __result;
 END_RCPP
 }
 // cpp_replace
-SEXP cpp_replace(vector<string>& input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel);
+SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel);
 RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< vector<string>& >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
     Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
     Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);

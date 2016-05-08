@@ -272,53 +272,7 @@ RE2::Anchor get_anchor_type(size_t anchor){
     }
 }
 
-
-
-#define INIT_ARGS_PTR                                          \
-auto cap_nums = pattern.NumberOfCapturingGroups();                 \
-auto argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);   \
-auto args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]); \
-auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]); \
-auto piece_ptr = piece.get();                                  \
-auto args_ptr = args.get();                                    \
-auto argv_ptr = argv.get();                                    \
-                                                               \
-for (int nn = 0; nn != cap_nums; nn++){                        \
-    args_ptr[nn] = &argv_ptr[nn];                              \
-    argv_ptr[nn] = &piece_ptr[nn];                             \
-}                                                              \
-
-
-#define UNVALUE_BLOCK                                          \
-std::transform(input.begin() + begin,                      \
-              input.begin() + end,                        \
-              output.begin() + begin,                     \
-[this,cap_nums,piece_ptr,args_ptr, &pattern](tr2::optional<string>& x) -> optstring{\
-        if (!bool(x)){                                         \
-            return fill_opt_res(cap_nums, piece_ptr, false) ;  \
-            }                                                  \
-        for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
-
-
-#define INIT_LISTI                                                       \
-StringPiece todo_str(ind.value());                                               \
-StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length()); \
-for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();               \
-size_t cnt = 0;                                                          \
-optstring optinner;                                                      \
-
-
-#define CHECK_RESULT                                             \
-for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();       \
-if(todo_str.length() == 0) break;                                \
-                                                                 \
-if((todo_str.data() == tmp_piece.data()) &&                      \
-   (todo_str.length() == tmp_piece.length()) &&                  \
-   (todo_str.length() !=0) ){                                    \
-    todo_str.remove_prefix(1);                                   \
-}                                                                \
-                                                                 \
-tmp_piece = StringPiece(todo_str.data(), todo_str.length());     \
+// begin real work
 
 
 SEXP cpp_detect(CharacterVector& input,
@@ -417,19 +371,19 @@ SEXP cpp_match_nocapture(CharacterVector& input,
     SEXP inputx = input;
     Shield<SEXP> ress(Rf_allocMatrix(STRSXP,input.size(),1));
     SEXP res = ress;
-    auto ip = 0;
-    for(auto it = 0; it!= input.size(); it++,ip++){
+
+    for(auto it = 0; it!= input.size(); it++){
         auto rstr = STRING_ELT(inputx, it);
         if (rstr == NA_STRING){
-            SET_STRING_ELT(res, ip, NA_STRING);
+            SET_STRING_ELT(res, it, NA_STRING);
             continue;
         }
         auto r_char = R_CHAR(rstr);
         if(pattern->Match(r_char,0, strlen(r_char),
                           anchor_type, nullptr, 0)){
-            SET_STRING_ELT(res, ip, STRING_ELT(inputx, it));
+            SET_STRING_ELT(res, it, STRING_ELT(inputx, it));
         } else {
-            SET_STRING_ELT(res, ip, NA_STRING);
+            SET_STRING_ELT(res, it, NA_STRING);
         }
 
     }
@@ -523,6 +477,31 @@ SEXP cpp_match_not_all(CharacterVector& input,
     return res;
 }
 
+
+#define INIT_ARGS_PTR                                              \
+auto cap_nums = pattern.NumberOfCapturingGroups();                 \
+auto argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);       \
+auto args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]);     \
+auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]); \
+auto piece_ptr = piece.get();                                      \
+auto args_ptr = args.get();                                        \
+auto argv_ptr = argv.get();                                        \
+                                                                   \
+for (int nn = 0; nn != cap_nums; nn++){                            \
+    args_ptr[nn] = &argv_ptr[nn];                                  \
+    argv_ptr[nn] = &piece_ptr[nn];                                 \
+}                                                                  \
+
+#define UNVALUE_BLOCK                                                                              \
+std::transform(input.begin() + begin,                                                              \
+               input.begin() + end,                                                                \
+               output.begin() + begin,                                                             \
+               [this,cap_nums,piece_ptr,args_ptr, &pattern](tr2::optional<string>& x) -> optstring{\
+                   if (!bool(x)){                                                                  \
+                       return fill_opt_res(cap_nums, piece_ptr, false) ;                           \
+                   }                                                                               \
+                   for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();                      \
+
 struct UnValue : public Worker{
     vector<tr2::optional<string>>& input;
     vector<optstring>& output;
@@ -598,6 +577,17 @@ for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();                      
 size_t cnt = 0;                                                                        \
 
 
+#define CHECK_RESULT                                             \
+for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();       \
+if(todo_str.length() == 0) break;                                \
+                                                                 \
+if((todo_str.data() == tmp_piece.data()) &&                      \
+   (todo_str.length() == tmp_piece.length()) &&                  \
+   (todo_str.length() !=0) ){                                    \
+    todo_str.remove_prefix(1);                                   \
+}                                                                \
+                                                                 \
+tmp_piece = StringPiece(todo_str.data(), todo_str.length());     \
 
 SEXP cpp_match_all(CharacterVector& input,
                        RE2* pattern,
@@ -653,6 +643,13 @@ SEXP cpp_match_all(CharacterVector& input,
     return listres;
 }
 
+
+#define INIT_LISTI                                                               \
+StringPiece todo_str(ind.value());                                               \
+StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());         \
+for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();                       \
+size_t cnt = 0;                                                                  \
+optstring optinner;                                                              \
 
 struct MatValue : public Worker{
     vector<tr2::optional<string>>& input;

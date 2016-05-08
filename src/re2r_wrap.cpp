@@ -167,12 +167,12 @@ IntegerVector cpp_get_named_groups(XPtr<RE2Obj>& ptr){
 struct QuoteMetaP : public Worker
 {
     // source
-    const vector<string>& input;
+    optstring& input;
     // destination
-    vector<string>& output;
+    optstring& output;
 
     // initialize with source and destination
-    QuoteMetaP(const vector<string>&  input_, vector<string>& output_)
+    QuoteMetaP(optstring&  input_, optstring& output_)
         : input(input_),output(output_) {}
 
     // the range of elements requested
@@ -181,59 +181,78 @@ struct QuoteMetaP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       tt.QuoteMeta);
+                       [this,&tt](tr2::optional<string>& x)->tr2::optional<string>{
+                           if (!bool(x)){
+                               return tr2::nullopt;
+                           }
+                           return tr2::make_optional( tt.QuoteMeta(x.value()));
+                       });
     }
 };
 
 // [[Rcpp::export]]
-SEXP cpp_quote_meta(vector<string>& input, bool parallel){
-
-    vector<string> res(input.size());
+SEXP cpp_quote_meta(CharacterVector input, bool parallel){
 
     if (!parallel){
+        SEXP inputx = input;
+        Shield<SEXP> ress(Rf_allocVector(STRSXP,input.size()));
+        SEXP res = ress;
         RE2 tt(""); // break on windows without tt
-        auto it = res.begin();
-        for(auto ind : input) {
-            *it = tt.QuoteMeta(ind);
-            it++;
+        for(auto it = 0; it!= input.size(); it++){
+            auto rstr = STRING_ELT(inputx, it);
+            if (rstr == NA_STRING){
+                SET_STRING_ELT(res, it, NA_STRING);
+                continue;
+            }
+
+            auto resi = tt.QuoteMeta(R_CHAR(rstr));
+            SET_STRING_ELT(res, it, Rf_mkCharLenCE(resi.c_str(),  strlen(resi.c_str()) , CE_UTF8));
         }
 
-        return toprotect_vec_string_sexp(res);
+        return res;
     }
     else{
-        QuoteMetaP pobj(input, res);
+        optstring res(input.size());
+        auto inputv = as_vec_opt_string(input);
+        QuoteMetaP pobj(inputv, res);
         parallelFor(0, input.size(), pobj, 600000);
-        return toprotect_vec_string_sexp(res);
+        return toprotect_optstring_sexp(res);
     }
 }
 
 struct ReplaceP : public Worker
 {
-    vector<string>& input;
+    optstring& input;
     RE2& tt;
     RE2::Options& opt;
     string& rewrite;
 
-    ReplaceP(vector<string>&  input_, RE2& tt_, RE2::Options& opt_, string& rewrite_)
+    ReplaceP(optstring&  input_, RE2& tt_, RE2::Options& opt_, string& rewrite_)
         : input(input_), tt(tt_), opt(opt_), rewrite(rewrite_){}
 
     void operator()(std::size_t begin, std::size_t end) {
         RE2 pattern(tt.pattern(),opt);
         std::for_each(input.begin() + begin,
                        input.begin() + end,
-                       [this,&pattern](string& x){ pattern.Replace(&x, pattern, rewrite);});
+                       [this,&pattern](tr2::optional<string>& x){
+                           if (!bool(x)){
+                               return;
+                           }
+                           pattern.Replace(& x.value(), pattern, rewrite);
+
+                           });
     }
 };
 
 struct ReplaceGlobalP : public Worker
 {
-    vector<string>& input;
+    optstring& input;
     vector<size_t>& count;
     RE2& tt;
     RE2::Options& opt;
     string& rewrite;
 
-    ReplaceGlobalP(vector<string>&  input_,vector<size_t>& count_, RE2& tt_, RE2::Options& opt_,string& rewrite_)
+    ReplaceGlobalP(optstring&  input_,vector<size_t>& count_, RE2& tt_, RE2::Options& opt_,string& rewrite_)
         : input(input_), count(count_), tt(tt_), opt(opt_),rewrite(rewrite_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -241,16 +260,21 @@ struct ReplaceGlobalP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        count.begin() + begin,
-                      [this,&pattern](string& x){ return pattern.GlobalReplace(&x, pattern, rewrite);});
+                      [this,&pattern](tr2::optional<string>& x){
+                          if (!bool(x)){
+                              return 0;
+                          }
+                          return pattern.GlobalReplace(&x.value(), pattern, rewrite);
+                          });
     }
 };
 
 
 
 // [[Rcpp::export]]
-SEXP cpp_replace(vector<string>& input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel){
+SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel){
     string errmsg;
-
+    auto inputv = as_vec_opt_string(input);
     RE2* ptr = &(regexp->regexp);
 
     if(! ptr->CheckRewriteString(rewrite, &errmsg)){
@@ -259,26 +283,39 @@ SEXP cpp_replace(vector<string>& input, XPtr<RE2Obj>& regexp, string& rewrite, b
 
     if(!global_) {
         if (!parallel){
-            for(string& ind : input) ptr->Replace(&ind,*ptr,rewrite);
-            return toprotect_vec_string_sexp(input);
+            for(tr2::optional<string>& ind : inputv) {
+                if(!bool(ind)){
+                    continue;
+                }
+                ptr->Replace(&ind.value(),*ptr,rewrite);
+            }
+            return toprotect_optstring_sexp(inputv);
+
         } else{
-            ReplaceP pobj(input, *ptr, *(regexp->options), rewrite);
+
+            optstring res(input.size());
+            ReplaceP pobj(inputv, *ptr, *(regexp->options), rewrite);
             parallelFor(0, input.size(), pobj, 200000);
-            return  toprotect_vec_string_sexp(input);
+            return   toprotect_optstring_sexp(inputv);
         }
     }
     else {
         vector<size_t> count;
         if (!parallel){
             count.reserve(input.size());
-            for(string& ind : input) count.push_back(ptr->GlobalReplace(&ind,*ptr,rewrite));
+            for(tr2::optional<string>& ind : inputv) {
+                if(!bool(ind)){
+                    count.push_back(0);
+                }
+                count.push_back(ptr->GlobalReplace(&ind.value(),*ptr,rewrite));
+            }
         } else {
             count.resize(input.size());
-            ReplaceGlobalP pobj(input, count, *ptr, *(regexp->options), rewrite);
+            ReplaceGlobalP pobj(inputv, count, *ptr, *(regexp->options), rewrite);
             parallelFor(0, input.size(), pobj, 200000);
         }
 
-        CharacterVector res(toprotect_vec_string_sexp(input));
+        CharacterVector res( toprotect_optstring_sexp(inputv));
         res.attr("count") = count;
         return res;
     }
@@ -286,12 +323,12 @@ SEXP cpp_replace(vector<string>& input, XPtr<RE2Obj>& regexp, string& rewrite, b
 
 struct ExtractP : public Worker
 {
-    vector<string>& input;
+    optstring& input;
     optstring& output;
     RE2& tt;
     RE2::Options& opt;
 
-    ExtractP(vector<string>&  input_, optstring& output_, RE2& tt_, RE2::Options& opt_)
+    ExtractP(optstring&  input_, optstring& output_, RE2& tt_, RE2::Options& opt_)
         : input(input_), output(output_), tt(tt_), opt(opt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -299,10 +336,12 @@ struct ExtractP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this, &pattern](string& x) -> tr2::optional<string>{
-
+                       [this, &pattern](tr2::optional<string>& x) -> tr2::optional<string>{
+                           if(!bool(x)){
+                               return tr2::nullopt;
+                           }
                            StringPiece match;
-                           if (! pattern.Match( x, 0 , x.length(), RE2::UNANCHORED, &match, 1)) {
+                           if (! pattern.Match( x.value(), 0 , x.value().length(), RE2::UNANCHORED, &match, 1)) {
                                return tr2::nullopt;
                            } else {
                                return tr2::make_optional(match.as_string());
@@ -315,12 +354,13 @@ struct ExtractP : public Worker
 
 struct ExtractAllP : public Worker
 {
-    vector<string>& input;
-    vector<vector<string>>& output;
+    optstring& input;
+    vector<tr2::optional<vector<string>>>& output;
     RE2& tt;
     RE2::Options& opt;
 
-    ExtractAllP(vector<string>&  input_, vector<vector<string>>& output_, RE2& tt_, RE2::Options& opt_)
+    ExtractAllP(optstring&  input_, vector<tr2::optional<vector<string>>>& output_,
+                RE2& tt_, RE2::Options& opt_)
         : input(input_), output(output_), tt(tt_), opt(opt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -328,20 +368,22 @@ struct ExtractAllP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this, &pattern](string& x) -> vector<string>{
-
+                       [this, &pattern](tr2::optional<string>& x) -> tr2::optional<vector<string>>{
+                           if(!bool(x)){
+                               return tr2::nullopt;
+                           }
                            StringPiece match;
                            vector<string> res;
 
-                           StringPiece str(x);
+                           StringPiece str(x.value());
                            size_t lastIndex = 0;
 
-                           while (pattern.Match(str, lastIndex , x.length(), RE2::UNANCHORED, &match, 1)){
+                           while (pattern.Match(str, lastIndex , x.value().length(), RE2::UNANCHORED, &match, 1)){
                                lastIndex = match.data() - str.data() + match.size();
                                res.push_back(match.as_string());
                            }
 
-                            return res;
+                            return tr2::make_optional(res);
                        });
     }
 };
@@ -365,6 +407,13 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
             SEXP x = xs;
 
             for(auto it = 0; it!= input.size(); it++){
+
+                auto rstr = STRING_ELT(inputx, it);
+                if (rstr == NA_STRING){
+                    SET_STRING_ELT(x, it, NA_STRING);
+                    continue;
+                }
+
                 StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
                 auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
                 size_t lastIndex = 0;
@@ -382,8 +431,15 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
             SEXP x = xs;
 
             for(auto it = 0; it!= input.size(); it++){
-                StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-                auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+
+                auto rstr = STRING_ELT(inputx, it);
+                if (rstr == NA_STRING){
+                    SET_VECTOR_ELT(x, it, R_NilValue);
+                    continue;
+                }
+
+                StringPiece str(R_CHAR(rstr));
+                auto str_size = strlen(R_CHAR(rstr));
                 size_t lastIndex = 0;
                 vector<string> res;
 
@@ -403,7 +459,7 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
             return x;
         }
     } else{ // parallel
-        vector<string> inputv = as<vector<string>>(input);
+        auto inputv = as_vec_opt_string(input);
         if (!all){
             optstring res(input.size());
 
@@ -411,7 +467,7 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
             parallelFor(0, input.size(), pobj, 1000000);
             return toprotect_optstring_sexp(res);
         } else {
-            vector<vector<string>> res(input.size());
+            vector<tr2::optional<vector<string>>> res(input.size());
 
             ExtractAllP pobj(inputv, res, *ptr, *(regexp->options));
             parallelFor(0, input.size(), pobj, 600000);
@@ -421,11 +477,12 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
 
             R_xlen_t index = 0;
 
-            for (auto resi : res){
-                if (resi.empty()) {
+            for (tr2::optional<vector<string>>& resi : res){
+                if (! bool(resi) || resi.value().empty()) {
                     SET_VECTOR_ELT(x, index, R_NilValue);
-                }else{
-                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(resi)));
+                }
+                else{
+                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(resi.value())));
                 }
                 index ++;
             }
