@@ -41,7 +41,7 @@ using re2::RE2;
 using re2::StringPiece;
 
 #include "optional.hpp"
-
+#include <memory>
 namespace tr2 = std::experimental;
 
 typedef vector<tr2::optional<string>> optstring;
@@ -98,7 +98,19 @@ RCPP_EXCEPTION_CLASS(ErrorRewriteString, std::string("rewrite string error: ") +
 
 RCPP_EXCEPTION_CLASS(ErrorAnchorType, std::string("anchor type error: ") + messages)
 
-XPtr<RE2> cpp_re2_compile(const char* pattern,
+struct RE2Obj{
+    RE2 regexp;
+    unique_ptr<RE2::Options> options;
+
+
+    RE2Obj(unique_ptr<RE2::Options> opt,
+           string pattern):
+           regexp(StringPiece(pattern), *opt),
+           options(move(opt)){
+    }
+};
+
+XPtr<RE2Obj> cpp_re2_compile(const char* pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,

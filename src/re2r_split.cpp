@@ -43,17 +43,19 @@ struct SplitP : public Worker
 {
     vector<string>& input;
     vector<vector<string>>& output;
-    RE2* tt;
+    RE2& tt;
+    RE2::Options& opt;
     size_t limit;
 
-    SplitP(vector<string>&  input_, vector<vector<string>>& output_, RE2* tt_,size_t limit_)
-        : input(input_), output(output_), tt(tt_), limit(limit_){}
+    SplitP(vector<string>&  input_, vector<vector<string>>& output_, RE2& tt_, RE2::Options& opt_, size_t limit_)
+        : input(input_), output(output_), tt(tt_), opt(opt_),limit(limit_){}
 
     void operator()(std::size_t begin, std::size_t end) {
+        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this](string& x) -> vector<string>{
+                       [this,&pattern](string& x) -> vector<string>{
                            StringPiece str(x);
                            auto str_size = x.length();
                            size_t lastIndex = 0;
@@ -61,7 +63,7 @@ struct SplitP : public Worker
                            vector<string> pieces;
 
                            while (lastIndex < str_size &&
-                                  tt->Match(str, lastIndex, str_size, RE2::UNANCHORED,
+                                  pattern.Match(str, lastIndex, str_size, RE2::UNANCHORED,
                                                  &match, 1)) {
 
                                if (pieces.size() >= limit-1) {
@@ -91,17 +93,19 @@ struct SplitFixP : public Worker
 {
     vector<string>& input;
     vector<vector<string>>& output;
-    RE2* tt;
+    RE2& tt;
+    RE2::Options& opt;
     size_t limit;
 
-    SplitFixP(vector<string>&  input_, vector<vector<string>>& output_, RE2* tt_,size_t limit_)
-        : input(input_), output(output_), tt(tt_), limit(limit_){}
+    SplitFixP(vector<string>&  input_, vector<vector<string>>& output_, RE2& tt_, RE2::Options& opt_,size_t limit_)
+        : input(input_), output(output_), tt(tt_), opt(opt_),limit(limit_){}
 
     void operator()(std::size_t begin, std::size_t end) {
+        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this](string& x) -> vector<string>{
+                       [this,&pattern](string& x) -> vector<string>{
                            StringPiece str(x);
                            auto str_size = x.length();
                            size_t lastIndex = 0;
@@ -110,7 +114,7 @@ struct SplitFixP : public Worker
 
                            size_t split_n = 0;
                            while (lastIndex < str_size &&
-                                  tt->Match(str, lastIndex, str_size, RE2::UNANCHORED,
+                                  pattern.Match(str, lastIndex, str_size, RE2::UNANCHORED,
                                                  &match, 1)) {
 
                                if (split_n >= limit-1) {
@@ -147,14 +151,14 @@ struct SplitFixP : public Worker
 
 
 // [[Rcpp::export]]
-SEXP cpp_split(CharacterVector input, XPtr<RE2>& ptr, NumericVector part, bool fixed, bool parallel){
-    auto pattern = ptr.checked_get();
+SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel){
+    RE2* pattern = &(ptr->regexp);
     SEXP inputx = input;
 
     if (part.size() == 0){
         stop("need the number of pieces.");
     }
-    size_t limit = numeric_limits<size_t>::max();
+    size_t limit = numeric_limits<R_xlen_t>::max();
 
     if (R_finite(part[0])){
         limit = as<size_t>(part);
@@ -256,8 +260,8 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2>& ptr, NumericVector part, bool f
         if (!fixed){
 
 
-            SplitP pobj(inputv, res, ptr,limit);
-            parallelFor(0, input.size(), pobj);
+            SplitP pobj(inputv, res, *pattern, *(ptr->options), limit);
+            parallelFor(0, input.size(), pobj, 150000);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;
@@ -275,8 +279,8 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2>& ptr, NumericVector part, bool f
             return x;
         } else {
 
-            SplitFixP pobj(inputv, res, ptr,limit);
-            parallelFor(0, input.size(), pobj);
+            SplitFixP pobj(inputv, res, *pattern, *(ptr->options), limit);
+            parallelFor(0, input.size(), pobj,250000);
             Shield<SEXP>  xs(Rf_allocMatrix(STRSXP, input.size(),limit));
             SEXP x = xs;
 

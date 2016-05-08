@@ -7,7 +7,7 @@
 \usage{
 re2_psplit(input, pattern, part = Inf, ...)
 
-re2_psplit_fixed(input, pattern, part = Inf, ...)
+re2_psplit_fixed(input, pattern, part, ...)
 }
 \arguments{
 \item{input}{a character vector}

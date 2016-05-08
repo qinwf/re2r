@@ -48,7 +48,7 @@ re2_split = function(input, pattern, part = Inf, ...) {
 
 #' @rdname re2_split
 #' @export
-re2_split_fixed = function(input, pattern, part = Inf, ...) {
+re2_split_fixed = function(input, pattern, part, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
@@ -75,7 +75,7 @@ re2_psplit = function(input, pattern, part = Inf, ...) {
 
 #' @rdname re2_psplit
 #' @export
-re2_psplit_fixed = function(input, pattern, part = Inf, ...) {
+re2_psplit_fixed = function(input, pattern, part, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
