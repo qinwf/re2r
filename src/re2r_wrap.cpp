@@ -38,6 +38,8 @@ using namespace RcppParallel;
 
 #define thr(code) case RE2::ErrorCode::code: throw code(msg); break;
 
+#define GRAIN_SIZE (input.size() > 100000) ? input.size() : (input.size()/ 20)
+
 void check_compile_error(RE2::ErrorCode code_,const string& msg){
     switch(code_){
         case RE2::ErrorCode::NoError: return; break;
@@ -202,7 +204,7 @@ SEXP cpp_quote_meta(vector<string>& input, bool parallel){
     }
     else{
         QuoteMetaP pobj(input, res);
-        parallelFor(0, input.size(), pobj);
+        parallelFor(0, input.size(), pobj, 10000000);
         return toprotect_vec_string_sexp(res);
     }
 }
@@ -263,7 +265,7 @@ SEXP cpp_replace(vector<string>& input, XPtr<RE2Obj>& regexp, string& rewrite, b
             return toprotect_vec_string_sexp(input);
         } else{
             ReplaceP pobj(input, *ptr, *(regexp->options), rewrite);
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, GRAIN_SIZE);
             return  toprotect_vec_string_sexp(input);
         }
     }
@@ -275,7 +277,7 @@ SEXP cpp_replace(vector<string>& input, XPtr<RE2Obj>& regexp, string& rewrite, b
         } else {
             count.resize(input.size());
             ReplaceGlobalP pobj(input, count, *ptr, *(regexp->options), rewrite);
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, 10000000);
         }
 
         CharacterVector res(toprotect_vec_string_sexp(input));
@@ -408,13 +410,13 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
             optstring res(input.size());
 
             ExtractP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, 10000000);
             return toprotect_optstring_sexp(res);
         } else {
             vector<vector<string>> res(input.size());
 
             ExtractAllP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, 10000000);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;

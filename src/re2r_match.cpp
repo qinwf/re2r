@@ -541,7 +541,7 @@ SEXP cpp_match(CharacterVector input,
             RVector<int> res(reso);
             vector<string> inputv = as<vector<string>>(input);
             BoolP pobj(inputv, res, *pattern, *(ptr->options),anchor_type);
-            parallelFor(0, input.size(), pobj);
+            parallelFor(0, input.size(), pobj, 10000000);
             return wrap(reso);
         }
 
@@ -576,7 +576,7 @@ SEXP cpp_match(CharacterVector input,
                 vector<string> inputv = as<vector<string>>(input);
 
                 NoCaptureP pobj(inputv, res, *pattern, *(ptr->options), anchor_type);
-                parallelFor(0, inputv.size(), pobj);
+                parallelFor(0, inputv.size(), pobj, 10000000);
 
                 return toprotect_optstring_to_charmat(res);
             }
