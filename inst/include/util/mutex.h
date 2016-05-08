@@ -39,7 +39,7 @@ namespace re2 {
 # define HAVE_RWLOCK 0
 #endif
 
-#if defined(NO_THREADS)
+#if defined(NO_RE2_THREADS)
   typedef int MutexType;      // to keep a lock-count
 #elif HAVE_PTHREAD && HAVE_RWLOCK
   // Needed for pthread_rwlock_*.  If it causes problems, you could take it
@@ -105,7 +105,7 @@ class Mutex {
 };
 
 // Now the implementation of Mutex for various systems
-#if defined(NO_THREADS)
+#if defined(NO_RE2_THREADS)
 
 // When we don't have threads, we can be either reading or writing,
 // but not both.  We can have lots of readers at once (in no-threads

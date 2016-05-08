@@ -316,21 +316,23 @@ RE2::Anchor get_anchor_type(size_t anchor){
 struct BoolP : public Worker
 {
     vector<string>& input;
-    vector<bool>& output;
-    RE2* tt;
+    RVector<int> output;
+    RE2& tt;
+    RE2::Options& opt;
     const RE2::Anchor anchor_type;
 
-    BoolP (vector<string>&  input_,vector<bool>& output_, RE2* tt_, const RE2::Anchor&  anchor_type_)
-        : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
+    BoolP (vector<string>&  input_,RVector<int> output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor&  anchor_type_)
+        : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
+        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this](string& x){
-                           return tt->Match(x, 0, (int) x.length(),
-                                                 anchor_type, nullptr, 0);
-                           });
+                       [this,&pattern](string& x)->int{
+                           return pattern.Match(x, 0, (int) x.length(),
+                                            anchor_type, nullptr, 0);
+                       });
     }
 };
 
@@ -338,18 +340,20 @@ struct NoCaptureP : public Worker
 {
     const vector<string>& input;
     optstring& output;
-    RE2* tt;
+    RE2& tt;
+    RE2::Options& opt;
     const RE2::Anchor anchor_type;
 
-    NoCaptureP (const vector<string>&  input_, optstring& output_, RE2* tt_, const RE2::Anchor&  anchor_type_)
-        : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
+    NoCaptureP (const vector<string>&  input_, optstring& output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor&  anchor_type_)
+        : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
+        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this](const string& x) -> tr2::optional<string>{
-                           if (tt->Match(x, 0, (int) x.length(),
+                       [this,&pattern](const string& x) -> tr2::optional<string>{
+                           if (pattern.Match(x, 0, (int) x.length(),
                                             anchor_type, nullptr, 0)){
                                return tr2::make_optional(x);
                            } else {
@@ -360,7 +364,7 @@ struct NoCaptureP : public Worker
 };
 
 #define INIT_ARGS_PTR                                          \
-auto cap_nums = tt->NumberOfCapturingGroups();                 \
+auto cap_nums = pattern.NumberOfCapturingGroups();                 \
 auto argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);   \
 auto args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]); \
 auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]); \
@@ -378,7 +382,7 @@ for (int nn = 0; nn != cap_nums; nn++){                        \
     std::transform(input.begin() + begin,                      \
                    input.begin() + end,                        \
                    output.begin() + begin,                     \
-    [this,cap_nums,piece_ptr,args_ptr](const string& x) -> optstring{\
+    [this,cap_nums,piece_ptr,args_ptr, &pattern](const string& x) -> optstring{\
         for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear(); \
 
 
@@ -386,20 +390,22 @@ for (int nn = 0; nn != cap_nums; nn++){                        \
 struct UnValue : public Worker{
     const vector<string>& input;
     vector<optstring>& output;
-    RE2* tt;
+    RE2& tt;
+    RE2::Options& opt;
     const RE2::Anchor& anchor_type;
 
-    UnValue(const vector<string>&  input_, vector<optstring>& output_, RE2* tt_,const RE2::Anchor& anchor_type_)
-        : input(input_), output(output_), tt(tt_),anchor_type(anchor_type_){}
+    UnValue(const vector<string>&  input_, vector<optstring>& output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor& anchor_type_)
+        : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
+        RE2 pattern(tt.pattern(),opt);
         INIT_ARGS_PTR
 
         if (anchor_type == RE2::ANCHOR_BOTH){
             UNVALUE_BLOCK
             return fill_opt_res(cap_nums,
                                 piece_ptr,
-                                tt->FullMatchN(x, *tt, args_ptr, cap_nums));
+                                pattern.FullMatchN(x, pattern, args_ptr, cap_nums));
 
                            });
         } else if (anchor_type == RE2::ANCHOR_START){
@@ -407,14 +413,14 @@ struct UnValue : public Worker{
            StringPiece tmpstring(x);
            return fill_opt_res(cap_nums,
                                piece_ptr,
-                               tt->ConsumeN(&tmpstring, *tt, args_ptr, cap_nums));
+                               pattern.ConsumeN(&tmpstring, tt, args_ptr, cap_nums));
 
                            });
         } else { // RE2::UNANCHORED
             UNVALUE_BLOCK
             return fill_opt_res(cap_nums,
                                 piece_ptr,
-                                tt->PartialMatchN(x, *tt, args_ptr, cap_nums));
+                                pattern.PartialMatchN(x, pattern, args_ptr, cap_nums));
                            });
         }
     }
@@ -452,22 +458,24 @@ tmp_piece = StringPiece(todo_str.data(), todo_str.length());     \
 struct MatValue : public Worker{
     const vector<string>& input;
     vector<tr2::optional<optstring>>& output;
-    RE2* tt;
+    RE2& tt;
+    RE2::Options& opt;
     const RE2::Anchor& anchor_type;
 
-    MatValue(const vector<string>&  input_, vector<tr2::optional<optstring>>& output_, RE2* tt_,const RE2::Anchor& anchor_type_)
-        : input(input_), output(output_), tt(tt_),anchor_type(anchor_type_){}
+    MatValue(const vector<string>&  input_, vector<tr2::optional<optstring>>& output_, RE2& tt_, RE2::Options& opt_,const RE2::Anchor& anchor_type_)
+        : input(input_), output(output_),tt(tt_), opt(opt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
+        RE2 pattern(tt.pattern(),opt);
         INIT_ARGS_PTR
         if (anchor_type != RE2::UNANCHORED){
             std::transform(input.begin() + begin,
                            input.begin() + end,
                            output.begin() + begin,
-                           [this,cap_nums,piece_ptr,args_ptr](const string& ind) -> tr2::optional<optstring>{
+                           [this,cap_nums,piece_ptr,args_ptr,&pattern](const string& ind) -> tr2::optional<optstring>{
                                 INIT_LISTI
 
-                                while (RE2::ConsumeN(&todo_str, *tt, args_ptr, cap_nums)) {
+                                while (RE2::ConsumeN(&todo_str, pattern, args_ptr, cap_nums)) {
                                     cnt+=1;
                                     fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
 
@@ -484,10 +492,11 @@ struct MatValue : public Worker{
             std::transform(input.begin() + begin,
                            input.begin() + end,
                            output.begin() + begin,
-                           [this,cap_nums,piece_ptr,args_ptr](const string& ind) -> tr2::optional<optstring>{
+                           [this,cap_nums,piece_ptr,args_ptr,&pattern](const string& ind) -> tr2::optional<optstring>{
+
                                INIT_LISTI
 
-                               while (RE2::FindAndConsumeN(&todo_str, *tt, args_ptr, cap_nums)) {
+                               while (RE2::FindAndConsumeN(&todo_str, pattern, args_ptr, cap_nums)) {
                                    cnt+=1;
                                    fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
 
@@ -506,34 +515,36 @@ struct MatValue : public Worker{
 
 // [[Rcpp::export]]
 SEXP cpp_match(CharacterVector input,
-               XPtr<RE2>& ptr,
+               XPtr<RE2Obj>& ptr,
                bool value,
                size_t anchor,
                bool all,
                bool parallel){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
-    auto pattern = ptr.checked_get();
+    RE2* pattern = &(ptr->regexp);
+
     SEXP inputx = input;
     if (value == false){
-        vector<bool> res;
 
         if (!parallel){
-            res.reserve(input.size());
-            for(auto it = 0; it != input.size(); it++){
+            LogicalVector res(input.size());
+            auto resi  = res.begin();
+            for(auto it = 0; it != input.size(); it++, resi ++){
                 auto r_char = R_CHAR(STRING_ELT(inputx, it));
-                res.push_back(pattern->Match( r_char ,0, strlen(r_char),
-                                             anchor_type, nullptr, 0));
+                *resi = pattern->Match( r_char ,0, strlen(r_char),
+                                             anchor_type, nullptr, 0);
             }
+            return wrap(res);
         } else {
-            res.resize(input.size());
+            LogicalVector reso(input.size());
+            RVector<int> res(reso);
             vector<string> inputv = as<vector<string>>(input);
-            BoolP pobj(inputv, res, pattern, anchor_type);
+            BoolP pobj(inputv, res, *pattern, *(ptr->options),anchor_type);
             parallelFor(0, input.size(), pobj);
+            return wrap(reso);
         }
 
-        return wrap(res);
-        // bool return, the fastest one
     } else{
         auto cap_nums = pattern->NumberOfCapturingGroups();
 
@@ -564,7 +575,7 @@ SEXP cpp_match(CharacterVector input,
                 optstring res(input.size());
                 vector<string> inputv = as<vector<string>>(input);
 
-                NoCaptureP pobj(inputv, res, pattern, anchor_type);
+                NoCaptureP pobj(inputv, res, *pattern, *(ptr->options), anchor_type);
                 parallelFor(0, inputv.size(), pobj);
 
                 return toprotect_optstring_to_charmat(res);
@@ -679,7 +690,7 @@ SEXP cpp_match(CharacterVector input,
                 vector<optstring> output(input.size());
                 vector<string> inputv = as<vector<string>>(input);
 
-                UnValue pobj(inputv, output, pattern, anchor_type);
+                UnValue pobj(inputv, output, *pattern, *(ptr->options),anchor_type);
                 parallelFor(0, input.size(), pobj);
                 Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output,cap_nums));
 
@@ -752,7 +763,7 @@ SEXP cpp_match(CharacterVector input,
                     vector<tr2::optional<optstring>> res(input.size());
                     vector<string> inputv = as<vector<string>>(input);
 
-                    MatValue pobj(inputv, res, pattern, anchor_type);
+                    MatValue pobj(inputv, res, *pattern, *(ptr->options), anchor_type);
                     parallelFor(0, input.size(), pobj);
 
                     Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));

@@ -4,7 +4,7 @@
 \alias{get_number_of_groups}
 \title{Return the number of capturing subpatterns}
 \usage{
-get_number_of_groups(regexp)
+get_number_of_groups(ptr)
 }
 \arguments{
 \item{regexp}{a pre-compiled regular expression}
