@@ -72,12 +72,12 @@ SEXP toprotect_loc_matrix(vector<tuple<size_t,size_t>>& input){
 
 struct LocateP : public Worker
 {
-    vector<string>& input;
+    optstring& input;
     vector<tuple<size_t,size_t>>& output;
     RE2& tt;
     RE2::Options& opt;
 
-    LocateP(vector<string>&  input_, vector<tuple<size_t,size_t>>& output_, RE2& tt_, RE2::Options& opt_)
+    LocateP(optstring&  input_, vector<tuple<size_t,size_t>>& output_, RE2& tt_, RE2::Options& opt_)
         : input(input_), output(output_), tt(tt_), opt(opt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -85,11 +85,13 @@ struct LocateP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](string& x) -> tuple<size_t,size_t>{
-
+                       [this,&pattern](tr2::optional<string>& x) -> tuple<size_t,size_t>{
+                           if (!bool(x)){
+                               return make_tuple(NA_INTEGER,NA_INTEGER);
+                           }
                            size_t headn = 0;
-                           StringPiece str(x);
-                           auto str_size = x.length();
+                           StringPiece str(x.value());
+                           auto str_size = x.value().length();
                            size_t lastIndex = 0;
                            StringPiece match;
 
@@ -125,12 +127,12 @@ struct LocateP : public Worker
 
 struct LocateAllP : public Worker
 {
-    vector<string>& input;
+    optstring& input;
     vector<vector<tuple<size_t,size_t>>>& output;
     RE2& tt;
     RE2::Options& opt;
 
-    LocateAllP(vector<string>&  input_, vector<vector<tuple<size_t,size_t>>>& output_, RE2& tt_, RE2::Options& opt_)
+    LocateAllP(optstring&  input_, vector<vector<tuple<size_t,size_t>>>& output_, RE2& tt_, RE2::Options& opt_)
         : input(input_), output(output_), tt(tt_), opt(opt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
@@ -138,16 +140,18 @@ struct LocateAllP : public Worker
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](string& x) -> vector<tuple<size_t,size_t>>{
-
+                       [this,&pattern](tr2::optional<string>& x) -> vector<tuple<size_t,size_t>>{
+                           vector<tuple<size_t,size_t>> res;
+                           if (!bool(x)){
+                               res.push_back(make_tuple(NA_INTEGER,NA_INTEGER));
+                               return res;
+                           }
                            StringPiece match;
 
-                           StringPiece str(x);
+                           StringPiece str(x.value());
                            size_t lastIndex = 0;
                            size_t headn = 0;
-                           auto str_size = x.length();
-
-                           vector<tuple<size_t,size_t>> res;
+                           auto str_size = x.value().length();
 
                            while ( lastIndex < str_size && pattern.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
                                if (match.size()){
@@ -188,9 +192,6 @@ struct LocateAllP : public Worker
 
 SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
     SEXP inputx = input;
-
-    R_xlen_t index = 0;
-
     StringPiece match;
 
     Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, input.size(),2));
@@ -199,13 +200,23 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
     string headstr ;
 
     for(auto it = 0; it!= input.size(); it++){
+        auto rstr = STRING_ELT(inputx, it);
+        if (rstr == NA_STRING){
+            INTEGER(x)[it + input.size() *0] = NA_INTEGER;
+            INTEGER(x)[it + input.size() *1] = NA_INTEGER;
+            continue;
+        }
+        auto r_char = R_CHAR(rstr);
+
         size_t headn = 0;
-        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+
+        StringPiece str(r_char);
+        auto str_size = strlen(r_char);
         size_t lastIndex = 0;
         if (! ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
             INTEGER(x)[it + input.size() *0] = NA_INTEGER;
             INTEGER(x)[it + input.size() *1] = NA_INTEGER;
+            continue;
         } else {
             if(match.size()){
 
@@ -220,6 +231,7 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
                 headn += len_mstring;
 
                 INTEGER(x)[it + input.size()*1] = headn;
+                continue;
             } else {
 
                 string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
@@ -229,6 +241,7 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
                 INTEGER(x)[it + input.size()*0] =  headn+1 ;
 
                 INTEGER(x)[it + input.size()*1] =  headn;
+                continue;
             }
 
         }
@@ -238,8 +251,6 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
 
 SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
     SEXP inputx = input;
-
-    R_xlen_t index = 0;
 
     StringPiece match;
     Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
@@ -252,11 +263,16 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
 
     string headstr ;
     for(auto it = 0; it!= input.size(); it++){
-
+        auto rstr = STRING_ELT(inputx, it);
+        if (rstr == NA_STRING){
+            SET_VECTOR_ELT(x, it, na_matrix);
+            continue;
+        }
+        auto r_char = R_CHAR(rstr);
 
         size_t headn = 0;
-        StringPiece str(R_CHAR(STRING_ELT(inputx, it)));
-        auto str_size = strlen(R_CHAR(STRING_ELT(inputx, it)));
+        StringPiece str(r_char);
+        auto str_size = strlen(r_char);
         size_t lastIndex = 0;
 
         vector<tuple<size_t,size_t>> res;
@@ -297,12 +313,11 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
         }
 
         if (res.empty()) {
-            SET_VECTOR_ELT(x, index, na_matrix);
+            SET_VECTOR_ELT(x, it, na_matrix);
         }else{
-            SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_loc_matrix(res)));
+            SET_VECTOR_ELT(x, it, Shield<SEXP>(toprotect_loc_matrix(res)));
         }
 
-        index++;
     }
     return x;
 
@@ -324,7 +339,7 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
     } else{
         // parallel
 
-        vector<string> inputv = as<vector<string>>(input);
+        auto inputv = as_vec_opt_string(input);
 
         if (!all){
             vector<tuple<size_t,size_t>> res(input.size());
