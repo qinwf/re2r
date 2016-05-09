@@ -59,9 +59,8 @@ void check_compile_error(RE2::ErrorCode code_,const string& msg){
     }
 }
 
-
 // [[Rcpp::export]]
-XPtr<RE2Obj> cpp_re2_compile(string pattern,
+XPtr<RE2Obj> cpp_re2_compile_one(string pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,
@@ -114,6 +113,67 @@ XPtr<RE2Obj> cpp_re2_compile(string pattern,
     }
 
     return regobj;
+}
+
+// [[Rcpp::export]]
+SEXP cpp_re2_compile(CharacterVector input,
+                          bool log_errors_value,
+                          bool utf_8_value,
+                          bool posix_syntax_value,
+                          bool case_sensitive_value,
+                          bool dot_nl_value,
+                          bool literal_value,
+                          bool longest_match_value,
+                          bool never_nl_value,
+                          bool never_capture_value,
+                          bool one_line_value,
+                          bool perl_classes_value,
+                          bool word_boundary_value,
+                          int64_t max_mem_value){
+    if (input.size() == 0){
+        return R_NilValue;
+    }
+    if (input.size() == 1){
+        if (*input.begin() == NA_STRING){
+            return R_NilValue;
+        }else {
+
+            Shield<SEXP> res(cpp_re2_compile_one(R_CHAR(STRING_ELT(input, 0)),log_errors_value,utf_8_value,
+                                                 posix_syntax_value,case_sensitive_value,
+                                                 dot_nl_value,literal_value,
+                                                 longest_match_value,never_nl_value,
+                                                 never_capture_value,one_line_value,
+                                                 perl_classes_value,word_boundary_value,
+                                                 max_mem_value));
+            Rf_setAttrib( res, R_ClassSymbol, Rf_mkString("re2c") );
+            return res;
+        }
+    }else{
+        Shield<SEXP> resx(Rf_allocVector(VECSXP, input.size()));
+        SEXP res = resx;
+        SEXP inputx = input;
+        auto re2c = Rf_mkString("re2c");
+        for (auto it = 0 ; it != input.size(); it++){
+            auto rstr = STRING_ELT(inputx, it);
+
+            if (rstr  == NA_STRING){
+                SET_VECTOR_ELT(res,it, R_NilValue);
+                continue;
+            }
+            auto r_char = R_CHAR(rstr);
+            Shield<SEXP> resi(cpp_re2_compile_one(r_char,log_errors_value,utf_8_value,
+                                        posix_syntax_value,case_sensitive_value,
+                                        dot_nl_value,literal_value,
+                                        longest_match_value,never_nl_value,
+                                        never_capture_value,one_line_value,
+                                        perl_classes_value,word_boundary_value,
+                                        max_mem_value));
+            Rf_setAttrib( resi, R_ClassSymbol,  re2c);
+            SET_VECTOR_ELT(res, it, resi);
+        }
+        return res;
+    }
+
 }
 
 

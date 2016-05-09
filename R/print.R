@@ -37,7 +37,7 @@
 #' re2("(.*)@([^.]*)")
 #' re2("(?P<name>sd)")
 #' @export
-print.re2exp = function(x, ...) {
+print.re2c = function(x, ...) {
     cat("re2 pre-compiled regular expression\n\n")
     cat("pattern: ")
     cat(get_pattern(x))

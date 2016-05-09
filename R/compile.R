@@ -104,10 +104,7 @@ re2 = function(pattern,
                word_boundary = FALSE,
                max_mem = 8388608) {
 
-    if(is.null(pattern) || is.na(pattern[1])){
-        stop("pattern is NA or NULL, please use a string a pattern.")
-    }
-    regexp = cpp_re2_compile(
+    cpp_re2_compile(
         stri_enc_toutf8(pattern),
         log_errors_value = FALSE,
         utf_8_value = utf_8,
@@ -123,9 +120,6 @@ re2 = function(pattern,
         word_boundary_value = word_boundary,
         max_mem_value = max_mem
     )
-
-    class(regexp) = "re2exp"
-    regexp
 }
 
 #' The string specification for this RE2.
