@@ -5,9 +5,9 @@
 \alias{re2_psplit_fixed}
 \title{Split strings with a pattern with multithread.}
 \usage{
-re2_psplit(input, pattern, part = Inf, ...)
+re2_psplit(input, pattern, part = Inf, grain_size = 1e+05, ...)
 
-re2_psplit_fixed(input, pattern, part, ...)
+re2_psplit_fixed(input, pattern, part, grain_size = 1e+05, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -15,6 +15,8 @@ re2_psplit_fixed(input, pattern, part, ...)
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{part}{number of pieces to return. Default (Inf) uses all possible split positions.}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

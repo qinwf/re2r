@@ -43,7 +43,7 @@ re2_locate = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_locate(stri_enc_toutf8(input), pattern, FALSE, FALSE)
+    cpp_locate(stri_enc_toutf8(input), pattern, FALSE, FALSE,1)
 }
 
 #' @rdname re2_locate
@@ -52,7 +52,7 @@ re2_locate_all = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_locate(stri_enc_toutf8(input), pattern, TRUE, FALSE)
+    cpp_locate(stri_enc_toutf8(input), pattern, TRUE, FALSE,1)
 }
 
 #' Locate a pattern in strings with multithread.
@@ -62,22 +62,25 @@ re2_locate_all = function(input, pattern, ...) {
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_plocate("yabba dabba doo", "(d)")
 #' @export
-re2_plocate = function(input, pattern, ...) {
+re2_plocate = function(input, pattern,
+                       grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_locate(stri_enc_toutf8(input), pattern, FALSE, TRUE)
+    cpp_locate(stri_enc_toutf8(input), pattern, FALSE, TRUE,grain_size)
 }
 
 #' @rdname re2_pextract
 #' @export
-re2_plocate_all = function(input, pattern, ...) {
+re2_plocate_all = function(input, pattern,
+                           grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_locate(stri_enc_toutf8(input), pattern, TRUE, TRUE)
+    cpp_locate(stri_enc_toutf8(input), pattern, TRUE, TRUE,grain_size)
 }

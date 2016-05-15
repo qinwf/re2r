@@ -51,7 +51,7 @@ re2_replace = function(input, pattern, rewrite, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  FALSE, FALSE)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  FALSE, FALSE,1)
 }
 
 #' @rdname re2_replace
@@ -60,7 +60,7 @@ re2_replace_all = function(input, pattern, rewrite, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), TRUE, FALSE)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite), TRUE, FALSE,1)
 }
 
 #' Replace a pattern in strings with multithread.
@@ -74,25 +74,27 @@ re2_replace_all = function(input, pattern, rewrite, ...) {
 #' @param pattern a pre-compiled regular expression or a string
 #' @param rewrite replace the first match or all of the match of "pattern" in "input" with "rewrite"
 #' @param input a character vector
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
+#'
 #' @return a character vector
 #' @examples
 #' regexp = re2("b+")
 #' re2_preplace_all("yabba dabba doo", regexp,"d") == "yada dada doo"
 #' re2_preplace("yabba dabba doo", "b+","d") == "yada dabba doo"
 #' @export
-re2_preplace = function(input, pattern, rewrite , ...) {
+re2_preplace = function(input, pattern, rewrite , grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  FALSE, TRUE)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  FALSE, TRUE, grain_size)
 }
 
 #' @rdname re2_preplace
 #' @export
-re2_preplace_all = function(input, pattern, rewrite,  ...) {
+re2_preplace_all = function(input, pattern, rewrite, grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  TRUE, TRUE)
+    cpp_replace(stri_enc_toutf8(input), pattern, stri_enc_toutf8(rewrite),  TRUE, TRUE, grain_size)
 }

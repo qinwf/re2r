@@ -38,6 +38,7 @@
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
 #' @param all find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.
 #' @param parallel multithreading support
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #'
@@ -68,11 +69,12 @@ re2_match = function(input,
                      value = TRUE,
                      all = FALSE,
                      parallel = FALSE,
+                     grain_size = 1,
                      ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_match(stri_enc_toutf8(input), pattern,   value, anchor, all, parallel)
+    cpp_match(stri_enc_toutf8(input), pattern,   value, anchor, all, parallel, grain_size)
 }
 
 #' Test a pattern in strings, and return boolean.
@@ -97,6 +99,7 @@ re2_detect = function(input,
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_pdetect("one", "(o.e)")
@@ -104,8 +107,9 @@ re2_detect = function(input,
 re2_pdetect = function(input,
                       pattern,
                       anchor = 0,
+                      grain_size = 100000,
                       ...) {
-    re2_match(input, pattern, anchor = anchor, value = FALSE, all = FALSE, parallel = TRUE,  ...)
+    re2_match(input, pattern, anchor = anchor, value = FALSE, all = FALSE, parallel = TRUE,  grain_size , ...)
 }
 
 #' Find matched groups from strings with multithread.
@@ -113,6 +117,7 @@ re2_pdetect = function(input,
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
 #' @param anchor a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #'
@@ -140,8 +145,9 @@ re2_pdetect = function(input,
 re2_pmatch = function(input,
                        pattern,
                        anchor = 0,
+                      grain_size = 100000,
                        ...) {
-        re2_match(input, pattern, anchor = anchor, value = TRUE, all = FALSE, parallel = TRUE, ...)
+        re2_match(input, pattern, anchor = anchor, value = TRUE, all = FALSE, parallel = TRUE, grain_size,...)
 }
 
 #' @export
@@ -159,7 +165,8 @@ re2_match_all = function(input,
 re2_pmatch_all = function(input,
                            pattern,
                            anchor = 0,
+                          grain_size = 100000,
                            ...) {
-    re2_match(input, pattern, anchor = anchor, value = TRUE, all = TRUE, parallel = FALSE, ...)
+    re2_match(input, pattern, anchor = anchor, value = TRUE, all = TRUE, parallel = FALSE, grain_size, ...)
 }
 

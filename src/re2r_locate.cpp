@@ -324,13 +324,13 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
 }
 
 // [[Rcpp::export]]
-SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel){
+SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size){
     string errmsg;
 
     RE2* ptr = &(regexp->regexp);
 
 
-    if (! parallel){
+    if (! parallel || input.size() < grain_size){
         if (!all){
             return cpp_locate_not_all(input, ptr);
         } else { // not parallel ,all
@@ -345,13 +345,13 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
             vector<tuple<size_t,size_t>> res(input.size());
 
             LocateP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj , 1000000);
+            parallelFor(0, input.size(), pobj , grain_size);
             return toprotect_loc_matrix(res);
         } else {
             vector<vector<tuple<size_t,size_t>>> res(input.size());
 
             LocateAllP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj, 200000);
+            parallelFor(0, input.size(), pobj, grain_size);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;

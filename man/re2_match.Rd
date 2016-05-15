@@ -6,7 +6,7 @@
 \title{Find matched groups from strings.}
 \usage{
 re2_match(input, pattern, anchor = 0, value = TRUE, all = FALSE,
-  parallel = FALSE, ...)
+  parallel = FALSE, grain_size = 1, ...)
 
 re2_match_all(input, pattern, anchor = 0, ...)
 }
@@ -22,6 +22,8 @@ re2_match_all(input, pattern, anchor = 0, ...)
 \item{all}{find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.}
 
 \item{parallel}{multithreading support}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

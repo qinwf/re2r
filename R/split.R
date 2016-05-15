@@ -43,7 +43,7 @@ re2_split = function(input, pattern, part = Inf, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_split(stri_enc_toutf8(input), pattern, part, FALSE,FALSE)
+    cpp_split(stri_enc_toutf8(input), pattern, part, FALSE,FALSE,1)
 }
 
 #' @rdname re2_split
@@ -52,7 +52,7 @@ re2_split_fixed = function(input, pattern, part, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_split(stri_enc_toutf8(input), pattern, part, TRUE, FALSE)
+    cpp_split(stri_enc_toutf8(input), pattern, part, TRUE, FALSE,1)
 }
 
 #' Split strings with a pattern with multithread.
@@ -62,22 +62,23 @@ re2_split_fixed = function(input, pattern, part, ...) {
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
 #' @param part number of pieces to return. Default (Inf) uses all possible split positions.
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_psplit("yabba dabba doo", " ")
 #' @export
-re2_psplit = function(input, pattern, part = Inf, ...) {
+re2_psplit = function(input, pattern, part = Inf,  grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_split(stri_enc_toutf8(input), pattern, part, FALSE, TRUE)
+    cpp_split(stri_enc_toutf8(input), pattern, part, FALSE, TRUE,grain_size)
 }
 
 #' @rdname re2_psplit
 #' @export
-re2_psplit_fixed = function(input, pattern, part, ...) {
+re2_psplit_fixed = function(input, pattern, part, grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_split(stri_enc_toutf8(input), pattern, part, TRUE, TRUE)
+    cpp_split(stri_enc_toutf8(input), pattern, part, TRUE, TRUE,grain_size)
 }

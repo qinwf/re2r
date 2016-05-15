@@ -44,7 +44,7 @@ re2_extract = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE)
+    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE,1)
 }
 
 #' @rdname re2_extract
@@ -53,7 +53,7 @@ re2_extract_all = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE)
+    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE,1)
 }
 
 #' Extract a pattern in strings with multithread.
@@ -63,22 +63,23 @@ re2_extract_all = function(input, pattern, ...) {
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_pextract("yabba dabba doo", "(.)")
 #' @export
-re2_pextract = function(input, pattern, ...) {
+re2_pextract = function(input, pattern, grain_size=100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, TRUE)
+    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, TRUE,grain_size)
 }
 
 #' @rdname re2_pextract
 #' @export
-re2_pextract_all = function(input, pattern, ...) {
+re2_pextract_all = function(input, pattern, grain_size = 100000,...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, TRUE)
+    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, TRUE,grain_size)
 }

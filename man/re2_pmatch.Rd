@@ -5,9 +5,9 @@
 \alias{re2_pmatch_all}
 \title{Find matched groups from strings with multithread.}
 \usage{
-re2_pmatch(input, pattern, anchor = 0, ...)
+re2_pmatch(input, pattern, anchor = 0, grain_size = 1e+05, ...)
 
-re2_pmatch_all(input, pattern, anchor = 0, ...)
+re2_pmatch_all(input, pattern, anchor = 0, grain_size = 1e+05, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -15,6 +15,8 @@ re2_pmatch_all(input, pattern, anchor = 0, ...)
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

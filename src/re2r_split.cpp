@@ -266,9 +266,8 @@ SEXP cpp_split_fixed(CharacterVector input,RE2* pattern,size_t limit){
 }
 
 // [[Rcpp::export]]
-SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel){
+SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel, size_t grain_size){
     RE2* pattern = &(ptr->regexp);
-    SEXP inputx = input;
 
     if (part.size() == 0){
         stop("need the number of pieces.");
@@ -279,7 +278,7 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
         limit = as<size_t>(part);
 
     }
-    if (!parallel){
+    if (!parallel || input.size() < grain_size){
         if (!fixed){
             return cpp_split_not_fixed(input, pattern, limit);
         } else {
@@ -293,7 +292,7 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
 
         if (!fixed){
             SplitP pobj(inputv, res, *pattern, *(ptr->options), limit);
-            parallelFor(0, input.size(), pobj, 150000);
+            parallelFor(0, input.size(), pobj, grain_size);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;
@@ -317,7 +316,7 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
         } else {
 
             SplitFixP pobj(inputv, res, *pattern, *(ptr->options), limit);
-            parallelFor(0, input.size(), pobj,250000);
+            parallelFor(0, input.size(), pobj, grain_size);
             Shield<SEXP>  xs(Rf_allocMatrix(STRSXP, input.size(),limit));
             SEXP x = xs;
 

@@ -251,9 +251,9 @@ struct QuoteMetaP : public Worker
 };
 
 // [[Rcpp::export]]
-SEXP cpp_quote_meta(CharacterVector input, bool parallel){
+SEXP cpp_quote_meta(CharacterVector input, bool parallel, size_t grain_size){
 
-    if (!parallel){
+    if (!parallel || input.size() < grain_size){
         SEXP inputx = input;
         Shield<SEXP> ress(Rf_allocVector(STRSXP,input.size()));
         SEXP res = ress;
@@ -275,7 +275,7 @@ SEXP cpp_quote_meta(CharacterVector input, bool parallel){
         optstring res(input.size());
         auto inputv = as_vec_opt_string(input);
         QuoteMetaP pobj(inputv, res);
-        parallelFor(0, input.size(), pobj, 600000);
+        parallelFor(0, input.size(), pobj, grain_size);
         return toprotect_optstring_sexp(res);
     }
 }
@@ -332,7 +332,7 @@ struct ReplaceGlobalP : public Worker
 
 
 // [[Rcpp::export]]
-SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel){
+SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size){
     string errmsg;
     auto inputv = as_vec_opt_string(input);
     RE2* ptr = &(regexp->regexp);
@@ -342,7 +342,7 @@ SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, b
     }
 
     if(!global_) {
-        if (!parallel){
+        if (!parallel || input.size() < grain_size){
             for(tr2::optional<string>& ind : inputv) {
                 if(!bool(ind)){
                     continue;
@@ -355,13 +355,13 @@ SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, b
 
             optstring res(input.size());
             ReplaceP pobj(inputv, *ptr, *(regexp->options), rewrite);
-            parallelFor(0, input.size(), pobj, 200000);
+            parallelFor(0, input.size(), pobj, grain_size);
             return   toprotect_optstring_sexp(inputv);
         }
     }
     else {
         vector<size_t> count;
-        if (!parallel){
+        if (!parallel || input.size() < grain_size){
             count.reserve(input.size());
             for(tr2::optional<string>& ind : inputv) {
                 if(!bool(ind)){
@@ -372,7 +372,7 @@ SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, b
         } else {
             count.resize(input.size());
             ReplaceGlobalP pobj(inputv, count, *ptr, *(regexp->options), rewrite);
-            parallelFor(0, input.size(), pobj, 200000);
+            parallelFor(0, input.size(), pobj, grain_size);
         }
 
         CharacterVector res( toprotect_optstring_sexp(inputv));
@@ -449,13 +449,13 @@ struct ExtractAllP : public Worker
 };
 
 // [[Rcpp::export]]
-SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel){
+SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size){
     string errmsg;
 
     RE2* ptr = &(regexp->regexp);
     SEXP inputx = input;
 
-    if (! parallel){
+    if (! parallel || input.size() < grain_size){
 
         R_xlen_t index = 0;
 
@@ -524,13 +524,13 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
             optstring res(input.size());
 
             ExtractP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj, 1000000);
+            parallelFor(0, input.size(), pobj, grain_size);
             return toprotect_optstring_sexp(res);
         } else {
             vector<tr2::optional<vector<string>>> res(input.size());
 
             ExtractAllP pobj(inputv, res, *ptr, *(regexp->options));
-            parallelFor(0, input.size(), pobj, 600000);
+            parallelFor(0, input.size(), pobj, grain_size);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
             SEXP x = xs;

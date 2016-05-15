@@ -48,8 +48,13 @@ re2_subset <- function(input, pattern, anchor = 0, ...) {
     input[re2_detect(input, pattern ,anchor, ...)]
 }
 
-#' @rdname re2_subset
+#' Keep strings matching a pattern with multithread.
+#'
+#' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
+#'
+#' @inheritParams re2_pdetect
+#' @return A character vector.
 #' @export
-re2_psubset <- function(input, pattern, anchor = 0, ...) {
-    input[re2_pdetect(input, pattern ,anchor, ...)]
+re2_psubset <- function(input, pattern, anchor = 0, grain_size = 100000, ...) {
+    input[re2_pdetect(input, pattern ,anchor, grain_size, ...)]
 }

@@ -4,12 +4,14 @@
 \alias{quote_meta}
 \title{Escapes all potentially meaningful regexp characters in  'unquoted'.}
 \usage{
-quote_meta(unquoted, parallel = FALSE)
+quote_meta(unquoted, parallel = FALSE, grain_size = 1e+05)
 }
 \arguments{
 \item{unquoted}{unquoted string}
 
 \item{parallel}{multithreading support}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms.}
 }
 \value{
 quoted string

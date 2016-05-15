@@ -5,9 +5,9 @@
 \alias{re2_preplace_all}
 \title{Replace a pattern in strings with multithread.}
 \usage{
-re2_preplace(input, pattern, rewrite, ...)
+re2_preplace(input, pattern, rewrite, grain_size = 1e+05, ...)
 
-re2_preplace_all(input, pattern, rewrite, ...)
+re2_preplace_all(input, pattern, rewrite, grain_size = 1e+05, ...)
 }
 \arguments{
 \item{input}{a character vector}
@@ -15,6 +15,8 @@ re2_preplace_all(input, pattern, rewrite, ...)
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{rewrite}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

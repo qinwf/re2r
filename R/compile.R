@@ -162,11 +162,12 @@ get_named_groups = function(regexp) {
 #'
 #' @param unquoted unquoted string
 #' @param parallel multithreading support
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @examples
 #' quote_meta(c("1.2","abc"))
 #' @return quoted string
 #' @export
-quote_meta = function(unquoted, parallel = FALSE) {
-    res = cpp_quote_meta(stri_enc_toutf8(unquoted), parallel)
+quote_meta = function(unquoted, parallel = FALSE, grain_size = 100000) {
+    res = cpp_quote_meta(stri_enc_toutf8(unquoted), parallel,grain_size)
     res
 }

@@ -325,12 +325,13 @@ struct BoolP : public Worker
 SEXP cpp_detect_parallel(CharacterVector& input,
                 RE2* pattern,
                 RE2::Options& opt,
-                RE2::Anchor anchor_type){
+                RE2::Anchor anchor_type,
+                size_t grain_size){
     LogicalVector reso(input.size());
     RVector<int> res(reso);
     auto inputv = as_vec_opt_string(input);
     BoolP pobj(inputv, res, *pattern, opt, anchor_type);
-    parallelFor(0, input.size(), pobj, 1000000);
+    parallelFor(0, input.size(), pobj, grain_size);
     return wrap(reso);
 }
 
@@ -398,12 +399,13 @@ SEXP cpp_match_nocapture(CharacterVector& input,
 SEXP cpp_match_nocapture_parallel(CharacterVector& input,
                          RE2* pattern,
                          RE2::Options& opt,
-                         RE2::Anchor anchor_type){
+                         RE2::Anchor anchor_type,
+                         size_t grain_size){
     optstring res(input.size());
     auto inputv = as_vec_opt_string(input);
 
     NoCaptureP pobj(inputv, res, *pattern, opt, anchor_type);
-    parallelFor(0, inputv.size(), pobj, 3000000);
+    parallelFor(0, inputv.size(), pobj, grain_size);
 
     return toprotect_optstring_to_charmat(res);
 }
@@ -547,12 +549,13 @@ SEXP cpp_match_not_all_parallel(CharacterVector& input,
                        RE2::Options& opt,
                        RE2::Anchor anchor_type,
                        vector<string>& groups_name,
-                       int cap_nums){
+                       int cap_nums,
+                       size_t grain_size){
     vector<optstring> output(input.size());
     auto inputv = as_vec_opt_string(input);
 
     UnValue pobj(inputv, output, *pattern, opt,anchor_type);
-    parallelFor(0, input.size(), pobj, 2400000);
+    parallelFor(0, input.size(), pobj, grain_size);
     Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output,cap_nums));
 
     // generate CharacterMatrix
@@ -719,7 +722,8 @@ SEXP cpp_match_all_parallel(CharacterVector& input,
                        RE2::Options& opt,
                        RE2::Anchor anchor_type,
                        vector<string>& groups_name,
-                       int cap_nums){
+                       int cap_nums,
+                       size_t grain_size){
 
     List listres(input.size());
 
@@ -727,7 +731,7 @@ SEXP cpp_match_all_parallel(CharacterVector& input,
     auto inputv = as_vec_opt_string(input);
 
     MatValue pobj(inputv, res, *pattern, opt, anchor_type);
-    parallelFor(0, input.size(), pobj,2400000);
+    parallelFor(0, input.size(), pobj,grain_size);
 
     Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));
     SET_VECTOR_ELT(new_dimnames, 1, Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
@@ -751,28 +755,29 @@ SEXP cpp_match(CharacterVector input,
                bool value,
                size_t anchor,
                bool all,
-               bool parallel){
+               bool parallel,
+               size_t grain_size){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
     RE2* pattern = &(ptr->regexp);
 
     if (value == false){
 
-        if (!parallel){
+        if (!parallel || input.size() < grain_size){
             return cpp_detect(input, pattern, anchor_type);
         } else {
-            return cpp_detect_parallel(input, pattern, *(ptr->options), anchor_type);
+            return cpp_detect_parallel(input, pattern, *(ptr->options), anchor_type,grain_size);
         }
 
     } else{
         auto cap_nums = pattern->NumberOfCapturingGroups();
 
         if ( cap_nums == 0){
-            if (!parallel){
+            if (!parallel || input.size() < grain_size){
                 return cpp_match_nocapture(input, pattern, anchor_type);
                 // no capture group return
             } else {
-                return cpp_match_nocapture_parallel(input, pattern, *(ptr->options), anchor_type);
+                return cpp_match_nocapture_parallel(input, pattern, *(ptr->options), anchor_type, grain_size);
             }
         }
 
@@ -788,15 +793,15 @@ SEXP cpp_match(CharacterVector input,
             groups_name.push_back(*it);
         }
 
-        if (parallel){
+        if (parallel && input.size() > grain_size){
             if (all){
                 return cpp_match_all_parallel(input,pattern,*(ptr->options),
                                               anchor_type,
-                                              groups_name,cap_nums);
+                                              groups_name,cap_nums, grain_size);
             } else {
                 return cpp_match_not_all_parallel(input,pattern,*(ptr->options),
                                                   anchor_type,
-                                                  groups_name,cap_nums);
+                                                  groups_name,cap_nums, grain_size);
             }
 
         } else{

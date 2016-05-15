@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // cpp_locate
-SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel);
-RcppExport SEXP re2r_cpp_locate(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP) {
+SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_locate(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -16,13 +16,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_locate(input, regexp, all, parallel));
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    __result = Rcpp::wrap(cpp_locate(input, regexp, all, parallel, grain_size));
     return __result;
 END_RCPP
 }
 // cpp_match
-SEXP cpp_match(CharacterVector input, XPtr<RE2Obj>& ptr, bool value, size_t anchor, bool all, bool parallel);
-RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP parallelSEXP) {
+SEXP cpp_match(CharacterVector input, XPtr<RE2Obj>& ptr, bool value, size_t anchor, bool all, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -32,13 +33,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_match(input, ptr, value, anchor, all, parallel));
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    __result = Rcpp::wrap(cpp_match(input, ptr, value, anchor, all, parallel, grain_size));
     return __result;
 END_RCPP
 }
 // cpp_split
-SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel);
-RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP ptrSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP) {
+SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP ptrSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -47,7 +49,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type part(partSEXP);
     Rcpp::traits::input_parameter< bool >::type fixed(fixedSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_split(input, ptr, part, fixed, parallel));
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    __result = Rcpp::wrap(cpp_split(input, ptr, part, fixed, parallel, grain_size));
     return __result;
 END_RCPP
 }
@@ -144,20 +147,21 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_quote_meta
-SEXP cpp_quote_meta(CharacterVector input, bool parallel);
-RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP, SEXP parallelSEXP) {
+SEXP cpp_quote_meta(CharacterVector input, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_quote_meta(SEXP inputSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_quote_meta(input, parallel));
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    __result = Rcpp::wrap(cpp_quote_meta(input, parallel, grain_size));
     return __result;
 END_RCPP
 }
 // cpp_replace
-SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel);
-RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP) {
+SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -166,13 +170,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
     Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite, global_, parallel));
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite, global_, parallel, grain_size));
     return __result;
 END_RCPP
 }
 // cpp_extract
-SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel);
-RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP) {
+SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -180,7 +185,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
-    __result = Rcpp::wrap(cpp_extract(input, regexp, all, parallel));
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    __result = Rcpp::wrap(cpp_extract(input, regexp, all, parallel, grain_size));
     return __result;
 END_RCPP
 }
