@@ -10,6 +10,10 @@ HTMLWidgets.widget({
     // create our sigma object and bind it to the element
     var parseError = false;
     var dd  = document.createElement("div");
+    var to_remove = document.getElementById("svg-container-base");
+    if (to_remove){
+    	to_remove.parentNode.removeChild(to_remove);
+    }
     dd.setAttribute("style","display: none;");
     dd.setAttribute("id","svg-container-base");
 
@@ -20,6 +24,7 @@ HTMLWidgets.widget({
     svg_.setAttribute("class","svg svg-container");
     var svg_svg = document.createElement("svg");
     svg_svg.setAttribute("class","regexp-svg");
+    svg_svg.setAttribute("id",el.id+"regexp-svg");
     svg_svg.setAttribute("preserveAspectRatio","xMinYMin meet");
     svg_.appendChild(svg_svg);
     dd.appendChild(svg_);
@@ -27,11 +32,11 @@ HTMLWidgets.widget({
     document.body.appendChild(dd);
     var ress = document.createElement("div");
     ress.setAttribute("id",el.id+"svg");
-
     document.getElementById(el.id).appendChild(ress);
 
         console.log("parsing");
     var sig = new Parser(document.getElementById(el.id+"svg"));
+    sig.re2r_id = el.id;
 
     return {
       renderValue: function(x) {
@@ -74,9 +79,9 @@ HTMLWidgets.widget({
       .then(
         function(){
           this.running = false;
-          var temps = document.querySelector(".regexp-svg");
-          window.re2r_width_ = temps.getAttribute("width") / width ;
-          window.re2r_ratio_ = temps.getAttribute("height") / temps.getAttribute("width") ;
+          var temps = document.getElementById(el.id+"regexp-svg");
+          sig.re2r_width_ = temps.getAttribute("width") / width ;
+          sig.re2r_ratio_ = temps.getAttribute("height") / temps.getAttribute("width") ;
 
           temps.setAttribute("viewBox","0,0," + temps.getAttribute("width") +"," + temps.getAttribute("height"));
           
@@ -95,9 +100,9 @@ HTMLWidgets.widget({
       
       resize: function(width, height) {
 
-          var temps = document.querySelector(".regexp-svg");
-          to_wid =  window.re2r_width_ * width ;
-          to_hi  = to_wid * re2r_ratio_;
+          var temps = document.getElementById(sig.re2r_id + ".regexp-svg");
+          to_wid =  sig.re2r_width_ * width ;
+          to_hi  = to_wid * sig.re2r_ratio_;
 
           temps.setAttribute("viewBox","0,0," +  to_wid  +"," + to_hi );
         
