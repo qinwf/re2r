@@ -1,0 +1,195 @@
+
+#open-iconic {
+    display: none
+}
+
+.svg-container { 
+	display: inline-block;
+	position: relative;
+	width: 100%;
+    height: auto;
+	vertical-align: middle; 
+	overflow: hidden; 
+}
+
+svg.regexp-svg {
+    background-color: #fff;
+    overflow: hidden; 
+}
+
+svg.regexp-svg text,
+svg.regexp-svg tspan {
+    font: 12px Arial
+}
+
+svg.regexp-svg path {
+    fill-opacity: 0;
+    stroke-width: 2px;
+    stroke: #000
+}
+
+svg.regexp-svg circle {
+    fill: #6b6659;
+    stroke-width: 2px;
+    stroke: #000
+}
+
+svg.regexp-svg .anchor text,
+svg.regexp-svg .any-character text {
+    fill: #fff
+}
+
+svg.regexp-svg .anchor rect,
+svg.regexp-svg .any-character rect {
+    fill: #6b6659
+}
+
+svg.regexp-svg .escape text,
+svg.regexp-svg .charset-escape text,
+svg.regexp-svg .literal text {
+    fill: #000
+}
+
+svg.regexp-svg .escape rect,
+svg.regexp-svg .charset-escape rect {
+    fill: #bada55
+}
+
+svg.regexp-svg .literal rect {
+    fill: #dae9e5
+}
+
+svg.regexp-svg .charset .charset-box {
+    fill: #cbcbba
+}
+
+svg.regexp-svg .subexp .subexp-label tspan,
+svg.regexp-svg .charset .charset-label tspan,
+svg.regexp-svg .match-fragment .repeat-label tspan {
+    font-size: 10px
+}
+
+svg.regexp-svg .subexp .subexp-label tspan,
+svg.regexp-svg .charset .charset-label tspan {
+    dominant-baseline: text-after-edge
+}
+
+svg.regexp-svg .subexp .subexp-box {
+    stroke: #908c83;
+    stroke-dasharray: 6, 2;
+    stroke-width: 2px;
+    fill-opacity: 0
+}
+
+svg.regexp-svg .quote {
+    fill: #908c83
+}
+
+.svg-container {
+    min-width: 200px
+}
+
+.svg-container.loading .svg {
+    position: absolute;
+    top: -10000px
+}
+
+body.has-results #content .results,
+body.has-error #content .results,
+body.is-loading #content .results {
+    display: block
+}
+
+.progress {
+    width: 50%;
+    height: .75em;
+    border: 1px solid #8ca440;
+    overflow: hidden;
+    margin: 1.5em auto
+}
+
+.progress div {
+    background-color: #bada55;
+    background-image: -webkit-linear-gradient(-225deg, #bada55 25%, #cbe380 25%, #cbe380 50%, #bada55 50%, #bada55 75%, #cbe380 75%, #cbe380 100%);
+    background-image: linear-gradient(-45deg, #bada55 25%, #cbe380 25%, #cbe380 50%, #bada55 50%, #bada55 75%, #cbe380 75%, #cbe380 100%);
+    background-size: 3em 3em;
+    background-repeat: repeat-x;
+    height: 100%;
+    -webkit-animation: progress 1s infinite linear;
+    -moz-animation: progress 1s infinite linear;
+    animation: progress 1s infinite linear
+}
+
+@-webkit-keyframes progress {
+    0% {
+        background-position-x: 3em
+    }
+    100% {
+        background-position-x: 0
+    }
+}
+
+@-moz-keyframes progress {
+    0% {
+        background-position-x: 3em
+    }
+    100% {
+        background-position-x: 0
+    }
+}
+
+@keyframes progress {
+    0% {
+        background-position-x: 3em
+    }
+    100% {
+        background-position-x: 0
+    }
+}
+
+#error {
+    background: #b3151a;
+    color: #fff;
+    padding: 0 0.5em;
+    white-space: pre;
+    font-family: monospace;
+    font-weight: bold;
+    display: none;
+    overflow-x: auto
+}
+
+body.has-error #error {
+    display: block
+}
+
+#warnings {
+    font-size: 1em;
+    line-height: 1.5em;
+    font-weight: bold;
+    background-color: #f8ca00;
+    display: none
+}
+
+#warnings li {
+    margin: .375em
+}
+
+body.has-results #warnings {
+    display: block
+}
+
+#regexp-render {
+    background: #fff;
+    width: 100%;
+    overflow: auto;
+    text-align: center;
+    display: none
+}
+
+body.is-loading #regexp-render,
+body.has-results #regexp-render {
+    display: block
+}
+
+
+/*# sourceMappingURL=main.css.map */

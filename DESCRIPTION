@@ -9,7 +9,8 @@ Description: RE2 is a primarily DFA based regexp engine from Google that is very
 License: BSD_3_clause + file LICENSE
 LazyData: TRUE
 Imports:
-    Rcpp (>= 0.12.2), stringi, RcppParallel
+    Rcpp (>= 0.12.2), stringi, RcppParallel,
+    htmlwidgets (>= 0.6),
 LinkingTo: Rcpp, RcppParallel
 Suggests:
     knitr (>= 1.12.3),testthat,

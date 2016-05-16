@@ -68,6 +68,19 @@ re2_detect("this is just one test", "(o.e)")
 
 `.` stands for **any character, possibly including newline** . For more syntax, you can check out the [RE2 Syntax](./re2r-syntax.html) vignette.
 
+```{r}
+show_regex("(o.e)", width = 100, height =100)
+```
+
+Here is an example of email pattern.
+
+```{r}
+show_regex("\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}\\b", width = 670, height = 280)
+
+re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}\\b")
+```
+
+
 ```{r, eval=FALSE, include=TRUE}
 re2_match(string, pattern)
 ```
@@ -87,7 +100,6 @@ We can create named capture group with `(?P<name>pattern)` syntax.
 (res = re2_match("this is just one test", "(?P<testname>this)( is)"))
 str(res)
 ```
-
 
 If there is no capture group, the matched origin strings will be returned.
 

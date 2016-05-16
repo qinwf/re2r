@@ -36,6 +36,22 @@ re2_detect(test_string, "(o.e)")
 
 Searches the string expression for the occurence(s) of a substring that matches 'pattern' and returns boolean result.
 
+Here is an example of email pattern.
+
+```r
+show_regex("\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}\\b", width = 670, height = 280)
+```
+
+![email pattern](https://cdn.rawgit.com/qinwf/re2r/master/email.jpg)
+
+```
+re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}\\b")
+```
+
+```r
+#> [1] TRUE
+```
+
 `re2_match(string, pattern)` will return the capture groups with `()`.
 
 ```r

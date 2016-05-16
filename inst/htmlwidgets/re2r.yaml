@@ -1,0 +1,8 @@
+dependencies:
+  - name: re2r
+    version: 1.0.3
+    src: htmlwidgets/lib/
+    script: 
+      - main.js
+    stylesheet:
+      - main.css
