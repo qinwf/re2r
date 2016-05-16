@@ -67,12 +67,23 @@ were originally written by:
 
 and modified by Qin Wenfeng.
 
-The files in inst/include and inst/include/,
+The files in inst/include,
 	
 	optional.hpp
 
 were originally written by:
 
 	Andrzej Krzemienski.
+
+The files in inst/htmlwidgets/lib ,
+	
+	main.js
+	main.css
+
+were originally written by:
+
+	 Jeffrey Avallone.
+
+and modified by Qin Wenfeng.
 
 Other part of this package is written by Qin Wenfeng.

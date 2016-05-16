@@ -66,8 +66,16 @@ The files in inst/include and inst/include/re2, inst/include/util, and src/ subd
 
 are derived and modified from the RE2 project (https://github.com/google/RE2) under BSD-like lisence.
 
-The files in inst/include and inst/include/,
+The files in inst/include ,
     
     optional.hpp
 
 are derived and modified from the Andrzej Krzemienski under Boost Software License.
+
+
+The files in inst/htmlwidgets/lib ,
+    
+    main.js
+    main.css
+
+are derived and modified from the Jeffrey Avallone under MIT License.
