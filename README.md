@@ -42,7 +42,7 @@ Here is an example of email pattern.
 show_regex("\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}\\b", width = 670, height = 280)
 ```
 
-![email pattern](https://raw.githubusercontent.com/qinwf/re2r/master/email.jpg)
+![email pattern](https://raw.githubusercontent.com/qinwf/re2r/master/email.png)
 
 ```
 re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}\\b")
