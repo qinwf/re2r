@@ -8,6 +8,7 @@ Description: RE2 is a primarily DFA based regexp engine from Google that is very
     at matching large amounts of text.
 License: BSD_3_clause + file LICENSE
 LazyData: TRUE
+Depends: R (>= 3.3)
 Imports:
     Rcpp (>= 0.12.2), stringi, RcppParallel,
     htmlwidgets (>= 0.6),
