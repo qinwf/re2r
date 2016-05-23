@@ -2,7 +2,10 @@ Package: re2r
 Type: Package
 Title: RE2 Regular Expression
 Version: 0.1.0
-Author: Qin Wenfeng, and RE2 developers.
+Authors@R: c(
+    person("Qin", "Wenfeng", , "mail@qinwenfeng.com", c("aut", "cre")),
+    person("RE2 developers", role = "ctb")
+    )
 Maintainer: Qin Wenfeng <mail@qinwenfeng.com>
 Description: RE2 is a primarily DFA based regexp engine from Google that is very fast
     at matching large amounts of text.

@@ -5,6 +5,7 @@ src/*.o
 src/*.so
 src/*.dll
 inst/doc
+inst/web
 .idea/
 cmakebuild/
 GPATH

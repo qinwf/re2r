@@ -48,7 +48,9 @@ after_failure:
 
 after_success:
   - ./travis-tool.sh dump_logs
-  - Rscript -e 'if ( Sys.getenv("OS") == "Linux" && Sys.getenv("RUN_RE2R_BENCHMARK") == "TRUE") {library(devtools); install(); build_vignettes(); library("covr"); codecov();}' 
+  - Rscript -e 'if ( Sys.getenv("OS") == "Linux" && Sys.getenv("RUN_RE2R_BENCHMARK") == "TRUE") {library(devtools); install(); install_github("hadley/staticdocs"); build_vignettes(); system("rm -rf ./vignettes"); staticdocs::build_site(); library("covr"); codecov();}' 
+  - mkdir ./inst/doc/function
+  - cp -r ./inst/web ./inst/doc/function
   - cd ./inst/doc/
   - touch .nojekyll
   - cp re2r-intro.html index.html

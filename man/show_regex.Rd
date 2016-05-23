@@ -20,6 +20,10 @@ Show JS-style regex pattern in an htmlwidget.
 Most parts of RE2 regex syntax are supported, except for some special Unicode character classes.
 }
 \examples{
+# Skip on CRAN
+
+\dontrun{
+
 # US ZIP code
 
 show_regex("[0-9]{5}(?:-[0-9]{4})?")
@@ -39,6 +43,7 @@ show_regex("((www\\\\.|(http|https|ftp|news|file)+\\\\:\\\\/\\\\/)[_.a-z0-9-]+\\
 # major credit cards
 
 show_regex("^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|622((12[6-9]|1[3-9][0-9])|([2-8][0-9][0-9])|(9(([0-1][0-9])|(2[0-5]))))[0-9]{10}|64[4-9][0-9]{13}|65[0-9]{14}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13})*$")
+}
 
 }
 \seealso{
