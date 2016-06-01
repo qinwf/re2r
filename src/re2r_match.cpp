@@ -50,7 +50,7 @@ inline string NumberToString ( T Number )
     return ss.str();
 }
 
-void bump_count(size_t& coli,size_t& rowi, size_t cols){
+inline void bump_count(size_t& coli,size_t& rowi, size_t cols){
     coli++;
     if (coli== cols){
         coli = 0;
@@ -58,7 +58,7 @@ void bump_count(size_t& coli,size_t& rowi, size_t cols){
     }
 }
 
-void set_colnames(SEXP res, SEXP names){
+inline void set_colnames(SEXP res, SEXP names){
 
     Rf_setAttrib(res, R_DimNamesSymbol, names);
 }
