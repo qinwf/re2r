@@ -45,12 +45,10 @@ template <typename T>
 inline string NumberToString ( T Number )
 {
     ostringstream ss;
-    ss << "?";
+    ss << ".";
     ss << Number;
     return ss.str();
 }
-
-
 
 void bump_count(size_t& coli,size_t& rowi, size_t cols){
     coli++;
@@ -70,7 +68,7 @@ SEXP toprotect_optstring_to_charmat(const optstring& res){
     Shield<SEXP>  resv(Rf_allocMatrix(STRSXP, res.size(), 1));
     SEXP dims = Rf_getAttrib(resv, R_DimSymbol);
     SEXP new_dimnames = Shield<SEXP>((Rf_allocVector(VECSXP, Rf_length(dims))));
-    SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create("?nocapture"));
+    SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create(".match"));
     set_colnames(resv, new_dimnames );
 
 
@@ -390,7 +388,7 @@ SEXP cpp_match_nocapture(CharacterVector& input,
     }
     SEXP dims = Rf_getAttrib(res, R_DimSymbol);
     Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
-    SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create("?nocapture"));
+    SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create(".match"));
     set_colnames(res, new_dimnames );
 
     return res;

@@ -57,7 +57,7 @@ re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4
 ```r
 (res = re2_match(test_string, "(o.e)"))
 
-##      ?1   
+##      .1   
 ## [1,] "one"
 
 str(res)
@@ -65,17 +65,17 @@ str(res)
 ## chr [1, 1] "one"
 ## - attr(*, "dimnames")=List of 2
 ##  ..$ : NULL
-##  ..$ : chr "?1"
+##  ..$ : chr ".1"
 ```
 
-The return result is a character matrix. `?1` is the first capture group and it is unnamed group.
+The return result is a character matrix. `.1` is the first capture group and it is unnamed group.
 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
 ```r
 (res = re2_match(test_string, "(?P<testname>this)( is)")
 
-##      testname ?2   
+##      testname .2   
 ## [1,] "this"   " is"
 
 str(res)
@@ -92,7 +92,7 @@ test_string = c("this is just one test", "the second test");
 ```
 
 ```r
-##      ?nocapture             
+##      .match            
 ## [1,] "this is just one test"
 ## [2,] NA    
 ```
@@ -108,11 +108,11 @@ re2_match_all(c("this is test",
 
 ```r
 ## [[1]]
-##      testname ?2   
+##      testname .2   
 ## [1,] "this"   " is"
 ##
 ## [[2]]
-##      testname ?2   
+##      testname .2   
 ## [1,] "this"   " is"
 ## [2,] "this"   " is"
 ## 
