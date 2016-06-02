@@ -129,5 +129,6 @@ XPtr<RE2Obj> cpp_re2_compile(const char* pattern,
 SEXP toprotect_optstring_sexp(const optstring& input);
 SEXP toprotect_vec_string_sexp(const vector<string>& input);
 vector<tr2::optional<string>> as_vec_opt_string(CharacterVector& input);
+vector<string> get_groups_name(RE2* pattern, int cap_nums);
 
 #endif

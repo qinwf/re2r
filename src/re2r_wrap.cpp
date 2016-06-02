@@ -220,8 +220,8 @@ int get_number_of_groups(XPtr<RE2Obj>& ptr){
 }
 
 // [[Rcpp::export]]
-IntegerVector cpp_get_named_groups(XPtr<RE2Obj>& ptr){
-    return wrap(ptr->regexp.NamedCapturingGroups());
+SEXP cpp_get_named_groups(XPtr<RE2Obj>& ptr){
+    return wrap(get_groups_name(&ptr->regexp,ptr->regexp.NumberOfCapturingGroups()));
 }
 
 struct QuoteMetaP : public Worker

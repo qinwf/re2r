@@ -28,8 +28,6 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-
 #' Find matched groups from strings.
 #'
 #' @param pattern a pre-compiled regular expression or a string

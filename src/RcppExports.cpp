@@ -136,7 +136,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_get_named_groups
-IntegerVector cpp_get_named_groups(XPtr<RE2Obj>& ptr);
+SEXP cpp_get_named_groups(XPtr<RE2Obj>& ptr);
 RcppExport SEXP re2r_cpp_get_named_groups(SEXP ptrSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
