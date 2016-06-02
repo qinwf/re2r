@@ -4,10 +4,10 @@
 \alias{get_expression_size}
 \title{Get pre-compiled regular expression program size}
 \usage{
-get_expression_size(ptr)
+get_expression_size(regexp)
 }
 \arguments{
-\item{ptr}{a pre-compiled regular expression}
+\item{regexp}{a pre-compiled regular expression}
 }
 \value{
 a integer
