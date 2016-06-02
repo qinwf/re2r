@@ -10,7 +10,7 @@ test_that("re2_locate",{
 
     res_2 = re2_locate_all(c(NA,"sds"),"sd")
 
-    expect_identical(sub_string("sds",res2[[2]]),"sd")
+    expect_identical(sub_string("sds",res_2[[2]]),"sd")
     expect_identical(sub_string("sds",1,2),"sd")
 })
 
