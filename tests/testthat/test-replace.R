@@ -87,5 +87,6 @@ test_that("re2_replace", {
 
     }
 
+    expect_identical(re2_preplace(input = c("a","aa"), pattern = "a", rewrite = "b", grain_size = 1), c("b","ba"))
 })
 
