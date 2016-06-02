@@ -79,13 +79,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_expression_size
-int get_expression_size(XPtr<RE2Obj>& ptr);
-RcppExport SEXP re2r_get_expression_size(SEXP ptrSEXP) {
+int get_expression_size(XPtr<RE2Obj>& regexp);
+RcppExport SEXP re2r_get_expression_size(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
-    __result = Rcpp::wrap(get_expression_size(ptr));
+    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(get_expression_size(regexp));
     return __result;
 END_RCPP
 }
@@ -101,13 +101,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_number_of_groups
-int get_number_of_groups(XPtr<RE2Obj>& ptr);
-RcppExport SEXP re2r_get_number_of_groups(SEXP ptrSEXP) {
+int get_number_of_groups(XPtr<RE2Obj>& regexp);
+RcppExport SEXP re2r_get_number_of_groups(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
-    __result = Rcpp::wrap(get_number_of_groups(ptr));
+    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(get_number_of_groups(regexp));
     return __result;
 END_RCPP
 }

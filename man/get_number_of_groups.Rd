@@ -7,7 +7,7 @@
 get_number_of_groups(ptr)
 }
 \arguments{
-\item{regexp}{a pre-compiled regular expression}
+\item{ptr}{a pre-compiled regular expression}
 }
 \value{
 a integer

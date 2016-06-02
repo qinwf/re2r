@@ -188,8 +188,8 @@ SEXP cpp_re2_compile(CharacterVector input,
 //' get_expression_size(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_expression_size(XPtr<RE2Obj>& ptr){
-    return ptr->regexp.ProgramSize();
+int get_expression_size(XPtr<RE2Obj>& regexp){
+    return regexp->regexp.ProgramSize();
 }
 
 // [[Rcpp::export]]
@@ -214,8 +214,8 @@ SEXP cpp_get_pattern(XPtr<RE2Obj>& ptr){
 //' get_number_of_groups(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_number_of_groups(XPtr<RE2Obj>& ptr){
-    return ptr->regexp.NumberOfCapturingGroups();
+int get_number_of_groups(XPtr<RE2Obj>& regexp){
+    return regexp->regexp.NumberOfCapturingGroups();
 }
 
 // [[Rcpp::export]]

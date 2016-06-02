@@ -28,8 +28,8 @@ cpp_re2_compile <- function(input, log_errors_value, utf_8_value, posix_syntax_v
 #' regexp = re2("1")
 #' get_expression_size(regexp)
 #' @export
-get_expression_size <- function(ptr) {
-    .Call('re2r_get_expression_size', PACKAGE = 're2r', ptr)
+get_expression_size <- function(regexp) {
+    .Call('re2r_get_expression_size', PACKAGE = 're2r', regexp)
 }
 
 cpp_get_pattern <- function(ptr) {
@@ -48,8 +48,8 @@ cpp_get_pattern <- function(ptr) {
 #' regexp = re2("1")
 #' get_number_of_groups(regexp)
 #' @export
-get_number_of_groups <- function(ptr) {
-    .Call('re2r_get_number_of_groups', PACKAGE = 're2r', ptr)
+get_number_of_groups <- function(regexp) {
+    .Call('re2r_get_number_of_groups', PACKAGE = 're2r', regexp)
 }
 
 cpp_get_named_groups <- function(ptr) {
