@@ -130,4 +130,7 @@ test_that("match NA",{
     expect_identical(re2_detect(c(NA,"sd"),"NA"),re2_pdetect(c(NA,"sd"),"NA"))
     expect_identical(re2_detect(c(NA,"sd"),"sd"),re2_pdetect(c(NA,"sd"),"sd"))
 
+    expect_identical(re2_detect(c(NA,"sd"),"sd"),re2_pdetect(c(NA,"sd"),"sd", grain_size = 1))
+    expect_identical(re2_detect(c(NA,"sd"),"NA"),re2_pdetect(c(NA,"sd"),"NA", grain_size = 1))
+
 })
