@@ -49,7 +49,7 @@
 #' (sub_string(x, 2, -2) <- "")
 #' @export
 sub_string <- function(string, from = 1L, to = -1L) {
-    if (is.matrix(start)) {
+    if (is.matrix(from)) {
         stringi::stri_sub(string, from = from)
     } else {
         stringi::stri_sub(string, from = from, to = to)
@@ -60,7 +60,7 @@ sub_string <- function(string, from = 1L, to = -1L) {
 #' @export
 #' @rdname sub_string
 "sub_string<-" <- function(string, from = 1L, to = -1L, value) {
-    if (is.matrix(start)) {
+    if (is.matrix(from)) {
         stringi::stri_sub(string, from = from) <- value
     } else {
         stringi::stri_sub(string, from = from, to = to) <- value
