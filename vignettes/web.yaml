@@ -1,0 +1,12 @@
+html_document:
+    toc: yes
+    toc_level: 2
+    toc_float:
+        collapsed: yes
+    theme: readable
+    highlight: tango
+    self_contained: yes
+    css: one.css
+    include:
+        before_body: navbar.htm
+        in_header: head.html

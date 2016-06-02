@@ -48,7 +48,8 @@ after_failure:
 
 after_success:
   - ./travis-tool.sh dump_logs
-  - Rscript -e 'if ( Sys.getenv("OS") == "Linux" && Sys.getenv("RUN_RE2R_BENCHMARK") == "TRUE") {library(devtools); install.packages("roxygen2"); install(); install_github("hadley/staticdocs"); build_vignettes(); system("rm -rf ./vignettes"); staticdocs::build_site(); library("covr"); codecov();}' 
+  - Rscript -e 'if ( Sys.getenv("OS") == "Linux" && Sys.getenv("RUN_RE2R_BENCHMARK") != "TRUE") {library("covr"); codecov();}'
+  - Rscript -e 'if ( Sys.getenv("OS") == "Linux" && Sys.getenv("RUN_RE2R_BENCHMARK") == "TRUE") {library(devtools); install.packages("roxygen2"); install(); install_github("hadley/staticdocs"); file.copy("./vignettes/web.yaml","./vignettes/_output.yaml",overwrite = T); build_vignettes(); system("rm -rf ./vignettes"); staticdocs::build_site();}' 
   - mkdir ./inst/doc/function
   - cp -r ./inst/web/* ./inst/doc/function
   - cd ./inst/doc/
