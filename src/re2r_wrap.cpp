@@ -59,7 +59,6 @@ void check_compile_error(RE2::ErrorCode code_,const string& msg){
     }
 }
 
-// [[Rcpp::export]]
 XPtr<RE2Obj> cpp_re2_compile_one(string pattern,
                           bool log_errors_value,
                           bool utf_8_value,
