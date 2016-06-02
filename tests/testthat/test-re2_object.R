@@ -17,7 +17,7 @@ test_that("get_named_groups",{
 )
 
 test_that("number of groups",{
-    expect_identical(get_number_of_groups(re2("1")),0)
+    expect_identical(get_number_of_groups(re2("1")),0L)
     expect_identical(get_number_of_groups(re2("()")),1L)
     expect_identical(get_number_of_groups(re2("()()")),2L)
     expect_identical(
