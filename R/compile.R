@@ -35,6 +35,7 @@
 #' Create a pre-compiled regular expression from a string.
 #' @param pattern regular expression pattern
 #' @param utf_8 (true)  text and pattern are UTF-8; otherwise Latin-1
+#' @param log_error     (false) log syntax and execution errors
 #' @param posix_syntax     (false) restrict regexps to POSIX egrep syntax
 #' @param longest_match    (false) search for longest match, not first match
 #' @param max_mem          (see details)  approx. max memory footprint of RE2

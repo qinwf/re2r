@@ -7,7 +7,8 @@
 re2(pattern, utf_8 = TRUE, case_sensitive = TRUE, posix_syntax = FALSE,
   dot_nl = FALSE, literal = FALSE, longest_match = FALSE,
   never_nl = FALSE, never_capture = FALSE, one_line = FALSE,
-  perl_classes = FALSE, word_boundary = FALSE, max_mem = 8388608)
+  perl_classes = FALSE, word_boundary = FALSE, log_error = FALSE,
+  max_mem = 8388608)
 }
 \arguments{
 \item{pattern}{regular expression pattern}
@@ -33,6 +34,8 @@ re2(pattern, utf_8 = TRUE, case_sensitive = TRUE, posix_syntax = FALSE,
 \item{perl_classes}{(false) allow Perl's \\d \\s \\w \\D \\S \\W, when posix_syntax == false this features are always enabled}
 
 \item{word_boundary}{(false) allow Perl's \\b \\B (word boundary and not), when posix_syntax == false this features are always enabled}
+
+\item{log_error}{(false) log syntax and execution errors}
 
 \item{max_mem}{(see details)  approx. max memory footprint of RE2}
 }
