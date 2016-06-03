@@ -120,10 +120,7 @@ public:
     void Flush() {
         stream() << "\n";
         if (severity_ >= re2::FLAGS_minloglevel) {
-            // string s = str_.str();
-            // size_t n = s.size();
-            // if (fwrite(s.data(), 1, n, stderr) < n) {}  // shut up gcc
-            Rcpp::Rcerr << str_.str();
+            Rcpp::Rcout << str_.str();
         }
         flushed_ = true;
     }
@@ -148,7 +145,7 @@ public:
         : LogMessage(file, line, 3) {}
     ~LogMessageFatal() {
         Flush();
-        Rcpp::stop("RE2: A unknown fatal error.");
+        Rcpp::Rcout << "RE2: A unknown fatal error.\n";
     }
 private:
     DISALLOW_COPY_AND_ASSIGN(LogMessageFatal);

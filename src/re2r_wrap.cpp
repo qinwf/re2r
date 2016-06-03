@@ -121,7 +121,7 @@ inline LogicalVector btd(bool input){
 
 // [[Rcpp::export]]
 SEXP cpp_get_options(XPtr<RE2Obj>& ptr){
-    List rptr(12);
+    List rptr(13);
     auto re2ptr = ptr.get();
     unique_ptr<RE2::Options>& opt = re2ptr->options;
     rptr[0] = btd(opt->utf8());
@@ -135,7 +135,8 @@ SEXP cpp_get_options(XPtr<RE2Obj>& ptr){
     rptr[8] = btd(opt->one_line());
     rptr[9] = btd(opt->perl_classes());
     rptr[10] = btd(opt->word_boundary());
-    rptr[11] = (double) opt->max_mem();
+    rptr[11] = btd(opt->log_errors());
+    rptr[12] = (double) opt->max_mem();
     return rptr;
 }
 

@@ -102,11 +102,12 @@ re2 = function(pattern,
                one_line = FALSE,
                perl_classes = FALSE,
                word_boundary = FALSE,
+               log_error = FALSE,
                max_mem = 8388608) {
 
     cpp_re2_compile(
         stri_enc_toutf8(pattern),
-        log_errors_value = FALSE,
+        log_errors_value = log_error,
         utf_8_value = utf_8,
         case_sensitive_value = case_sensitive,
         posix_syntax_value = posix_syntax,
@@ -144,7 +145,7 @@ get_pattern = function(regexp) {
 #' @export
 get_options = function(regexp) {
     res = cpp_get_options(regexp)
-    names(res) = c("utf_8", "posix_syntax", "case_sensitive", "dot_nl", "literal", "longest_match", "never_nl", "never_capture", "one_line", "perl_classes", "word_boundary", "max_mem")
+    names(res) = c("utf_8", "posix_syntax", "case_sensitive", "dot_nl", "literal", "longest_match", "never_nl", "never_capture", "one_line", "perl_classes", "word_boundary", "log_error", "max_mem")
     res
 }
 
