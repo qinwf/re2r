@@ -80,3 +80,7 @@ cpp_regex_to_string <- function(regexp) {
     .Call('re2r_cpp_regex_to_string', PACKAGE = 're2r', regexp)
 }
 
+cpp_regex_mimicsPCRE <- function(regexp) {
+    .Call('re2r_cpp_regex_mimicsPCRE', PACKAGE = 're2r', regexp)
+}
+

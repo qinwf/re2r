@@ -199,3 +199,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_regex_mimicsPCRE
+LogicalVector cpp_regex_mimicsPCRE(XPtr<RE2Obj>& regexp);
+RcppExport SEXP re2r_cpp_regex_mimicsPCRE(SEXP regexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(cpp_regex_mimicsPCRE(regexp));
+    return __result;
+END_RCPP
+}

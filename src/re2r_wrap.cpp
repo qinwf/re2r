@@ -600,3 +600,9 @@ SEXP cpp_regex_to_string(XPtr<RE2Obj>& regexp){
     UNPROTECT(1);
     return(res);
 }
+
+// [[Rcpp::export]]
+LogicalVector cpp_regex_mimicsPCRE(XPtr<RE2Obj>& regexp){
+    auto ptr = regexp->regexp.Regexp();
+    return wrap(ptr->MimicsPCRE());
+}
