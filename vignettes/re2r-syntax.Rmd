@@ -7,11 +7,155 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, include=FALSE}
+library(re2r)
+```
+
 This page lists the regular expression syntax accepted by RE2. It also lists syntax accepted by PCRE, PERL, and VIM.
 
 Grayed out expressions are not supported by RE2.
 
-<div class="markdown-body">
+<div  class="markdown-body">
+
+## RE Engine Compare
+
+<table>
+<tr><td>**Feature**</td>
+<td>**ICU**</td>
+<td>**PCRE**</td>
+<td>**TRE**</td>
+<td>**RE2**</td>
+<td>**Boost.Regex**</td>
+</tr>
+<tr><td>&quot;+&quot; quantifier</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>Negated character classes</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>Non-greedy quantifiers</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>non-capturing groups</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>Recursion</td>
+<td>x</td>
+<td>o</td>
+<td>x</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>Look-ahead</td>
+<td>o</td>
+<td>o</td>
+<td>x</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>Look-behind</td>
+<td>o</td>
+<td>o</td>
+<td>x</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>Backreferences</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>&gt;9 indexable captures</td>
+<td>o</td>
+<td>o</td>
+<td>x</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>Flags modifiers </td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>Conditionals</td>
+<td>x</td>
+<td>o</td>
+<td>x</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>Independent sub-expressions</td>
+<td>o</td>
+<td>o</td>
+<td>x</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>Named capture</td>
+<td>x</td>
+<td>o</td>
+<td>x</td>
+<td>o</td>
+<td>o</td>
+</tr>
+<tr><td>Comments</td>
+<td>o</td>
+<td>o</td>
+<td>o</td>
+<td>x</td>
+<td>o</td>
+</tr>
+<tr><td>Embedded code</td>
+<td>x</td>
+<td>o</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr><td>Unicode property support </td>
+<td>o</td>
+<td>o</td>
+<td>?</td>
+<td>Some</td>
+<td>Some</td>
+</tr>
+<tr><td>Balancing groups</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr><td>Variable-length look-behinds</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+</tr>
+</table>
+
+<p />
 
 ## Single Character
 
