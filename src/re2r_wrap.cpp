@@ -114,6 +114,30 @@ XPtr<RE2Obj> cpp_re2_compile_one(string pattern,
     return regobj;
 }
 
+inline LogicalVector btd(bool input){
+    return wrap(input);
+}
+
+// [[Rcpp::export]]
+SEXP cpp_get_options(XPtr<RE2Obj>& ptr){
+    List rptr(12);
+    auto re2ptr = ptr.get();
+    unique_ptr<RE2::Options>& opt = re2ptr->options;
+    rptr[0] = btd(opt->utf8());
+    rptr[1] = btd(opt->posix_syntax());
+    rptr[2] = btd(opt->case_sensitive());
+    rptr[3] = btd(opt->dot_nl());
+    rptr[4] = btd(opt->literal());
+    rptr[5] = btd(opt->longest_match());
+    rptr[6] = btd(opt->never_nl());
+    rptr[7] = btd(opt->never_capture());
+    rptr[8] = btd(opt->one_line());
+    rptr[9] = btd(opt->perl_classes());
+    rptr[10] = btd(opt->word_boundary());
+    rptr[11] = (double) opt->max_mem();
+    return rptr;
+}
+
 // [[Rcpp::export]]
 SEXP cpp_re2_compile(CharacterVector input,
                           bool log_errors_value,

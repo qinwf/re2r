@@ -135,6 +135,19 @@ get_pattern = function(regexp) {
     res
 }
 
+#' Return the options for a pre-compiled regular expression
+#'
+#' @param regexp a pre-compiled regular expression
+#' @examples
+#' get_options(re2("1"))
+#' @return a list
+#' @export
+get_options = function(regexp) {
+    res = cpp_get_options(regexp)
+    names(res) = c("utf_8", "posix_syntax", "case_sensitive", "dot_nl", "literal", "longest_match", "never_nl", "never_capture", "one_line", "perl_classes", "word_boundary", "max_mem")
+    res
+}
+
 #' Return capturing names with indices.
 #'
 #' The map records the index of the leftmost group with the given name.

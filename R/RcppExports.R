@@ -13,6 +13,10 @@ cpp_split <- function(input, ptr, part, fixed, parallel, grain_size) {
     .Call('re2r_cpp_split', PACKAGE = 're2r', input, ptr, part, fixed, parallel, grain_size)
 }
 
+cpp_get_options <- function(ptr) {
+    .Call('re2r_cpp_get_options', PACKAGE = 're2r', ptr)
+}
+
 cpp_re2_compile <- function(input, log_errors_value, utf_8_value, posix_syntax_value, case_sensitive_value, dot_nl_value, literal_value, longest_match_value, never_nl_value, never_capture_value, one_line_value, perl_classes_value, word_boundary_value, max_mem_value) {
     .Call('re2r_cpp_re2_compile', PACKAGE = 're2r', input, log_errors_value, utf_8_value, posix_syntax_value, case_sensitive_value, dot_nl_value, literal_value, longest_match_value, never_nl_value, never_capture_value, one_line_value, perl_classes_value, word_boundary_value, max_mem_value)
 }
