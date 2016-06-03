@@ -82,7 +82,7 @@ class DFA {
 
   // Computes min and max for matching strings.  Won't return strings
   // bigger than maxlen.
-  bool PossibleMatchRange(string* min, string* max, int maxlen);
+  // bool PossibleMatchRange(string* min, string* max, int maxlen);
 
   // These data structures are logically private, but C++ makes it too
   // difficult to mark them as such.
@@ -1950,163 +1950,163 @@ int Prog::BuildEntireDFA(MatchKind kind) {
 
 // Computes min and max for matching string.
 // Won't return strings bigger than maxlen.
-bool DFA::PossibleMatchRange(string* min, string* max, int maxlen) {
-  if (!ok())
-    return false;
+// bool DFA::PossibleMatchRange(string* min, string* max, int maxlen) {
+//   if (!ok())
+//     return false;
 
-  // NOTE: if future users of PossibleMatchRange want more precision when
-  // presented with infinitely repeated elements, consider making this a
-  // parameter to PossibleMatchRange.
-  static int kMaxEltRepetitions = 0;
+//   // NOTE: if future users of PossibleMatchRange want more precision when
+//   // presented with infinitely repeated elements, consider making this a
+//   // parameter to PossibleMatchRange.
+//   static int kMaxEltRepetitions = 0;
 
-  // Keep track of the number of times we've visited states previously. We only
-  // revisit a given state if it's part of a repeated group, so if the value
-  // portion of the map tuple exceeds kMaxEltRepetitions we bail out and set
-  // |*max| to |PrefixSuccessor(*max)|.
-  //
-  // Also note that previously_visited_states[UnseenStatePtr] will, in the STL
-  // tradition, implicitly insert a '0' value at first use. We take advantage
-  // of that property below.
-  map<State*, int> previously_visited_states;
+//   // Keep track of the number of times we've visited states previously. We only
+//   // revisit a given state if it's part of a repeated group, so if the value
+//   // portion of the map tuple exceeds kMaxEltRepetitions we bail out and set
+//   // |*max| to |PrefixSuccessor(*max)|.
+//   //
+//   // Also note that previously_visited_states[UnseenStatePtr] will, in the STL
+//   // tradition, implicitly insert a '0' value at first use. We take advantage
+//   // of that property below.
+//   map<State*, int> previously_visited_states;
 
-  // Pick out start state for anchored search at beginning of text.
-  RWLocker l(&cache_mutex_);
-  SearchParams params(NULL, NULL, &l);
-  params.anchored = true;
-  if (!AnalyzeSearch(&params))
-    return false;
-  if (params.start == DeadState) {  // No matching strings
-    *min = "";
-    *max = "";
-    return true;
-  }
-  if (params.start == FullMatchState)  // Every string matches: no max
-    return false;
+//   // Pick out start state for anchored search at beginning of text.
+//   RWLocker l(&cache_mutex_);
+//   SearchParams params(NULL, NULL, &l);
+//   params.anchored = true;
+//   if (!AnalyzeSearch(&params))
+//     return false;
+//   if (params.start == DeadState) {  // No matching strings
+//     *min = "";
+//     *max = "";
+//     return true;
+//   }
+//   if (params.start == FullMatchState)  // Every string matches: no max
+//     return false;
 
-  // The DFA is essentially a big graph rooted at params.start,
-  // and paths in the graph correspond to accepted strings.
-  // Each node in the graph has potentially 256+1 arrows
-  // coming out, one for each byte plus the magic end of
-  // text character kByteEndText.
+//   // The DFA is essentially a big graph rooted at params.start,
+//   // and paths in the graph correspond to accepted strings.
+//   // Each node in the graph has potentially 256+1 arrows
+//   // coming out, one for each byte plus the magic end of
+//   // text character kByteEndText.
 
-  // To find the smallest possible prefix of an accepted
-  // string, we just walk the graph preferring to follow
-  // arrows with the lowest bytes possible.  To find the
-  // largest possible prefix, we follow the largest bytes
-  // possible.
+//   // To find the smallest possible prefix of an accepted
+//   // string, we just walk the graph preferring to follow
+//   // arrows with the lowest bytes possible.  To find the
+//   // largest possible prefix, we follow the largest bytes
+//   // possible.
 
-  // The test for whether there is an arrow from s on byte j is
-  //    ns = RunStateOnByteUnlocked(s, j);
-  //    if (ns == NULL)
-  //      return false;
-  //    if (ns != DeadState && ns->ninst > 0)
-  // The RunStateOnByteUnlocked call asks the DFA to build out the graph.
-  // It returns NULL only if the DFA has run out of memory,
-  // in which case we can't be sure of anything.
-  // The second check sees whether there was graph built
-  // and whether it is interesting graph.  Nodes might have
-  // ns->ninst == 0 if they exist only to represent the fact
-  // that a match was found on the previous byte.
+//   // The test for whether there is an arrow from s on byte j is
+//   //    ns = RunStateOnByteUnlocked(s, j);
+//   //    if (ns == NULL)
+//   //      return false;
+//   //    if (ns != DeadState && ns->ninst > 0)
+//   // The RunStateOnByteUnlocked call asks the DFA to build out the graph.
+//   // It returns NULL only if the DFA has run out of memory,
+//   // in which case we can't be sure of anything.
+//   // The second check sees whether there was graph built
+//   // and whether it is interesting graph.  Nodes might have
+//   // ns->ninst == 0 if they exist only to represent the fact
+//   // that a match was found on the previous byte.
 
-  // Build minimum prefix.
-  State* s = params.start;
-  min->clear();
-  MutexLock lock(&mutex_);
-  for (int i = 0; i < maxlen; i++) {
-    if (previously_visited_states[s] > kMaxEltRepetitions) {
-      VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
-        << " for state s=" << s << " and min=" << CEscape(*min);
-      break;
-    }
-    previously_visited_states[s]++;
+//   // Build minimum prefix.
+//   State* s = params.start;
+//   min->clear();
+//   MutexLock lock(&mutex_);
+//   for (int i = 0; i < maxlen; i++) {
+//     if (previously_visited_states[s] > kMaxEltRepetitions) {
+//       VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
+//         << " for state s=" << s << " and min=" << CEscape(*min);
+//       break;
+//     }
+//     previously_visited_states[s]++;
 
-    // Stop if min is a match.
-    State* ns = RunStateOnByte(s, kByteEndText);
-    if (ns == NULL)  // DFA out of memory
-      return false;
-    if (ns != DeadState && (ns == FullMatchState || ns->IsMatch()))
-      break;
+//     // Stop if min is a match.
+//     State* ns = RunStateOnByte(s, kByteEndText);
+//     if (ns == NULL)  // DFA out of memory
+//       return false;
+//     if (ns != DeadState && (ns == FullMatchState || ns->IsMatch()))
+//       break;
 
-    // Try to extend the string with low bytes.
-    bool extended = false;
-    for (int j = 0; j < 256; j++) {
-      ns = RunStateOnByte(s, j);
-      if (ns == NULL)  // DFA out of memory
-        return false;
-      if (ns == FullMatchState ||
-          (ns > SpecialStateMax && ns->ninst_ > 0)) {
-        extended = true;
-        min->append(1, static_cast<char>(j));
-        s = ns;
-        break;
-      }
-    }
-    if (!extended)
-      break;
-  }
+//     // Try to extend the string with low bytes.
+//     bool extended = false;
+//     for (int j = 0; j < 256; j++) {
+//       ns = RunStateOnByte(s, j);
+//       if (ns == NULL)  // DFA out of memory
+//         return false;
+//       if (ns == FullMatchState ||
+//           (ns > SpecialStateMax && ns->ninst_ > 0)) {
+//         extended = true;
+//         min->append(1, static_cast<char>(j));
+//         s = ns;
+//         break;
+//       }
+//     }
+//     if (!extended)
+//       break;
+//   }
 
-  // Build maximum prefix.
-  previously_visited_states.clear();
-  s = params.start;
-  max->clear();
-  for (int i = 0; i < maxlen; i++) {
-    if (previously_visited_states[s] > kMaxEltRepetitions) {
-      VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
-        << " for state s=" << s << " and max=" << CEscape(*max);
-      break;
-    }
-    previously_visited_states[s] += 1;
+//   // Build maximum prefix.
+//   previously_visited_states.clear();
+//   s = params.start;
+//   max->clear();
+//   for (int i = 0; i < maxlen; i++) {
+//     if (previously_visited_states[s] > kMaxEltRepetitions) {
+//       VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
+//         << " for state s=" << s << " and max=" << CEscape(*max);
+//       break;
+//     }
+//     previously_visited_states[s] += 1;
 
-    // Try to extend the string with high bytes.
-    bool extended = false;
-    for (int j = 255; j >= 0; j--) {
-      State* ns = RunStateOnByte(s, j);
-      if (ns == NULL)
-        return false;
-      if (ns == FullMatchState ||
-          (ns > SpecialStateMax && ns->ninst_ > 0)) {
-        extended = true;
-        max->append(1, static_cast<char>(j));
-        s = ns;
-        break;
-      }
-    }
-    if (!extended) {
-      // Done, no need for PrefixSuccessor.
-      return true;
-    }
-  }
+//     // Try to extend the string with high bytes.
+//     bool extended = false;
+//     for (int j = 255; j >= 0; j--) {
+//       State* ns = RunStateOnByte(s, j);
+//       if (ns == NULL)
+//         return false;
+//       if (ns == FullMatchState ||
+//           (ns > SpecialStateMax && ns->ninst_ > 0)) {
+//         extended = true;
+//         max->append(1, static_cast<char>(j));
+//         s = ns;
+//         break;
+//       }
+//     }
+//     if (!extended) {
+//       // Done, no need for PrefixSuccessor.
+//       return true;
+//     }
+//   }
 
-  // Stopped while still adding to *max - round aaaaaaaaaa... to aaaa...b
-  *max = PrefixSuccessor(*max);
+//   // Stopped while still adding to *max - round aaaaaaaaaa... to aaaa...b
+//   *max = PrefixSuccessor(*max);
 
-  // If there are no bytes left, we have no way to say "there is no maximum
-  // string".  We could make the interface more complicated and be able to
-  // return "there is no maximum but here is a minimum", but that seems like
-  // overkill -- the most common no-max case is all possible strings, so not
-  // telling the caller that the empty string is the minimum match isn't a
-  // great loss.
-  if (max->empty())
-    return false;
+//   // If there are no bytes left, we have no way to say "there is no maximum
+//   // string".  We could make the interface more complicated and be able to
+//   // return "there is no maximum but here is a minimum", but that seems like
+//   // overkill -- the most common no-max case is all possible strings, so not
+//   // telling the caller that the empty string is the minimum match isn't a
+//   // great loss.
+//   if (max->empty())
+//     return false;
 
-  return true;
-}
+//   return true;
+// }
 
 // PossibleMatchRange for a Prog.
-bool Prog::PossibleMatchRange(string* min, string* max, int maxlen) {
-  DFA* dfa = NULL;
-  {
-    MutexLock l(&dfa_mutex_);
-    // Have to use dfa_longest_ to get all strings for full matches.
-    // For example, (a|aa) never matches aa in first-match mode.
-    dfa = dfa_longest_;
-    if (dfa == NULL) {
-      dfa = new DFA(this, Prog::kLongestMatch, dfa_mem_/2);
-      ATOMIC_STORE_RELEASE(&dfa_longest_, dfa);
-      delete_dfa_ = DeleteDFA;
-    }
-  }
-  return dfa->PossibleMatchRange(min, max, maxlen);
-}
+// bool Prog::PossibleMatchRange(string* min, string* max, int maxlen) {
+//   DFA* dfa = NULL;
+//   {
+//     MutexLock l(&dfa_mutex_);
+//     // Have to use dfa_longest_ to get all strings for full matches.
+//     // For example, (a|aa) never matches aa in first-match mode.
+//     dfa = dfa_longest_;
+//     if (dfa == NULL) {
+//       dfa = new DFA(this, Prog::kLongestMatch, dfa_mem_/2);
+//       ATOMIC_STORE_RELEASE(&dfa_longest_, dfa);
+//       delete_dfa_ = DeleteDFA;
+//     }
+//   }
+//   return dfa->PossibleMatchRange(min, max, maxlen);
+// }
 
 }  // namespace re2

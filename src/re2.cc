@@ -493,48 +493,48 @@ string RE2::QuoteMeta(const StringPiece& unquoted) {
   return result;
 }
 
-bool RE2::PossibleMatchRange(string* min, string* max, int maxlen) const {
-  if (prog_ == NULL)
-    return false;
+// bool RE2::PossibleMatchRange(string* min, string* max, int maxlen) const {
+//   if (prog_ == NULL)
+//     return false;
 
-  int n = static_cast<int>(prefix_.size());
-  if (n > maxlen)
-    n = maxlen;
+//   int n = static_cast<int>(prefix_.size());
+//   if (n > maxlen)
+//     n = maxlen;
 
-  // Determine initial min max from prefix_ literal.
-  string pmin, pmax;
-  pmin = prefix_.substr(0, n);
-  pmax = prefix_.substr(0, n);
-  if (prefix_foldcase_) {
-    // prefix is ASCII lowercase; change pmin to uppercase.
-    for (int i = 0; i < n; i++) {
-      if ('a' <= pmin[i] && pmin[i] <= 'z')
-        pmin[i] += 'A' - 'a';
-    }
-  }
+//   // Determine initial min max from prefix_ literal.
+//   string pmin, pmax;
+//   pmin = prefix_.substr(0, n);
+//   pmax = prefix_.substr(0, n);
+//   if (prefix_foldcase_) {
+//     // prefix is ASCII lowercase; change pmin to uppercase.
+//     for (int i = 0; i < n; i++) {
+//       if ('a' <= pmin[i] && pmin[i] <= 'z')
+//         pmin[i] += 'A' - 'a';
+//     }
+//   }
 
-  // Add to prefix min max using PossibleMatchRange on regexp.
-  string dmin, dmax;
-  maxlen -= n;
-  if (maxlen > 0 && prog_->PossibleMatchRange(&dmin, &dmax, maxlen)) {
-    pmin += dmin;
-    pmax += dmax;
-  } else if (pmax.size() > 0) {
-    // prog_->PossibleMatchRange has failed us,
-    // but we still have useful information from prefix_.
-    // Round up pmax to allow any possible suffix.
-    pmax = PrefixSuccessor(pmax);
-  } else {
-    // Nothing useful.
-    *min = "";
-    *max = "";
-    return false;
-  }
+//   // Add to prefix min max using PossibleMatchRange on regexp.
+//   string dmin, dmax;
+//   maxlen -= n;
+//   if (maxlen > 0 && prog_->PossibleMatchRange(&dmin, &dmax, maxlen)) {
+//     pmin += dmin;
+//     pmax += dmax;
+//   } else if (pmax.size() > 0) {
+//     // prog_->PossibleMatchRange has failed us,
+//     // but we still have useful information from prefix_.
+//     // Round up pmax to allow any possible suffix.
+//     pmax = PrefixSuccessor(pmax);
+//   } else {
+//     // Nothing useful.
+//     *min = "";
+//     *max = "";
+//     return false;
+//   }
 
-  *min = pmin;
-  *max = pmax;
-  return true;
-}
+//   *min = pmin;
+//   *max = pmax;
+//   return true;
+// }
 
 // Avoid possible locale nonsense in standard strcasecmp.
 // The string a is known to be all lowercase.
@@ -652,22 +652,22 @@ bool RE2::Match(const StringPiece& text,
         if (dfa_failed) {
           // Fall back to NFA below.
           skipped_test = true;
-          if (FLAGS_trace_re2)
-            LOG(INFO) << "Match " << trunc(pattern_)
-                      << " [" << CEscape(subtext) << "]"
-                      << " DFA failed.";
+          // if (FLAGS_trace_re2)
+          //   LOG(INFO) << "Match " << trunc(pattern_)
+          //             << " [" << CEscape(subtext) << "]"
+          //             << " DFA failed.";
           break;
         }
-        if (FLAGS_trace_re2)
-          LOG(INFO) << "Match " << trunc(pattern_)
-                    << " [" << CEscape(subtext) << "]"
-                    << " used DFA - no match.";
+        // if (FLAGS_trace_re2)
+        //   LOG(INFO) << "Match " << trunc(pattern_)
+        //             << " [" << CEscape(subtext) << "]"
+        //             << " used DFA - no match.";
         return false;
       }
-      if (FLAGS_trace_re2)
-        LOG(INFO) << "Match " << trunc(pattern_)
-                  << " [" << CEscape(subtext) << "]"
-                  << " used DFA - match";
+      // if (FLAGS_trace_re2)
+      //   LOG(INFO) << "Match " << trunc(pattern_)
+      //             << " [" << CEscape(subtext) << "]"
+      //             << " used DFA - match";
       if (matchp == NULL)  // Matched.  Don't care where
         return true;
       // SearchDFA set match[0].end() but didn't know where the
@@ -681,24 +681,24 @@ bool RE2::Match(const StringPiece& text,
         if (dfa_failed) {
           // Fall back to NFA below.
           skipped_test = true;
-          if (FLAGS_trace_re2)
-            LOG(INFO) << "Match " << trunc(pattern_)
-                      << " [" << CEscape(subtext) << "]"
-                      << " reverse DFA failed.";
+          // if (FLAGS_trace_re2)
+          //   LOG(INFO) << "Match " << trunc(pattern_)
+          //             << " [" << CEscape(subtext) << "]"
+          //             << " reverse DFA failed.";
           break;
         }
-        if (FLAGS_trace_re2)
-          LOG(INFO) << "Match " << trunc(pattern_)
-                    << " [" << CEscape(subtext) << "]"
-                    << " DFA inconsistency.";
+        // if (FLAGS_trace_re2)
+        //   LOG(INFO) << "Match " << trunc(pattern_)
+        //             << " [" << CEscape(subtext) << "]"
+        //             << " DFA inconsistency.";
         if (options_.log_errors())
           LOG(ERROR) << "DFA inconsistency";
         return false;
       }
-      if (FLAGS_trace_re2)
-        LOG(INFO) << "Match " << trunc(pattern_)
-                  << " [" << CEscape(subtext) << "]"
-                  << " used reverse DFA.";
+      // if (FLAGS_trace_re2)
+      //   LOG(INFO) << "Match " << trunc(pattern_)
+      //             << " [" << CEscape(subtext) << "]"
+      //             << " used reverse DFA.";
       break;
     }
 
@@ -717,18 +717,18 @@ bool RE2::Match(const StringPiece& text,
       // the DFA does.
       if (can_one_pass && text.size() <= 4096 &&
           (ncap > 1 || text.size() <= 8)) {
-        if (FLAGS_trace_re2)
-          LOG(INFO) << "Match " << trunc(pattern_)
-                    << " [" << CEscape(subtext) << "]"
-                    << " skipping DFA for OnePass.";
+        // if (FLAGS_trace_re2)
+        //   LOG(INFO) << "Match " << trunc(pattern_)
+        //             << " [" << CEscape(subtext) << "]"
+        //             << " skipping DFA for OnePass.";
         skipped_test = true;
         break;
       }
       if (can_bit_state && text.size() <= bit_state_text_max && ncap > 1) {
         if (FLAGS_trace_re2)
-          LOG(INFO) << "Match " << trunc(pattern_)
-                    << " [" << CEscape(subtext) << "]"
-                    << " skipping DFA for BitState.";
+          // LOG(INFO) << "Match " << trunc(pattern_)
+          //           << " [" << CEscape(subtext) << "]"
+          //           << " skipping DFA for BitState.";
         skipped_test = true;
         break;
       }
@@ -736,16 +736,16 @@ bool RE2::Match(const StringPiece& text,
                             &match, &dfa_failed, NULL)) {
         if (dfa_failed) {
           if (FLAGS_trace_re2)
-            LOG(INFO) << "Match " << trunc(pattern_)
-                      << " [" << CEscape(subtext) << "]"
-                      << " DFA failed.";
+            // LOG(INFO) << "Match " << trunc(pattern_)
+            //           << " [" << CEscape(subtext) << "]"
+            //           << " DFA failed.";
           skipped_test = true;
           break;
         }
         if (FLAGS_trace_re2)
-          LOG(INFO) << "Match " << trunc(pattern_)
-                    << " [" << CEscape(subtext) << "]"
-                    << " used DFA - no match.";
+          // LOG(INFO) << "Match " << trunc(pattern_)
+          //           << " [" << CEscape(subtext) << "]"
+          //           << " used DFA - no match.";
         return false;
       }
       break;
@@ -771,20 +771,20 @@ bool RE2::Match(const StringPiece& text,
     }
 
     if (can_one_pass && anchor != Prog::kUnanchored) {
-      if (FLAGS_trace_re2)
-        LOG(INFO) << "Match " << trunc(pattern_)
-                  << " [" << CEscape(subtext) << "]"
-                  << " using OnePass.";
+      // if (FLAGS_trace_re2)
+      //   LOG(INFO) << "Match " << trunc(pattern_)
+      //             << " [" << CEscape(subtext) << "]"
+      //             << " using OnePass.";
       if (!prog_->SearchOnePass(subtext1, text, anchor, kind, submatch, ncap)) {
         if (!skipped_test && options_.log_errors())
           LOG(ERROR) << "SearchOnePass inconsistency";
         return false;
       }
     } else if (can_bit_state && subtext1.size() <= bit_state_text_max) {
-      if (FLAGS_trace_re2)
-        LOG(INFO) << "Match " << trunc(pattern_)
-                  << " [" << CEscape(subtext) << "]"
-                  << " using BitState.";
+      // if (FLAGS_trace_re2)
+      //   LOG(INFO) << "Match " << trunc(pattern_)
+      //             << " [" << CEscape(subtext) << "]"
+      //             << " using BitState.";
       if (!prog_->SearchBitState(subtext1, text, anchor,
                                  kind, submatch, ncap)) {
         if (!skipped_test && options_.log_errors())
@@ -792,10 +792,10 @@ bool RE2::Match(const StringPiece& text,
         return false;
       }
     } else {
-      if (FLAGS_trace_re2)
-        LOG(INFO) << "Match " << trunc(pattern_)
-                  << " [" << CEscape(subtext) << "]"
-                  << " using NFA.";
+      // if (FLAGS_trace_re2)
+      //   LOG(INFO) << "Match " << trunc(pattern_)
+      //             << " [" << CEscape(subtext) << "]"
+      //             << " using NFA.";
       if (!prog_->SearchNFA(subtext1, text, anchor, kind, submatch, ncap)) {
         if (!skipped_test && options_.log_errors())
           LOG(ERROR) << "SearchNFA inconsistency";
