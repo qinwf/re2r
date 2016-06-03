@@ -48,4 +48,5 @@ test_that("compile special cases",{
     expect_null(re2(NULL))
     expect_null(re2(NA))
     expect_true(is.list(re2(c("as","ab","cs"))))
+    expect_true(is.null(re2(c("as","ab",NA))[[3]]))
 })
