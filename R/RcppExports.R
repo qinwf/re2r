@@ -76,3 +76,7 @@ cpp_get_program_fanout <- function(regexp) {
     .Call('re2r_cpp_get_program_fanout', PACKAGE = 're2r', regexp)
 }
 
+cpp_regex_to_string <- function(regexp) {
+    .Call('re2r_cpp_regex_to_string', PACKAGE = 're2r', regexp)
+}
+

@@ -188,3 +188,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_regex_to_string
+SEXP cpp_regex_to_string(XPtr<RE2Obj>& regexp);
+RcppExport SEXP re2r_cpp_regex_to_string(SEXP regexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(cpp_regex_to_string(regexp));
+    return __result;
+END_RCPP
+}

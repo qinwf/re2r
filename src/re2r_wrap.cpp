@@ -29,6 +29,7 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../inst/include/re2r.h"
+#include "../inst/include/re2/regexp.h"
 #include <tuple>
 #include <memory>
 
@@ -588,4 +589,14 @@ SEXP cpp_get_program_fanout(XPtr<RE2Obj>& regexp){
     map<int,int> res;
     regexp->regexp.ProgramFanout(&res);
     return(wrap(res));
+}
+
+// [[Rcpp::export]]
+SEXP cpp_regex_to_string(XPtr<RE2Obj>& regexp){
+    auto ptr = regexp->regexp.Regexp();
+    string mstring = ptr->ToString();
+    SEXP res = PROTECT( Rf_allocVector(STRSXP,1));
+    SET_STRING_ELT(res, 0, Rf_mkCharLenCE(mstring.c_str(),  strlen(mstring.c_str()) , CE_UTF8));
+    UNPROTECT(1);
+    return(res);
 }
