@@ -67,27 +67,27 @@ StringPiece::size_type StringPiece::find(char c, size_type pos) const {
   return result != ptr_ + length_ ? result - ptr_ : npos;
 }
 
-StringPiece::size_type StringPiece::rfind(const StringPiece& s,
-                                          size_type pos) const {
-  if (length_ < s.length_) return npos;
-  const size_type ulen = length_;
-  if (s.length_ == 0) return min(ulen, pos);
-
-  const char* last = ptr_ + min(ulen - s.length_, pos) + s.length_;
-  const char* result = std::find_end(ptr_, last, s.ptr_, s.ptr_ + s.length_);
-  return result != last ? result - ptr_ : npos;
-}
-
-StringPiece::size_type StringPiece::rfind(char c, size_type pos) const {
-  if (length_ <= 0) return npos;
-  for (int i = static_cast<int>(min(pos, static_cast<size_type>(length_ - 1)));
-       i >= 0; --i) {
-    if (ptr_[i] == c) {
-      return i;
-    }
-  }
-  return npos;
-}
+// StringPiece::size_type StringPiece::rfind(const StringPiece& s,
+//                                           size_type pos) const {
+//   if (length_ < s.length_) return npos;
+//   const size_type ulen = length_;
+//   if (s.length_ == 0) return min(ulen, pos);
+//
+//   const char* last = ptr_ + min(ulen - s.length_, pos) + s.length_;
+//   const char* result = std::find_end(ptr_, last, s.ptr_, s.ptr_ + s.length_);
+//   return result != last ? result - ptr_ : npos;
+// }
+//
+// StringPiece::size_type StringPiece::rfind(char c, size_type pos) const {
+//   if (length_ <= 0) return npos;
+//   for (int i = static_cast<int>(min(pos, static_cast<size_type>(length_ - 1)));
+//        i >= 0; --i) {
+//     if (ptr_[i] == c) {
+//       return i;
+//     }
+//   }
+//   return npos;
+// }
 
 StringPiece StringPiece::substr(size_type pos, size_type n) const {
   if (pos > static_cast<size_type>(length_)) pos = static_cast<size_type>(length_);
