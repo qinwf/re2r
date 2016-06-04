@@ -263,3 +263,21 @@ test_that("bad regex",{
     expect_true( re2_detect(strlong_2 , ".{512}x"))
 
 })
+
+test_that("never \n",{
+    never_cases = list(
+    c("(.*)", "abc\ndef\nghi\n", "abc" ),
+    c("(?s)(abc.*def)", "abc\ndef\n", NA ),
+    c("(abc(.|\n)*def)", "abc\ndef\n", NA ),
+    c("(abc[^x]*def)", "abc\ndef\n", NA ),
+    c("(abc[^x]*def)", "abczzzdef\ndef\n", "abczzzdef" ))
+
+    for ( x in never_cases){
+        if (is.na(x[3])){
+            expect_true(!re2_detect(x[2], re2(x[1],never_nl = T)))
+        }else{
+            expect_identical(re2_match(x[2], re2(x[1],never_nl = T))[[1]], x[3])
+        }
+    }
+
+})
