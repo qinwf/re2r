@@ -1909,44 +1909,44 @@ bool Prog::SearchDFA(const StringPiece& text, const StringPiece& const_context,
 }
 
 // Build out all states in DFA.  Returns number of states.
-int DFA::BuildAllStates() {
-  if (!ok())
-    return 0;
-
-  // Pick out start state for unanchored search
-  // at beginning of text.
-  RWLocker l(&cache_mutex_);
-  SearchParams params(NULL, NULL, &l);
-  params.anchored = false;
-  if (!AnalyzeSearch(&params) || params.start <= SpecialStateMax)
-    return 0;
-
-  // Add start state to work queue.
-  StateSet queued;
-  vector<State*> q;
-  queued.insert(params.start);
-  q.push_back(params.start);
-
-  // Flood to expand every state.
-  for (size_t i = 0; i < q.size(); i++) {
-    State* s = q[i];
-    for (int c = 0; c < 257; c++) {
-      State* ns = RunStateOnByteUnlocked(s, c);
-      if (ns > SpecialStateMax && queued.find(ns) == queued.end()) {
-        queued.insert(ns);
-        q.push_back(ns);
-      }
-    }
-  }
-
-  return static_cast<int>(q.size());
-}
+// int DFA::BuildAllStates() {
+//   if (!ok())
+//     return 0;
+//
+//   // Pick out start state for unanchored search
+//   // at beginning of text.
+//   RWLocker l(&cache_mutex_);
+//   SearchParams params(NULL, NULL, &l);
+//   params.anchored = false;
+//   if (!AnalyzeSearch(&params) || params.start <= SpecialStateMax)
+//     return 0;
+//
+//   // Add start state to work queue.
+//   StateSet queued;
+//   vector<State*> q;
+//   queued.insert(params.start);
+//   q.push_back(params.start);
+//
+//   // Flood to expand every state.
+//   for (size_t i = 0; i < q.size(); i++) {
+//     State* s = q[i];
+//     for (int c = 0; c < 257; c++) {
+//       State* ns = RunStateOnByteUnlocked(s, c);
+//       if (ns > SpecialStateMax && queued.find(ns) == queued.end()) {
+//         queued.insert(ns);
+//         q.push_back(ns);
+//       }
+//     }
+//   }
+//
+//   return static_cast<int>(q.size());
+// }
 
 // Build out all states in DFA for kind.  Returns number of states.
-int Prog::BuildEntireDFA(MatchKind kind) {
-  //LOG(ERROR) << "BuildEntireDFA is only for testing.";
-  return GetDFA(kind)->BuildAllStates();
-}
+// int Prog::BuildEntireDFA(MatchKind kind) {
+//   //LOG(ERROR) << "BuildEntireDFA is only for testing.";
+//   return GetDFA(kind)->BuildAllStates();
+// }
 
 // Computes min and max for matching string.
 // Won't return strings bigger than maxlen.
