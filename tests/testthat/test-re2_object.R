@@ -51,12 +51,6 @@ test_that("compile special cases",{
     expect_true(is.null(re2(c("as","ab",NA))[[3]]))
 })
 
-test_that("get compile string",{
-    re2r:::cpp_regex_to_string(re2("((www\\.|(http|https|ftp|news|file)+\\:\\/\\/)[_.a-z0-9-]+\\.[a-z0-9\\/_:@=.+?,##%&~-]*[^.|\\'|\\# |!|\\(|?|,| |>|<|;|\\)])"))
-    re2r:::cpp_regex_to_string(re2("#?([a-f0-9]{6}|[a-f0-9]{3})"))
-    re2r:::cpp_regex_to_string(re2("^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|622((12[6-9]|1[3-9][0-9])|([2-8][0-9][0-9])|(9(([0-1][0-9])|(2[0-5]))))[0-9]{10}|64[4-9][0-9]{13}|65[0-9]{14}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13})*$"))
-})
-
 test_that("mimics PCRE",{
     test_cases = list(
     list( "abc",       TRUE  ),

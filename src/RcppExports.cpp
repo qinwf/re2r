@@ -38,6 +38,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_regex_simplify
+SEXP cpp_regex_simplify(XPtr<RE2Obj>& regexp);
+RcppExport SEXP re2r_cpp_regex_simplify(SEXP regexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(cpp_regex_simplify(regexp));
+    return __result;
+END_RCPP
+}
 // cpp_split
 SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP ptrSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {

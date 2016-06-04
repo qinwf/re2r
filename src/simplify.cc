@@ -15,27 +15,27 @@ namespace re2 {
 // Parses the regexp src and then simplifies it and sets *dst to the
 // string representation of the simplified form.  Returns true on success.
 // Returns false and sets *error (if error != NULL) on error.
-bool Regexp::SimplifyRegexp(const StringPiece& src, ParseFlags flags,
-                            string* dst,
-                            RegexpStatus* status) {
-  Regexp* re = Parse(src, flags, status);
-  if (re == NULL)
-    return false;
-  Regexp* sre = re->Simplify();
-  re->Decref();
-  if (sre == NULL) {
-    // Should not happen, since Simplify never fails.
-    LOG(ERROR) << "Simplify failed on " << src;
-    if (status) {
-      status->set_code(kRegexpInternalError);
-      status->set_error_arg(src);
-    }
-    return false;
-  }
-  *dst = sre->ToString();
-  sre->Decref();
-  return true;
-}
+// bool Regexp::SimplifyRegexp(const StringPiece& src, ParseFlags flags,
+//                             string* dst,
+//                             RegexpStatus* status) {
+//   Regexp* re = Parse(src, flags, status);
+//   if (re == NULL)
+//     return false;
+//   Regexp* sre = re->Simplify();
+//   re->Decref();
+//   if (sre == NULL) {
+//     // Should not happen, since Simplify never fails.
+//     LOG(ERROR) << "Simplify failed on " << src;
+//     if (status) {
+//       status->set_code(kRegexpInternalError);
+//       status->set_error_arg(src);
+//     }
+//     return false;
+//   }
+//   *dst = sre->ToString();
+//   sre->Decref();
+//   return true;
+// }
 
 // Assuming the simple_ flags on the children are accurate,
 // is this Regexp* simple?

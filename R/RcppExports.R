@@ -9,6 +9,10 @@ cpp_match <- function(input, ptr, value, anchor, all, parallel, grain_size) {
     .Call('re2r_cpp_match', PACKAGE = 're2r', input, ptr, value, anchor, all, parallel, grain_size)
 }
 
+cpp_regex_simplify <- function(regexp) {
+    .Call('re2r_cpp_regex_simplify', PACKAGE = 're2r', regexp)
+}
+
 cpp_split <- function(input, ptr, part, fixed, parallel, grain_size) {
     .Call('re2r_cpp_split', PACKAGE = 're2r', input, ptr, part, fixed, parallel, grain_size)
 }
