@@ -145,10 +145,10 @@ test_that("detect pattern",{
     c( "\\x{00000061}", "a" ),
 
     # Unicode scripts.
-    c( "\\p{Greek}+", rawToChar(as.raw(c(0x61, 0xa6, 0xc1, 0xa6, 0xc2, 0x62))) ),
-    c( "\\P{Greek}+", rawToChar(as.raw(c(0x61, 0xa6, 0xc1, 0xa6, 0xc2, 0x62)))  ),
-    c( "\\p{^Greek}+", rawToChar(as.raw(c(0x61, 0xa6, 0xc1, 0xa6, 0xc2, 0x62)))  ),
-    c( "\\P{^Greek}+", rawToChar(as.raw(c(0x61, 0xa6, 0xc1, 0xa6, 0xc2, 0x62)))  ),
+    c( "\\p{Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L)) ),
+    c( "\\P{Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  ),
+    c( "\\p{^Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  ),
+    c( "\\P{^Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  ),
 
     # Unicode properties.  Nd is decimal number.  N is any number.
     c( "[^0-9]+",  "abc123" ),
