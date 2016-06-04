@@ -46,6 +46,11 @@ inline size_t getUtf8CharSize(char ch) {
     return ((0xE5000000 >> ((ch >> 3) & 0x1E)) & 3) + 1;
 }
 
+inline void set_colnames(SEXP res, SEXP names){
+    SEXP dims = Rf_getAttrib(res, R_DimSymbol);
+    Rf_setAttrib(res, R_DimNamesSymbol, names);
+}
+
 SEXP toprotect_loc_matrix(vector<tuple<size_t,size_t>>& input){
 
     if (input.empty()){
@@ -185,11 +190,12 @@ struct LocateAllP : public Worker
     }
 };
 
-SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
+SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr, SEXP colsname){
     SEXP inputx = input;
     StringPiece match;
 
     Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, input.size(),2));
+    set_colnames(xs, colsname);
     SEXP x = xs;
 
     string headstr ;
@@ -244,7 +250,7 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr){
     return x;
 }
 
-SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
+SEXP cpp_locate_all(CharacterVector& input, RE2* ptr, SEXP colsname){
     SEXP inputx = input;
 
     StringPiece match;
@@ -255,6 +261,7 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
     SEXP na_matrix = na_matrixx;
     INTEGER(na_matrix)[0] = NA_INTEGER;
     INTEGER(na_matrix)[1] = NA_INTEGER;
+    set_colnames(na_matrix, colsname);
 
     string headstr ;
     for(auto it = 0; it!= input.size(); it++){
@@ -284,7 +291,7 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
                 headn += len_head;
 
                 size_t head_s = (size_t) headn+1 ;
-                headn += len_mstring;
+                headn += len_mstring ;
 
                 size_t tail_s = (size_t) headn;
 
@@ -306,8 +313,9 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
 
 
         }
-
-        SET_VECTOR_ELT(x, it, Shield<SEXP>(toprotect_loc_matrix(res)));
+        Shield<SEXP> tempres(toprotect_loc_matrix(res));
+        set_colnames(tempres, colsname);
+        SET_VECTOR_ELT(x, it, tempres);
 
     }
     return x;
@@ -320,12 +328,14 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
 
     RE2* ptr = &(regexp->regexp);
 
+    SEXP colsname = Shield<SEXP>((Rf_allocVector(VECSXP, 2)));
+    SET_VECTOR_ELT(colsname, 1, CharacterVector::create("start","end"));
 
     if (! parallel || input.size() < grain_size){
         if (!all){
-            return cpp_locate_not_all(input, ptr);
+            return cpp_locate_not_all(input, ptr, colsname);
         } else { // not parallel ,all
-            return cpp_locate_all(input, ptr);
+            return cpp_locate_all(input, ptr, colsname);
         }
     } else{
         // parallel
@@ -337,7 +347,9 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
 
             LocateP pobj(inputv, res, *ptr, *(regexp->options));
             parallelFor(0, input.size(), pobj , grain_size);
-            return toprotect_loc_matrix(res);
+            Shield<SEXP> tempres(toprotect_loc_matrix(res));
+            set_colnames(tempres, colsname);
+            return tempres;
         } else {
             vector<vector<tuple<size_t,size_t>>> res(input.size());
 
@@ -355,7 +367,9 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
             INTEGER(na_matrix)[1] = NA_INTEGER;
 
             for (auto resi : res){
-                SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_loc_matrix(resi)));
+                Shield<SEXP> tempres(toprotect_loc_matrix(resi));
+                set_colnames(tempres, colsname);
+                SET_VECTOR_ELT(x, index, tempres);
                 index ++;
             }
             return x;

@@ -40,8 +40,15 @@
 #' re2_locate("yabba dabba doo", "d")
 #' @export
 re2_locate = function(input, pattern, ...) {
+
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
+    }
+    if (get_pattern(pattern) == "") {
+        return(stringi::stri_locate_first_boundaries(
+            input,
+            opts_brkiter = stringi::stri_opts_brkiter("character"))
+        )
     }
     cpp_locate(stri_enc_toutf8(input), pattern, FALSE, FALSE,1)
 }
@@ -49,8 +56,17 @@ re2_locate = function(input, pattern, ...) {
 #' @rdname re2_locate
 #' @export
 re2_locate_all = function(input, pattern, ...) {
+
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
+    }
+    if (get_pattern(pattern) == "") {
+        return(stringi::stri_locate_all_boundaries(
+            input,
+            omit_no_match = TRUE,
+            opts_brkiter = stringi::stri_opts_brkiter("character")
+        )
+        )
     }
     cpp_locate(stri_enc_toutf8(input), pattern, TRUE, FALSE,1)
 }
@@ -72,6 +88,12 @@ re2_plocate = function(input, pattern,
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
+    if (get_pattern(pattern) == "") {
+        return(stringi::stri_locate_first_boundaries(
+            input,
+            opts_brkiter = stringi::stri_opts_brkiter("character"))
+        )
+    }
     cpp_locate(stri_enc_toutf8(input), pattern, FALSE, TRUE,grain_size)
 }
 
@@ -81,6 +103,14 @@ re2_plocate_all = function(input, pattern,
                            grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
+    }
+    if (get_pattern(pattern) == "") {
+        return(stringi::stri_locate_all_boundaries(
+            input,
+            omit_no_match = TRUE,
+            opts_brkiter = stringi::stri_opts_brkiter("character")
+        )
+        )
     }
     cpp_locate(stri_enc_toutf8(input), pattern, TRUE, TRUE,grain_size)
 }
