@@ -958,10 +958,10 @@ bool RE2::CheckRewriteString(const StringPiece& rewrite, string* error) const {
 
 /***** Parsers for various types *****/
 
-// bool RE2::Arg::parse_null(const char* str, int n, void* dest) {
-//   // We fail if somebody asked us to store into a non-NULL void* pointer
-//   return (dest == NULL);
-// }
+bool RE2::Arg::parse_null(const char* str, int n, void* dest) {
+  // We fail if somebody asked us to store into a non-NULL void* pointer
+  return (dest == NULL);
+}
 
 // bool RE2::Arg::parse_string(const char* str, int n, void* dest) {
 //   if (dest == NULL) return true;
