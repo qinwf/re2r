@@ -549,42 +549,42 @@ bool Prog::IsOnePass() {
     }
   }
 
-  if (Debug) {  // For debugging, dump one-pass NFA to LOG(ERROR).
-    string dump = "prog dump:\n" + Dump() + "node dump\n";
-    map<int, int> idmap;
-    for (int i = 0; i < size; i++)
-      if (nodebyid[i] != -1)
-        idmap[nodebyid[i]] = i;
-
-    StringAppendF(&dump, "byte ranges:\n");
-    int i = 0;
-    for (int b = 0; b < bytemap_range_; b++) {
-      int lo = i;
-      while (bytemap_[i] == b)
-        i++;
-      StringAppendF(&dump, "\t%d: %#x-%#x\n", b, lo, i - 1);
-    }
-
-    for (Instq::iterator it = tovisit.begin(); it != tovisit.end(); ++it) {
-      int id = *it;
-      int nodeindex = nodebyid[id];
-      if (nodeindex == -1)
-      	continue;
-      OneState* node = IndexToNode(nodes, statesize, nodeindex);
-      string s;
-      StringAppendF(&dump, "node %d id=%d: matchcond=%#x\n",
-                    nodeindex, id, node->matchcond);
-      for (int i = 0; i < bytemap_range_; i++) {
-        if ((node->action[i] & kImpossible) == kImpossible)
-          continue;
-        StringAppendF(&dump, "  %d cond %#x -> %d id=%d\n",
-                      i, node->action[i] & 0xFFFF,
-                      node->action[i] >> kIndexShift,
-                      idmap[node->action[i] >> kIndexShift]);
-      }
-    }
-    LOG(ERROR) << dump;
-  }
+  // if (Debug) {  // For debugging, dump one-pass NFA to LOG(ERROR).
+  //   string dump = "prog dump:\n" + Dump() + "node dump\n";
+  //   map<int, int> idmap;
+  //   for (int i = 0; i < size; i++)
+  //     if (nodebyid[i] != -1)
+  //       idmap[nodebyid[i]] = i;
+  //
+  //   StringAppendF(&dump, "byte ranges:\n");
+  //   int i = 0;
+  //   for (int b = 0; b < bytemap_range_; b++) {
+  //     int lo = i;
+  //     while (bytemap_[i] == b)
+  //       i++;
+  //     StringAppendF(&dump, "\t%d: %#x-%#x\n", b, lo, i - 1);
+  //   }
+  //
+  //   for (Instq::iterator it = tovisit.begin(); it != tovisit.end(); ++it) {
+  //     int id = *it;
+  //     int nodeindex = nodebyid[id];
+  //     if (nodeindex == -1)
+  //     	continue;
+  //     OneState* node = IndexToNode(nodes, statesize, nodeindex);
+  //     string s;
+  //     StringAppendF(&dump, "node %d id=%d: matchcond=%#x\n",
+  //                   nodeindex, id, node->matchcond);
+  //     for (int i = 0; i < bytemap_range_; i++) {
+  //       if ((node->action[i] & kImpossible) == kImpossible)
+  //         continue;
+  //       StringAppendF(&dump, "  %d cond %#x -> %d id=%d\n",
+  //                     i, node->action[i] & 0xFFFF,
+  //                     node->action[i] >> kIndexShift,
+  //                     idmap[node->action[i] >> kIndexShift]);
+  //     }
+  //   }
+  //   LOG(ERROR) << dump;
+  // }
 
   // Overallocated earlier; cut down to actual size.
   nodep = new uint8[nalloc*statesize];

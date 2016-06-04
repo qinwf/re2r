@@ -56,39 +56,39 @@ void Prog::Inst::InitFail() {
   set_opcode(kInstFail);
 }
 
-string Prog::Inst::Dump() {
-  switch (opcode()) {
-    default:
-      return StringPrintf("opcode %d", static_cast<int>(opcode()));
-
-    case kInstAlt:
-      return StringPrintf("alt -> %d | %d", out(), out1_);
-
-    case kInstAltMatch:
-      return StringPrintf("altmatch -> %d | %d", out(), out1_);
-
-    case kInstByteRange:
-      return StringPrintf("byte%s [%02x-%02x] -> %d",
-                          foldcase_ ? "/i" : "",
-                          lo_, hi_, out());
-
-    case kInstCapture:
-      return StringPrintf("capture %d -> %d", cap_, out());
-
-    case kInstEmptyWidth:
-      return StringPrintf("emptywidth %#x -> %d",
-                          static_cast<int>(empty_), out());
-
-    case kInstMatch:
-      return StringPrintf("match! %d", match_id());
-
-    case kInstNop:
-      return StringPrintf("nop -> %d", out());
-
-    case kInstFail:
-      return StringPrintf("fail");
-  }
-}
+// string Prog::Inst::Dump() {
+//   switch (opcode()) {
+//     default:
+//       return StringPrintf("opcode %d", static_cast<int>(opcode()));
+//
+//     case kInstAlt:
+//       return StringPrintf("alt -> %d | %d", out(), out1_);
+//
+//     case kInstAltMatch:
+//       return StringPrintf("altmatch -> %d | %d", out(), out1_);
+//
+//     case kInstByteRange:
+//       return StringPrintf("byte%s [%02x-%02x] -> %d",
+//                           foldcase_ ? "/i" : "",
+//                           lo_, hi_, out());
+//
+//     case kInstCapture:
+//       return StringPrintf("capture %d -> %d", cap_, out());
+//
+//     case kInstEmptyWidth:
+//       return StringPrintf("emptywidth %#x -> %d",
+//                           static_cast<int>(empty_), out());
+//
+//     case kInstMatch:
+//       return StringPrintf("match! %d", match_id());
+//
+//     case kInstNop:
+//       return StringPrintf("nop -> %d", out());
+//
+//     case kInstFail:
+//       return StringPrintf("fail");
+//   }
+// }
 
 Prog::Prog()
   : anchor_start_(false),
@@ -131,42 +131,42 @@ static inline void AddToQueue(Workq* q, int id) {
     q->insert(id);
 }
 
-static string ProgToString(Prog* prog, Workq* q) {
-  string s;
+// static string ProgToString(Prog* prog, Workq* q) {
+//   string s;
+//
+//   for (Workq::iterator i = q->begin(); i != q->end(); ++i) {
+//     int id = *i;
+//     Prog::Inst* ip = prog->inst(id);
+//     StringAppendF(&s, "%d. %s\n", id, ip->Dump().c_str());
+//     AddToQueue(q, ip->out());
+//     if (ip->opcode() == kInstAlt || ip->opcode() == kInstAltMatch)
+//       AddToQueue(q, ip->out1());
+//   }
+//   return s;
+// }
+//
+// string Prog::Dump() {
+//   string map;
+//   if (false) {  // Debugging
+//     int lo = 0;
+//     StringAppendF(&map, "byte map:\n");
+//     for (int i = 0; i < bytemap_range_; i++) {
+//       StringAppendF(&map, "\t%d. [%02x-%02x]\n", i, lo, unbytemap_[i]);
+//       lo = unbytemap_[i] + 1;
+//     }
+//     StringAppendF(&map, "\n");
+//   }
+//
+//   Workq q(size_);
+//   AddToQueue(&q, start_);
+//   return map + ProgToString(this, &q);
+// }
 
-  for (Workq::iterator i = q->begin(); i != q->end(); ++i) {
-    int id = *i;
-    Prog::Inst* ip = prog->inst(id);
-    StringAppendF(&s, "%d. %s\n", id, ip->Dump().c_str());
-    AddToQueue(q, ip->out());
-    if (ip->opcode() == kInstAlt || ip->opcode() == kInstAltMatch)
-      AddToQueue(q, ip->out1());
-  }
-  return s;
-}
-
-string Prog::Dump() {
-  string map;
-  if (false) {  // Debugging
-    int lo = 0;
-    StringAppendF(&map, "byte map:\n");
-    for (int i = 0; i < bytemap_range_; i++) {
-      StringAppendF(&map, "\t%d. [%02x-%02x]\n", i, lo, unbytemap_[i]);
-      lo = unbytemap_[i] + 1;
-    }
-    StringAppendF(&map, "\n");
-  }
-
-  Workq q(size_);
-  AddToQueue(&q, start_);
-  return map + ProgToString(this, &q);
-}
-
-string Prog::DumpUnanchored() {
-  Workq q(size_);
-  AddToQueue(&q, start_unanchored_);
-  return ProgToString(this, &q);
-}
+// string Prog::DumpUnanchored() {
+//   Workq q(size_);
+//   AddToQueue(&q, start_unanchored_);
+//   return ProgToString(this, &q);
+// }
 
 static bool IsMatch(Prog*, Prog::Inst*);
 

@@ -438,8 +438,8 @@ DFA::DFA(Prog* prog, Prog::MatchKind kind, int64 max_mem)
     astack_(NULL),
     mem_budget_(max_mem),
     cache_warned_(false) {
-  if (DebugDFA)
-    fprintf(stderr, "\nkind %d\n%s\n", (int)kind_, prog_->DumpUnanchored().c_str());
+  // if (DebugDFA)
+  //   fprintf(stderr, "\nkind %d\n%s\n", (int)kind_, prog_->DumpUnanchored().c_str());
   int nmark = 0;
   if (kind_ == Prog::kLongestMatch)
     nmark = prog->size();

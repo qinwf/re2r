@@ -688,8 +688,8 @@ bool
 Prog::SearchNFA(const StringPiece& text, const StringPiece& context,
                 Anchor anchor, MatchKind kind,
                 StringPiece* match, int nmatch) {
-  if (NFA::Debug)
-    Dump();
+  // if (NFA::Debug)
+  //   Dump();
 
   NFA nfa(this);
   StringPiece sp;
