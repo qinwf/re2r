@@ -15,3 +15,44 @@ test_that("unicode match",{
     expect_identical(re2_detect(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"), c(TRUE,TRUE))
     expect_identical(re2_pdetect(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"), c(TRUE,TRUE))
 })
+
+library(stringi)
+
+test_that("Chinese",{
+    expect_true(re2_detect("A", "\\p{L}"));
+    expect_true(re2_detect("A", "\\p{Lu}"));
+    expect_true(!re2_detect("A", "\\p{Ll}"));
+    expect_true(!re2_detect("A", "\\P{L}"));
+    expect_true(!re2_detect("A", "\\P{Lu}"));
+    expect_true(re2_detect("A", "\\P{Ll}"));
+
+    tan = stri_enc_fromutf32(35674)
+    expect_true(re2_detect(tan , "\\p{L}"));
+    expect_true(!re2_detect(tan , "\\p{Lu}"));
+    expect_true(!re2_detect(tan , "\\p{Ll}"));
+    expect_true(!re2_detect(tan , "\\P{L}"));
+    expect_true(re2_detect(tan , "\\P{Lu}"));
+    expect_true(re2_detect(tan , "\\P{Ll}"));
+
+    tan = stri_enc_fromutf32(27704)
+    expect_true(re2_detect(tan , "\\p{L}"));
+    expect_true(!re2_detect(tan , "\\p{Lu}"));
+    expect_true(!re2_detect(tan , "\\p{Ll}"));
+    expect_true(!re2_detect(tan , "\\P{L}"));
+    expect_true(re2_detect(tan , "\\P{Lu}"));
+    expect_true(re2_detect(tan , "\\P{Ll}"));
+
+    tan = stri_enc_fromutf32(37586)
+    expect_true(re2_detect(tan , "\\p{L}"));
+    expect_true(!re2_detect(tan , "\\p{Lu}"));
+    expect_true(!re2_detect(tan , "\\p{Ll}"));
+    expect_true(!re2_detect(tan , "\\P{L}"));
+    expect_true(re2_detect(tan , "\\P{Lu}"));
+    expect_true(re2_detect(tan , "\\P{Ll}"));
+
+    tan = stri_enc_fromutf32(c(65L, 66L, 67L, 68L, 69L, 70L, 71L, 72L, 73L, 35674L, 27704L, 37586L))
+
+    expect_identical(structure(c("A", "B", "C"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c(".1", ".2", ".3"))),re2_match(tan,"(.).*?(.).*?(.)"))
+    expect_identical(structure(c("A", "B", "C"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c(".1", ".2", ".3"))),re2_match(tan,"(.).*?([\\p{L}]).*?(.)"))
+    expect_identical(structure(stri_enc_fromutf32(list(35674L, 27704L, 37586L)), .Dim = c(1L, 3L), .Dimnames = list( NULL, c(".1", ".2", ".3"))),re2_match(tan,".*(.).*?([\\p{Lu}\\p{Lo}]).*?(.)"))
+})

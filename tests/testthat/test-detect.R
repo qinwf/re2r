@@ -287,3 +287,7 @@ test_that("dot nl",{
     expect_true(!re2_detect("\n", re2("(?-s).",dot_nl = T)))
     expect_true(!re2_detect("\n", re2(".",dot_nl = T, never_nl = T)))
 })
+
+test_that("never capture",{
+    expect_identical(0L,get_number_of_groups(re2("(A)(v)",never_capture = T)))
+})
