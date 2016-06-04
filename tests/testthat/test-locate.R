@@ -16,6 +16,43 @@ test_that("re2_locate",{
     expect_identical(sub_string("sds",1,2),"sd")
 })
 
+test_that("test locate NA",{
+
+    # NULL
+    expect_identical(re2_locate(NULL,pattern = "sd"),structure(integer(0), .Dim = c(0L, 2L)))
+
+    # re2_locate_all
+
+    expect_identical(re2_locate_all(c("as","as", NA),pattern = "sd"), list(structure(integer(0), .Dim = c(0L, 2L)), structure(integer(0), .Dim = c(0L, 2L)), structure(c(NA_integer_, NA_integer_), .Dim = 1:2)))
+
+    expect_identical(
+        re2_locate_all(c("as","as", NA),pattern = "sd"),
+        re2_plocate_all(c("as","as", NA),pattern = "sd"))
+
+    expect_identical(
+        re2_locate_all(c("as","as", NA),pattern = "sd"),
+        re2_plocate_all(c("as","as", NA),pattern = "sd", grain_size = 1))
+
+
+    # re2_locate
+
+    expect_identical(re2_locate(c("as","as", NA),pattern = "sd"),
+                     structure(c(NA_integer_, NA_integer_,
+                                 NA_integer_, NA_integer_,
+                                 NA_integer_, NA_integer_),
+                               .Dim = c(3L, 2L)))
+
+    expect_identical(
+        re2_locate(c("as","as", NA),pattern = "sd"),
+        re2_plocate(c("as","as", NA),pattern = "sd"))
+
+    expect_identical(
+        re2_locate(c("as","as", NA),pattern = "sd"),
+        re2_plocate(c("as","as", NA),pattern = "sd", grain_size = 1     ))
+
+})
+
+
 test_that("test sub_string",{
     sds = "sds"
     sub_string(sds,1,2) <- "ab"

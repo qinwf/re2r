@@ -49,13 +49,8 @@ inline size_t getUtf8CharSize(char ch) {
 SEXP toprotect_loc_matrix(vector<tuple<size_t,size_t>>& input){
 
     if (input.empty()){
-        Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, 1,2));
-        SEXP x = xs;
-        auto ptr = INTEGER(x);
-
-        ptr[0] = NA_INTEGER;
-        ptr[1] = NA_INTEGER;
-        return x;
+        Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, 0,2));
+        return xs;
     }
 
     Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, input.size(),2));
@@ -312,11 +307,7 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr){
 
         }
 
-        if (res.empty()) {
-            SET_VECTOR_ELT(x, it, na_matrix);
-        }else{
-            SET_VECTOR_ELT(x, it, Shield<SEXP>(toprotect_loc_matrix(res)));
-        }
+        SET_VECTOR_ELT(x, it, Shield<SEXP>(toprotect_loc_matrix(res)));
 
     }
     return x;
@@ -364,11 +355,7 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
             INTEGER(na_matrix)[1] = NA_INTEGER;
 
             for (auto resi : res){
-                if (resi.empty()) {
-                    SET_VECTOR_ELT(x, index, na_matrix);
-                }else{
-                    SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_loc_matrix(resi)));
-                }
+                SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_loc_matrix(resi)));
                 index ++;
             }
             return x;
