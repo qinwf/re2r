@@ -70,16 +70,28 @@ test_that("no capture with value", {
                      structure(c("this is just one test", NA), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".match")))
 
     expect_identical(re2_pmatch(s, "is"), re2_match(s, "is"))
+    expect_identical(re2_pmatch(s, "is", grain_size = 1), re2_match(s, "is"))
+
 })
+
 
 test_that("anchor start value not all",{
     expect_identical(
         re2_match("dsS","(ds)", anchor = 1),
         structure("ds", .Dim = c(1L, 1L), .Dimnames = list(NULL, ".1"))
         )
+
     expect_identical(
         re2_pmatch("dsS","(ds)",anchor = 1),
         re2_match("dsS","(ds)", anchor = 1))
+
+    expect_identical(
+        re2_pmatch(re2_pmatch(c("dsS", NA),"(ds)",anchor = 1),"(ds)",anchor = 1),
+        structure(c("ds", NA), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".1")))
+
+    expect_identical(
+        re2_pmatch(re2_pmatch(c("dsS", NA),"(ds)",anchor = 1),"(ds)",anchor = 1),
+        re2_pmatch(re2_pmatch(c("dsS", NA),"(ds)",anchor = 1),"(ds)",anchor = 1, grain_size = 1))
 
 
     expect_identical(
@@ -96,8 +108,13 @@ test_that("anchor start value not all",{
         re2_match(c("dsS","ds"),"(ds)", anchor = 2),
         structure(c(NA, "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".1"))
     )
+
     expect_identical(
         re2_pmatch(c("dsS","ds"),"(ds)", anchor = 2),
+        re2_match(c("dsS","ds"),"(ds)", anchor = 2))
+
+    expect_identical(
+        re2_pmatch(c("dsS","ds"),"(ds)", anchor = 2, grain_size =  1),
         re2_match(c("dsS","ds"),"(ds)", anchor = 2))
 
 })
@@ -116,6 +133,10 @@ test_that("tolist",{
         re2_match_all(str, "(?P<testname>this)( is)"),
         re2_pmatch_all(str,"(?P<testname>this)( is)")
         )
+    expect_identical(
+        re2_match_all(str, "(?P<testname>this)( is)"),
+        re2_pmatch_all(str,"(?P<testname>this)( is)", grain_size =  1)
+    )
 })
 
 library(stringi)
