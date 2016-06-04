@@ -150,6 +150,25 @@ test_that("tolist",{
         re2_match_all(str, "(?P<testname>this)( is)"),
         re2_pmatch_all(str,"(?P<testname>this)( is)", grain_size =  1)
     )
+
+    expect_identical(
+        re2_match_all(str, "(?P<testname>this)( is)", anchor = 1),
+
+        list(
+            structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(
+            NULL, c("testname", ".2"))),
+            structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(
+                NULL, c("testname", ".2"))), NULL, NULL))
+
+    expect_identical(
+        re2_match_all(str, "(?P<testname>this)( is)", anchor = 1),
+        re2_pmatch_all(str,"(?P<testname>this)( is)", anchor = 1)
+    )
+    expect_identical(
+        re2_match_all(str, "(?P<testname>this)( is)", anchor = 1),
+        re2_pmatch_all(str,"(?P<testname>this)( is)", grain_size = 1, anchor = 1)
+    )
+
 })
 
 test_that("big group",{
