@@ -233,4 +233,33 @@ test_that("detect pattern",{
         # print(x)
         expect_true(re2_detect(x[2],x[1],case_sensitive = F))
     }
+
+    empty_charset = c( "[^\\S\\s]",
+                       "[^\\S[:space:]]",
+                       "[^\\D\\d]",
+                       "[^\\D[:digit:]]")
+    for ( x in empty_charset){
+        expect_true(!re2_detect("abc", x))
+    }
+
+    bitstate_assumptions = c(
+        "((((()))))[^\\S\\s]?",
+        "((((()))))([^\\S\\s])?",
+        "((((()))))([^\\S\\s]|[^\\S\\s])?",
+        "((((()))))(([^\\S\\s]|[^\\S\\s])|)"
+    )
+    for ( x in bitstate_assumptions){
+        expect_true(re2_detect("", x))
+    }
+
+})
+
+test_that("bad regex",{
+
+    strlong = paste0("x*", stri_dup("a",131072),"*x")
+    expect_true( re2_detect(strlong ,"((?:\\s|xx.*\n|x[*](?:\n|.)*?[*]x)*)"))
+
+    strlong_2 = paste0(stri_dup("c",515),'x');
+    expect_true( re2_detect(strlong_2 , ".{512}x"))
+
 })
