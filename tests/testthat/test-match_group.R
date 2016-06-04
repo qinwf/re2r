@@ -65,9 +65,9 @@ test_that("simple match",{
 })
 
 test_that("no capture with value", {
-    s = c("this is just one test", "the second test");
+    s = c("this is just one test", "the second test", NA);
     expect_identical(re2_match(s, "is"),
-                     structure(c("this is just one test", NA), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".match")))
+                     structure(c("this is just one test", NA, NA), .Dim = c(3L, 1L), .Dimnames = list(NULL, ".match")))
 
     expect_identical(re2_pmatch(s, "is"), re2_match(s, "is"))
     expect_identical(re2_pmatch(s, "is", grain_size = 1), re2_match(s, "is"))
@@ -117,17 +117,30 @@ test_that("anchor start value not all",{
         re2_pmatch(c("dsS","ds"),"(ds)", anchor = 2, grain_size =  1),
         re2_match(c("dsS","ds"),"(ds)", anchor = 2))
 
+    expect_identical(
+        structure(c("ds", "ds"), .Dim = c(2L, 1L), .Dimnames = list(NULL,".1")),
+        re2_match(c("dsS","ds"),"(ds)", anchor = 0))
+
+    expect_identical(
+        re2_pmatch(c("dsS","ds"),"(ds)", anchor = 0),
+        re2_match(c("dsS","ds"),"(ds)", anchor = 0))
+
+    expect_identical(
+        re2_pmatch(c("dsS","ds"),"(ds)", anchor = 0, grain_size =  1),
+        re2_match(c("dsS","ds"),"(ds)", anchor = 0))
+
 })
 
 test_that("tolist",{
     str = c("this is test",
             "this is test, and this is not test",
-            "they are tests")
+            "they are tests",
+            NA)
 
     expect_identical(
         re2_match_all(str, "(?P<testname>this)( is)"),
 
-        list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", ".2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", ".2"))), NULL))
+        list(structure(c("this", " is"), .Dim = 1:2, .Dimnames = list(NULL, c("testname", ".2"))), structure(c("this", "this", " is", " is"), .Dim = c(2L, 2L), .Dimnames = list(NULL, c("testname", ".2"))), NULL, NULL))
 
     expect_identical(
         re2_match_all(str, "(?P<testname>this)( is)"),
@@ -137,6 +150,15 @@ test_that("tolist",{
         re2_match_all(str, "(?P<testname>this)( is)"),
         re2_pmatch_all(str,"(?P<testname>this)( is)", grain_size =  1)
     )
+})
+
+test_that("big group",{
+    big = paste0(rep("(a)", 1000L), collapse = "")
+    bigchar = paste0(rep("a", 1000L), collapse = "")
+    bigregex = re2(
+        big
+    )
+    expect_true(re2_detect(bigchar, bigregex))
 })
 
 library(stringi)

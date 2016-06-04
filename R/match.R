@@ -165,6 +165,6 @@ re2_pmatch_all = function(input,
                            anchor = 0,
                           grain_size = 100000,
                            ...) {
-    re2_match(input, pattern, anchor = anchor, value = TRUE, all = TRUE, parallel = FALSE, grain_size, ...)
+    re2_match(input, pattern, anchor = anchor, value = TRUE, all = TRUE, parallel = TRUE, grain_size, ...)
 }
 
