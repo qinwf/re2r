@@ -222,4 +222,6 @@ test_that("get compile string",{
         expect_identical( get_simplify(re2(x[[1]], dot_nl  = T, perl_classes = T)),x[[2]])
     }
 
+    expect_identical( get_simplify("ab"), "ab")
+
 })
