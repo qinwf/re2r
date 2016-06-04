@@ -499,44 +499,44 @@ DFA::~DFA() {
 // Debugging printouts
 
 // For debugging, returns a string representation of the work queue.
-string DFA::DumpWorkq(Workq* q) {
-  string s;
-  const char* sep = "";
-  for (DFA::Workq::iterator it = q->begin(); it != q->end(); ++it) {
-    if (q->is_mark(*it)) {
-      StringAppendF(&s, "|");
-      sep = "";
-    } else {
-      StringAppendF(&s, "%s%d", sep, *it);
-      sep = ",";
-    }
-  }
-  return s;
-}
+// string DFA::DumpWorkq(Workq* q) {
+//   string s;
+//   const char* sep = "";
+//   for (DFA::Workq::iterator it = q->begin(); it != q->end(); ++it) {
+//     if (q->is_mark(*it)) {
+//       StringAppendF(&s, "|");
+//       sep = "";
+//     } else {
+//       StringAppendF(&s, "%s%d", sep, *it);
+//       sep = ",";
+//     }
+//   }
+//   return s;
+// }
 
 // For debugging, returns a string representation of the state.
-string DFA::DumpState(State* state) {
-  if (state == NULL)
-    return "_";
-  if (state == DeadState)
-    return "X";
-  if (state == FullMatchState)
-    return "*";
-  string s;
-  const char* sep = "";
-  StringAppendF(&s, "(%p)", state);
-  for (int i = 0; i < state->ninst_; i++) {
-    if (state->inst_[i] == Mark) {
-      StringAppendF(&s, "|");
-      sep = "";
-    } else {
-      StringAppendF(&s, "%s%d", sep, state->inst_[i]);
-      sep = ",";
-    }
-  }
-  StringAppendF(&s, " flag=%#x", state->flag_);
-  return s;
-}
+// string DFA::DumpState(State* state) {
+//   if (state == NULL)
+//     return "_";
+//   if (state == DeadState)
+//     return "X";
+//   if (state == FullMatchState)
+//     return "*";
+//   string s;
+//   const char* sep = "";
+//   StringAppendF(&s, "(%p)", state);
+//   for (int i = 0; i < state->ninst_; i++) {
+//     if (state->inst_[i] == Mark) {
+//       StringAppendF(&s, "|");
+//       sep = "";
+//     } else {
+//       StringAppendF(&s, "%s%d", sep, state->inst_[i]);
+//       sep = ",";
+//     }
+//   }
+//   StringAppendF(&s, " flag=%#x", state->flag_);
+//   return s;
+// }
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -609,8 +609,8 @@ DFA::State* DFA::WorkqToCachedState(Workq* q, uint flag) {
   uint needflags = 0;     // flags needed by kInstEmptyWidth instructions
   bool sawmatch = false;  // whether queue contains guaranteed kInstMatch
   bool sawmark = false;  // whether queue contains a Mark
-  if (DebugDFA)
-    fprintf(stderr, "WorkqToCachedState %s [%#x]", DumpWorkq(q).c_str(), flag);
+  // if (DebugDFA)
+  //   fprintf(stderr, "WorkqToCachedState %s [%#x]", DumpWorkq(q).c_str(), flag);
   for (Workq::iterator it = q->begin(); it != q->end(); ++it) {
     int id = *it;
     if (sawmatch && (kind_ == Prog::kFirstMatch || q->is_mark(id)))
@@ -737,8 +737,8 @@ DFA::State* DFA::CachedState(int* inst, int ninst, uint flag) {
   State state = { inst, ninst, flag, NULL };
   StateSet::iterator it = state_cache_.find(&state);
   if (it != state_cache_.end()) {
-    if (DebugDFA)
-      fprintf(stderr, " -cached-> %s\n", DumpState(*it).c_str());
+    // if (DebugDFA)
+    //   fprintf(stderr, " -cached-> %s\n", DumpState(*it).c_str());
     return *it;
   }
 
@@ -764,8 +764,8 @@ DFA::State* DFA::CachedState(int* inst, int ninst, uint flag) {
   memmove(s->inst_, inst, ninst*sizeof s->inst_[0]);
   s->ninst_ = ninst;
   s->flag_ = flag;
-  if (DebugDFA)
-    fprintf(stderr, " -> %s\n", DumpState(s).c_str());
+  // if (DebugDFA)
+  //   fprintf(stderr, " -> %s\n", DumpState(s).c_str());
 
   // Put state in cache and return it.
   state_cache_.insert(s);
@@ -945,9 +945,9 @@ void DFA::RunWorkqOnByte(Workq* oldq, Workq* newq,
     }
   }
 
-  if (DebugDFA)
-    fprintf(stderr, "%s on %d[%#x] -> %s [%d]\n", DumpWorkq(oldq).c_str(),
-            c, flag, DumpWorkq(newq).c_str(), *ismatch);
+  // if (DebugDFA)
+  //   fprintf(stderr, "%s on %d[%#x] -> %s [%d]\n", DumpWorkq(oldq).c_str(),
+  //           c, flag, DumpWorkq(newq).c_str(), *ismatch);
 }
 
 // Processes input byte c in state, returning new state.
@@ -1330,9 +1330,9 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
   }
 
   while (p != ep) {
-    if (DebugDFA)
-      fprintf(stderr, "@%d: %s\n", static_cast<int>(p - bp),
-              DumpState(s).c_str());
+    // if (DebugDFA)
+    //   fprintf(stderr, "@%d: %s\n", static_cast<int>(p - bp),
+    //           DumpState(s).c_str());
     if (have_firstbyte && s == start) {
       // In start state, only way out is to find firstbyte,
       // so use optimized assembly in memchr to skip ahead.
@@ -1437,10 +1437,10 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
         lastmatch = p - 1;
       else
         lastmatch = p + 1;
-      if (DebugDFA)
-        fprintf(stderr, "match @%d! [%s]\n",
-                static_cast<int>(lastmatch - bp),
-                DumpState(s).c_str());
+      // if (DebugDFA)
+      //   fprintf(stderr, "match @%d! [%s]\n",
+      //           static_cast<int>(lastmatch - bp),
+      //           DumpState(s).c_str());
 
       if (want_earliest_match) {
         params->ep = reinterpret_cast<const char*>(lastmatch);
@@ -1484,8 +1484,8 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
     }
   }
   s = ns;
-  if (DebugDFA)
-    fprintf(stderr, "@_: %s\n", DumpState(s).c_str());
+  // if (DebugDFA)
+  //   fprintf(stderr, "@_: %s\n", DumpState(s).c_str());
   if (s == FullMatchState) {
     params->ep = reinterpret_cast<const char*>(ep);
     return true;
@@ -1502,9 +1502,9 @@ inline bool DFA::InlinedSearchLoop(SearchParams* params,
           v->push_back(ip->match_id());
       }
     }
-    if (DebugDFA)
-      fprintf(stderr, "match @%d! [%s]\n", static_cast<int>(lastmatch - bp),
-              DumpState(s).c_str());
+    // if (DebugDFA)
+    //   fprintf(stderr, "match @%d! [%s]\n", static_cast<int>(lastmatch - bp),
+    //           DumpState(s).c_str());
   }
   params->ep = reinterpret_cast<const char*>(lastmatch);
   return matched;
@@ -1653,13 +1653,13 @@ bool DFA::AnalyzeSearch(SearchParams* params) {
     }
   }
 
-  if (DebugDFA) {
-    int fb;
-    ATOMIC_LOAD_RELAXED(fb, &info->firstbyte);
-    fprintf(stderr, "anchored=%d fwd=%d flags=%#x state=%s firstbyte=%d\n",
-            params->anchored, params->run_forward, flags,
-            DumpState(info->start).c_str(), fb);
-  }
+  // if (DebugDFA) {
+  //   int fb;
+  //   ATOMIC_LOAD_RELAXED(fb, &info->firstbyte);
+  //   fprintf(stderr, "anchored=%d fwd=%d flags=%#x state=%s firstbyte=%d\n",
+  //           params->anchored, params->run_forward, flags,
+  //           DumpState(info->start).c_str(), fb);
+  // }
 
   params->start = info->start;
   ATOMIC_LOAD_ACQUIRE(params->firstbyte, &info->firstbyte);
@@ -1769,8 +1769,8 @@ bool DFA::Search(const StringPiece& text,
       *epp = text.end();
     return true;
   }
-  if (DebugDFA)
-    fprintf(stderr, "start %s\n", DumpState(params.start).c_str());
+  // if (DebugDFA)
+  //   fprintf(stderr, "start %s\n", DumpState(params.start).c_str());
   bool ret = FastSearchLoop(&params);
   if (params.failed) {
     *failed = true;
