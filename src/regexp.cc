@@ -174,11 +174,11 @@ void Regexp::AddRuneToString(Rune r) {
   runes_[nrunes_++] = r;
 }
 
-Regexp* Regexp::HaveMatch(int match_id, ParseFlags flags) {
-  Regexp* re = new Regexp(kRegexpHaveMatch, flags);
-  re->match_id_ = match_id;
-  return re;
-}
+// Regexp* Regexp::HaveMatch(int match_id, ParseFlags flags) {
+//   Regexp* re = new Regexp(kRegexpHaveMatch, flags);
+//   re->match_id_ = match_id;
+//   return re;
+// }
 
 Regexp* Regexp::Plus(Regexp* sub, ParseFlags flags) {
   if (sub->op() == kRegexpPlus && sub->parse_flags() == flags)
