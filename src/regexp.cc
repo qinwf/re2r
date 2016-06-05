@@ -786,15 +786,15 @@ bool CharClassBuilder::FoldsASCII() {
   return ((upper_ ^ lower_) & AlphaMask) == 0;
 }
 
-CharClassBuilder* CharClassBuilder::Copy() {
-  CharClassBuilder* cc = new CharClassBuilder;
-  for (iterator it = begin(); it != end(); ++it)
-    cc->ranges_.insert(RuneRange(it->lo, it->hi));
-  cc->upper_ = upper_;
-  cc->lower_ = lower_;
-  cc->nrunes_ = nrunes_;
-  return cc;
-}
+// CharClassBuilder* CharClassBuilder::Copy() {
+//   CharClassBuilder* cc = new CharClassBuilder;
+//   for (iterator it = begin(); it != end(); ++it)
+//     cc->ranges_.insert(RuneRange(it->lo, it->hi));
+//   cc->upper_ = upper_;
+//   cc->lower_ = lower_;
+//   cc->nrunes_ = nrunes_;
+//   return cc;
+// }
 
 
 
