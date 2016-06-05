@@ -500,10 +500,10 @@ string RegexpStatus::Text() const {
   return s;
 }
 
-void RegexpStatus::Copy(const RegexpStatus& status) {
-  code_ = status.code_;
-  error_arg_ = status.error_arg_;
-}
+// void RegexpStatus::Copy(const RegexpStatus& status) {
+//   code_ = status.code_;
+//   error_arg_ = status.error_arg_;
+// }
 
 typedef int Ignored;  // Walker<void> doesn't exist
 
