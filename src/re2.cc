@@ -300,17 +300,17 @@ int RE2::NumberOfCapturingGroups() const {
 }
 
 // Returns named_groups_, computing it if needed.
-const map<string, int>& RE2::NamedCapturingGroups() const {
-  MutexLock l(mutex_);
-  if (!ok())
-    return *empty_named_groups;
-  if (named_groups_ == NULL) {
-    named_groups_ = suffix_regexp_->NamedCaptures();
-    if (named_groups_ == NULL)
-      named_groups_ = empty_named_groups;
-  }
-  return *named_groups_;
-}
+// const map<string, int>& RE2::NamedCapturingGroups() const {
+//   MutexLock l(mutex_);
+//   if (!ok())
+//     return *empty_named_groups;
+//   if (named_groups_ == NULL) {
+//     named_groups_ = suffix_regexp_->NamedCaptures();
+//     if (named_groups_ == NULL)
+//       named_groups_ = empty_named_groups;
+//   }
+//   return *named_groups_;
+// }
 
 // Returns group_names_, computing it if needed.
 const map<int, string>& RE2::CapturingGroupNames() const {
@@ -439,21 +439,21 @@ int RE2::GlobalReplace(string *str,
   return count;
 }
 
-bool RE2::Extract(const StringPiece &text,
-                 const RE2& re,
-                 const StringPiece &rewrite,
-                 string *out) {
-  StringPiece vec[kVecSize];
-  int nvec = 1 + MaxSubmatch(rewrite);
-  if (nvec > arraysize(vec))
-    return false;
-
-  if (!re.Match(text, 0, text.size(), UNANCHORED, vec, nvec))
-    return false;
-
-  out->clear();
-  return re.Rewrite(out, rewrite, vec, nvec);
-}
+// bool RE2::Extract(const StringPiece &text,
+//                  const RE2& re,
+//                  const StringPiece &rewrite,
+//                  string *out) {
+//   StringPiece vec[kVecSize];
+//   int nvec = 1 + MaxSubmatch(rewrite);
+//   if (nvec > arraysize(vec))
+//     return false;
+//
+//   if (!re.Match(text, 0, text.size(), UNANCHORED, vec, nvec))
+//     return false;
+//
+//   out->clear();
+//   return re.Rewrite(out, rewrite, vec, nvec);
+// }
 
 string RE2::QuoteMeta(const StringPiece& unquoted) {
   string result;
