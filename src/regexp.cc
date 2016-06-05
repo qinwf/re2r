@@ -63,18 +63,18 @@ bool Regexp::QuickDestroy() {
 static map<Regexp*, int> *ref_map;
 GLOBAL_MUTEX(ref_mutex);
 
-int Regexp::Ref() {
-  if (ref_ < kMaxRef)
-    return ref_;
-
-  GLOBAL_MUTEX_LOCK(ref_mutex);
-  int r = 0;
-  if (ref_map != NULL) {
-    r = (*ref_map)[this];
-  }
-  GLOBAL_MUTEX_UNLOCK(ref_mutex);
-  return r;
-}
+// int Regexp::Ref() {
+//   if (ref_ < kMaxRef)
+//     return ref_;
+//
+//   GLOBAL_MUTEX_LOCK(ref_mutex);
+//   int r = 0;
+//   if (ref_map != NULL) {
+//     r = (*ref_map)[this];
+//   }
+//   GLOBAL_MUTEX_UNLOCK(ref_mutex);
+//   return r;
+// }
 
 // Increments reference count, returns object as convenience.
 Regexp* Regexp::Incref() {
