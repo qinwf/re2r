@@ -321,9 +321,9 @@ test_that("posix_syntax option",{
     expect_error(re2("\\d",posix_syntax = T))
 
     expect_true(!re2_detect("s
-               sdsd",re2("^sdsd$")))
+sdsd",re2("^sdsd$")))
     expect_true(re2_detect("s
-               sdsd",re2("^sdsd$", posix_syntax = T)))
+sdsd",re2("^sdsd$", posix_syntax = T)))
     expect_true(!re2_detect("s
-               sdsd",re2("^sdsd$", posix_syntax = T, one_line = T)))
+sdsd",re2("^sdsd$", posix_syntax = T, one_line = T)))
 })
