@@ -291,3 +291,10 @@ test_that("dot nl",{
 test_that("never capture",{
     expect_identical(0L,get_number_of_groups(re2("(A)(v)",never_capture = T)))
 })
+
+test_that("longest match",{
+    expect_identical(re2_match("aaabaaaa",re2("(a|aaa)",longest_match = T))[[1]], "aaa")
+    expect_identical(re2_match("aaabaaaa",re2("(a|aaa)",longest_match = F))[[1]], "a")
+})
+
+
