@@ -297,4 +297,33 @@ test_that("longest match",{
     expect_identical(re2_match("aaabaaaa",re2("(a|aaa)",longest_match = F))[[1]], "a")
 })
 
+test_that("utf_8 option",{
+    expect_true(re2_detect(stri_enc_fromutf32(c(20013L, 25991L)),re2(stri_enc_fromutf32(c(20013L, 25991L)),utf_8 = F)))
+})
 
+test_that("literal option",{
+    expect_identical(get_simplify(re2("[a-z]")),"[a-z]")
+    expect_identical(get_simplify(re2("[a-z]", literal = T)),"\\[a\\-z\\]")
+})
+
+test_that("max mem",{
+    expect_error(re2("asdddd*", max_mem = 3))
+})
+
+test_that("posix_syntax option",{
+
+    expect_error(re2("\\b",posix_syntax = T))
+    expect_error(re2("\\b"),NA)
+    expect_error(re2("\\b",posix_syntax = T, word_boundary = T),NA)
+
+    expect_error(re2("\\d"),NA)
+    expect_error(re2("\\d",posix_syntax = T, perl_classes = T),NA)
+    expect_error(re2("\\d",posix_syntax = T))
+
+    expect_true(!re2_detect("s
+               sdsd",re2("^sdsd$")))
+    expect_true(re2_detect("s
+               sdsd",re2("^sdsd$", posix_syntax = T)))
+    expect_true(!re2_detect("s
+               sdsd",re2("^sdsd$", posix_syntax = T, one_line = T)))
+})

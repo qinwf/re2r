@@ -79,7 +79,7 @@ XPtr<RE2Obj> cpp_re2_compile_one(string pattern,
     auto options = unique_ptr<RE2::Options>(new RE2::Options());
 
     RE2::Options::Encoding enc_value;
-    enc_value = (utf_8_value = true) ? RE2::Options::EncodingUTF8 : RE2::Options::EncodingLatin1;
+    enc_value = (utf_8_value == true) ? RE2::Options::EncodingUTF8 : RE2::Options::EncodingLatin1;
     options->set_encoding(enc_value);
 
     options->set_log_errors(log_errors_value);
