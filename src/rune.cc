@@ -24,7 +24,7 @@ enum
 	Bit2	= 5,
 	Bit3	= 4,
 	Bit4	= 3,
-	Bit5	= 2, 
+	Bit5	= 2,
 
 	T1	= ((1<<(Bit1+1))-1) ^ 0xFF,	/* 0000 0000 */
 	Tx	= ((1<<(Bitx+1))-1) ^ 0xFF,	/* 1000 0000 */
@@ -206,53 +206,53 @@ fullrune(const char *str, int n)
 }
 
 
-int
-utflen(const char *s)
-{
-	int c;
-	long n;
-	Rune rune;
+// int
+// utflen(const char *s)
+// {
+// 	int c;
+// 	long n;
+// 	Rune rune;
+//
+// 	n = 0;
+// 	for(;;) {
+// 		c = *(unsigned char*)s;
+// 		if(c < Runeself) {
+// 			if(c == 0)
+// 				return n;
+// 			s++;
+// 		} else
+// 			s += chartorune(&rune, s);
+// 		n++;
+// 	}
+// 	return 0;
+// }
 
-	n = 0;
-	for(;;) {
-		c = *(unsigned char*)s;
-		if(c < Runeself) {
-			if(c == 0)
-				return n;
-			s++;
-		} else
-			s += chartorune(&rune, s);
-		n++;
-	}
-	return 0;
-}
-
-char*
-utfrune(const char *s, Rune c)
-{
-	long c1;
-	Rune r;
-	int n;
-
-	if(c < Runesync)		/* not part of utf sequence */
-		return strchr((char*)s, c);
-
-	for(;;) {
-		c1 = *(unsigned char*)s;
-		if(c1 < Runeself) {	/* one byte rune */
-			if(c1 == 0)
-				return 0;
-			if(c1 == c)
-				return (char*)s;
-			s++;
-			continue;
-		}
-		n = chartorune(&r, s);
-		if(r == c)
-			return (char*)s;
-		s += n;
-	}
-	return 0;
-}
+// char*
+// utfrune(const char *s, Rune c)
+// {
+// 	long c1;
+// 	Rune r;
+// 	int n;
+//
+// 	if(c < Runesync)		/* not part of utf sequence */
+// 		return strchr((char*)s, c);
+//
+// 	for(;;) {
+// 		c1 = *(unsigned char*)s;
+// 		if(c1 < Runeself) {	/* one byte rune */
+// 			if(c1 == 0)
+// 				return 0;
+// 			if(c1 == c)
+// 				return (char*)s;
+// 			s++;
+// 			continue;
+// 		}
+// 		n = chartorune(&r, s);
+// 		if(r == c)
+// 			return (char*)s;
+// 		s += n;
+// 	}
+// 	return 0;
+// }
 
 }  // namespace re2
