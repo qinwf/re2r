@@ -187,11 +187,11 @@ vector<string> get_groups_name(RE2* pattern, int cap_nums){
 
 void fill_list_res(int cap_nums,
                   StringPiece* piece,
-                  optstring& res, size_t cnt,bool matched){
+                  optstring& res, size_t cnt){
     auto all_na = true;
 
     // don't get all na
-    if(cnt > 1 && matched ==true ){
+    if(cnt > 1){
         for(auto it = 0; it != cap_nums; ++it) {
             if((piece[it]).data() != NULL){
                 all_na = false;
@@ -201,16 +201,10 @@ void fill_list_res(int cap_nums,
         if (all_na) return;
     }
 
-    if(matched){
-        for(auto it = 0; it != cap_nums; ++it) {
-            if((piece[it]).data() != NULL){
-                res.push_back(tr2::make_optional(piece[it].as_string())) ;
-            } else{
-                res.push_back(tr2::nullopt);
-            }
-        }
-    }else{
-        for(auto it = 0; it != cap_nums; ++it) {
+    for(auto it = 0; it != cap_nums; ++it) {
+        if((piece[it]).data() != NULL){
+            res.push_back(tr2::make_optional(piece[it].as_string())) ;
+        } else{
             res.push_back(tr2::nullopt);
         }
     }
@@ -610,7 +604,7 @@ SEXP cpp_match_all(CharacterVector& input,
             INIT_LISTI_CHECKED
                 while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                     cnt+=1;
-                    fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
+                    fill_list_res(cap_nums, piece_ptr, optinner, cnt);
 
                     // Note that if the
                     // regular expression matches an empty string, input will advance
@@ -632,7 +626,7 @@ SEXP cpp_match_all(CharacterVector& input,
 
                 while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
                     cnt+=1;
-                    fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
+                    fill_list_res(cap_nums, piece_ptr, optinner, cnt);
 
                     CHECK_RESULT
 
@@ -677,7 +671,7 @@ struct MatValue : public Worker{
 
                                    while (RE2::ConsumeN(&todo_str, pattern, args_ptr, cap_nums)) {
                                        cnt+=1;
-                                       fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
+                                       fill_list_res(cap_nums, piece_ptr, optinner, cnt);
 
                                        CHECK_RESULT
                                            // advanced try next place
@@ -700,7 +694,7 @@ struct MatValue : public Worker{
 
                                    while (RE2::FindAndConsumeN(&todo_str, pattern, args_ptr, cap_nums)) {
                                        cnt+=1;
-                                       fill_list_res(cap_nums, piece_ptr, optinner, cnt, true);
+                                       fill_list_res(cap_nums, piece_ptr, optinner, cnt);
 
                                        CHECK_RESULT
                                            // advanced try next place
