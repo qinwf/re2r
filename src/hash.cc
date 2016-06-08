@@ -7,8 +7,8 @@
 lookup3.c, by Bob Jenkins, May 2006, Public Domain.
 
 These are functions for producing 32-bit hashes for hash table lookup.
-hashword(), hashlittle(), hashlittle2(), hashbig(), mix(), and final() 
-are externally useful functions.  Routines to test the hash are included 
+hashword(), hashlittle(), hashlittle2(), hashbig(), mix(), and final()
+are externally useful functions.  Routines to test the hash are included
 if SELF_TEST is defined.  You can use this free for any purpose.  It's in
 the public domain.  It has no warranty.
 
@@ -16,7 +16,7 @@ You probably want to use hashlittle().  hashlittle() and hashbig()
 hash byte arrays.  hashlittle() is is faster than hashbig() on
 little-endian machines.  Intel and AMD are little-endian machines.
 On second thought, you probably want hashlittle2(), which is identical to
-hashlittle() except it returns two 32-bit hashes for the price of one.  
+hashlittle() except it returns two 32-bit hashes for the price of one.
 You could implement hashbig2() if you wanted but I haven't bothered here.
 
 If you want to find a hash of, say, exactly 7 integers, do
@@ -29,9 +29,9 @@ If you want to find a hash of, say, exactly 7 integers, do
 then use c as the hash value.  If you have a variable length array of
 4-byte integers to hash, use hashword().  If you have a byte array (like
 a character string), use hashlittle().  If you have several byte arrays, or
-a mix of things, see the comments above hashlittle().  
+a mix of things, see the comments above hashlittle().
 
-Why is this so big?  I read 12 bytes at a time into 3 4-byte integers, 
+Why is this so big?  I read 12 bytes at a time into 3 4-byte integers,
 then mix those integers.  This is fast (you can do a lot more thorough
 mixing with 12*3 instructions on 3 integers than you can with 3 instructions
 on 1 byte), but shoehorning those bytes into integers efficiently is messy.
@@ -60,7 +60,7 @@ This was tested for:
   the output delta to a Gray code (a^(a>>1)) so a string of 1's (as
   is commonly produced by subtraction) look like a single 1-bit
   difference.
-* the base values were pseudorandom, all zero but one bit set, or 
+* the base values were pseudorandom, all zero but one bit set, or
   all zero plus a counter that starts at zero.
 
 Some k values for my "a-=c; a^=rot(c,k); c+=b;" arrangement that
@@ -70,7 +70,7 @@ satisfy this are
    14  9  3  7 17  3
 Well, "9 15 3 18 27 15" didn't quite get 32 bits diffing
 for "differ" defined as + with a one-bit base and a two-bit delta.  I
-used http://burtleburtle.net/bob/hash/avalanche.html to choose 
+used http://burtleburtle.net/bob/hash/avalanche.html to choose
 the operations, constants, and arrangements of the variables.
 
 This does not achieve avalanche.  There are input bits of (a,b,c)
@@ -109,7 +109,7 @@ produce values of c that look totally different.  This was tested for
   the output delta to a Gray code (a^(a>>1)) so a string of 1's (as
   is commonly produced by subtraction) look like a single 1-bit
   difference.
-* the base values were pseudorandom, all zero but one bit set, or 
+* the base values were pseudorandom, all zero but one bit set, or
   all zero plus a counter that starts at zero.
 
 These constants passed:
@@ -147,47 +147,47 @@ namespace re2 {
  hashlittle() has to dance around fitting the key bytes into registers.
 --------------------------------------------------------------------
 */
-uint32 hashword(
-const uint32 *k,                   /* the key, an array of uint32_t values */
-size_t          length,               /* the length of the key, in uint32_ts */
-uint32        initval)         /* the previous hash, or an arbitrary value */
-{
-  uint32_t a,b,c;
-
-  /* Set up the internal state */
-  a = b = c = 0xdeadbeef + (((uint32_t)length)<<2) + initval;
-
-  /*------------------------------------------------- handle most of the key */
-  while (length > 3)
-  {
-    a += k[0];
-    b += k[1];
-    c += k[2];
-    mix(a,b,c);
-    length -= 3;
-    k += 3;
-  }
-
-  /*------------------------------------------- handle the last 3 uint32_t's */
-  switch(length)                     /* all the case statements fall through */
-  { 
-  case 3 : c+=k[2];
-  case 2 : b+=k[1];
-  case 1 : a+=k[0];
-    final(a,b,c);
-  case 0:     /* case 0: nothing left to add */
-    break;
-  }
-  /*------------------------------------------------------ report the result */
-  return c;
-}
+// uint32 hashword(
+// const uint32 *k,                   /* the key, an array of uint32_t values */
+// size_t          length,               /* the length of the key, in uint32_ts */
+// uint32        initval)         /* the previous hash, or an arbitrary value */
+// {
+//   uint32_t a,b,c;
+//
+//   /* Set up the internal state */
+//   a = b = c = 0xdeadbeef + (((uint32_t)length)<<2) + initval;
+//
+//   /*------------------------------------------------- handle most of the key */
+//   while (length > 3)
+//   {
+//     a += k[0];
+//     b += k[1];
+//     c += k[2];
+//     mix(a,b,c);
+//     length -= 3;
+//     k += 3;
+//   }
+//
+//   /*------------------------------------------- handle the last 3 uint32_t's */
+//   switch(length)                     /* all the case statements fall through */
+//   {
+//   case 3 : c+=k[2];
+//   case 2 : b+=k[1];
+//   case 1 : a+=k[0];
+//     final(a,b,c);
+//   case 0:     /* case 0: nothing left to add */
+//     break;
+//   }
+//   /*------------------------------------------------------ report the result */
+//   return c;
+// }
 
 
 /*
 --------------------------------------------------------------------
 hashword2() -- same as hashword(), but take two seeds and return two
 32-bit values.  pc and pb must both be nonnull, and *pc and *pb must
-both be initialized with seeds.  If you pass in (*pb)==0, the output 
+both be initialized with seeds.  If you pass in (*pb)==0, the output
 (*pc) will be the same as the return value from hashword().
 --------------------------------------------------------------------
 */
@@ -216,7 +216,7 @@ uint32       *pb)               /* IN: more seed OUT: secondary hash value */
 
   /*------------------------------------------- handle the last 3 uint32_t's */
   switch(length)                     /* all the case statements fall through */
-  { 
+  {
   case 3 : c+=k[2];
   case 2 : b+=k[1];
   case 1 : a+=k[0];
