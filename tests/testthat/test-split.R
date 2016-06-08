@@ -13,6 +13,12 @@ test_that("split test",{
     expect_identical(re2_psplit_fixed(c("sdsdsds",NA),"s", grain_size = 1, part = 4), structure(c("", "", "d", "", "d", "", "ds", ""), .Dim = c(2L, 4L)))
     expect_identical(re2_split(c("sdsdsds",NA),"s"), list(c("", "d", "d", "d", ""), NA_character_))
     expect_identical(re2_split_fixed(c("sdsdsds",NA),"s", part = 4), structure(c("", "", "d", "", "d", "", "ds", ""), .Dim = c(2L, 4L)))
+    expect_identical(re2_split_fixed(c("sdsdsds",NA),"s", part = 10), structure(c("", "", "d", "", "d", "", "d", "", "", "", "", "", "", "", "", "", "", "", "", ""), .Dim = c(2L, 10L)))
+
+    # more parts than the splited result
+    expect_identical(re2_split_fixed(c("sdsdsds",NA),"s", part = 4), structure(c("", "", "d", "", "d", "", "ds", ""), .Dim = c(2L, 4L)))
+    expect_identical(re2_split_fixed(c("sdsdsds",NA),"s", part = 10), re2_psplit_fixed(c("sdsdsds", NA), "s", part = 10, grain_size = 1))
+    expect_identical(re2_split_fixed(c("sdsdsds",NA),"s", part = 10), re2_psplit_fixed(c("sdsdsds", NA), "s", part = 10))
 })
 
 test_that("split error test",{
