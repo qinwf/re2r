@@ -178,6 +178,7 @@ test_that("big group",{
         big
     )
     expect_true(re2_detect(bigchar, bigregex))
+    expect_true(unique(re2_match(bigchar, bigregex)[[1]]) == "a")
 })
 
 library(stringi)
