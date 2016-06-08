@@ -14,7 +14,7 @@ library(re2r)
 library(stringi)
 library(microbenchmark)
 library(ggplot2)
-library(plotly)
+library(directlabels)
 ```
 
 ## Repetitions
@@ -61,7 +61,7 @@ linear.legend <- function(times) {
              data=times)
 }
 
-ggplotly(linear.legend(times))
+direct.label(linear.legend(times), "last.polygons")
 
 log.legend <- function(times) { 
     ggplot()+
@@ -74,7 +74,8 @@ log.legend <- function(times) {
              shape=1,
              data=times)
 }
-ggplotly(log.legend(times))
+
+direct.label(log.legend(times), "last.polygons")
 ```
 
 ### Part 2
@@ -110,7 +111,7 @@ for(N in c(1,5,10,15,20,25)){
 }
 times <- do.call(rbind, times.list)
 
-ggplotly(linear.legend(times))
+direct.label(linear.legend(times), "last.polygons")
 
 identical(grepl("[0-9]{3,}", letdig) , re2_match(letdig, "[0-9]{3,}"))
 identical(grepl("[0-9]{3,}", letdig, perl = TRUE), re2_detect(letdig, "[0-9]{3,}"))

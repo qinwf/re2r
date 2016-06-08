@@ -34,7 +34,7 @@ before_install:
 
 install:
   - ./travis-tool.sh install_r_binary Rcpp RCurl stringi ggplot2 dplyr curl jsonlite yaml tidyr RcppParallel markdown
-  - ./travis-tool.sh install_r plotly covr
+  - ./travis-tool.sh install_r directlabels covr
   - ./travis-tool.sh install_deps
 
 before_script:
