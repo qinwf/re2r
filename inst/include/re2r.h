@@ -96,7 +96,7 @@ RCPP_EXCEPTION_CLASS(ErrorPatternTooLarge, std::string("pattern too large (compi
 
 RCPP_EXCEPTION_CLASS(ErrorRewriteString, std::string("rewrite string error: ") + messages)
 
-RCPP_EXCEPTION_CLASS(ErrorAnchorType, std::string("anchor type error: ") + messages)
+// RCPP_EXCEPTION_CLASS(ErrorAnchorType, std::string("anchor type error: ") + messages)
 
 struct RE2Obj{
     RE2 regexp;
