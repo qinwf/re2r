@@ -304,9 +304,10 @@ SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, boo
                     Shield<SEXP> na_string(Rf_allocVector(STRSXP,1));
                     SET_STRING_ELT(na_string , 0 ,NA_STRING);
                     SET_VECTOR_ELT(x, index,  na_string);
-                } else if(resi.value().empty()){
-                    SET_VECTOR_ELT(x, index, Shield<SEXP>(Rf_allocVector(STRSXP,0)));
                 }
+                // else if(resi.value().empty()){
+                //     SET_VECTOR_ELT(x, index, Shield<SEXP>(Rf_allocVector(STRSXP,0)));
+                // }
                 else{
                     SET_VECTOR_ELT(x, index, Shield<SEXP>(toprotect_vec_string_sexp(resi.value())));
                 }
