@@ -2,9 +2,12 @@
 % Please edit documentation in R/subset.R
 \name{re2_subset}
 \alias{re2_subset}
+\alias{re2_subset<-}
 \title{Keep strings matching a pattern.}
 \usage{
 re2_subset(input, pattern, anchor = 0, ...)
+
+re2_subset(input, pattern, anchor = 0, ...) <- value
 }
 \arguments{
 \item{input}{a character vector}
@@ -14,6 +17,8 @@ re2_subset(input, pattern, anchor = 0, ...)
 \item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
 
 \item{...}{further arguments passed to or from other methods.}
+
+\item{value}{character vector to be substituted with; replacement function only}
 }
 \value{
 A character vector.

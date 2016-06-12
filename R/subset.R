@@ -33,6 +33,7 @@
 #' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
 #'
 #' @inheritParams re2_detect
+#' @param value character vector to be substituted with; replacement function only
 #' @return A character vector.
 #' @export
 #' @examples
@@ -48,13 +49,39 @@ re2_subset <- function(input, pattern, anchor = 0, ...) {
     input[re2_detect(input, pattern ,anchor, ...)]
 }
 
+#' @rdname re2_subset
+#' @export
+`re2_subset<-` <- function(input, pattern, anchor = 0, ..., value){
+    res_bool = re2_detect(input, pattern ,anchor)
+    res_bool[is.na(res_bool)] = FALSE
+    if (all(!res_bool)){
+        return(input)
+    }
+    input[res_bool] <- value
+    input
+}
+
 #' Keep strings matching a pattern with multithread.
 #'
 #' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
 #'
 #' @inheritParams re2_pdetect
+#' @param value character vector to be substituted with; replacement function only
 #' @return A character vector.
 #' @export
 re2_psubset <- function(input, pattern, anchor = 0, grain_size = 100000, ...) {
     input[re2_pdetect(input, pattern ,anchor, grain_size, ...)]
 }
+
+#' @rdname re2_psubset
+#' @export
+`re2_psubset<-` = function(input, pattern, anchor = 0, ..., value){
+    res_bool = re2_pdetect(input, pattern ,anchor)
+    res_bool[is.na(res_bool)] = FALSE
+    if (all(!res_bool,na.rm = T)){
+        return(input)
+    }
+    input[res_bool] <- value
+    input
+}
+

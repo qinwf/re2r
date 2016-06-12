@@ -2,9 +2,12 @@
 % Please edit documentation in R/subset.R
 \name{re2_psubset}
 \alias{re2_psubset}
+\alias{re2_psubset<-}
 \title{Keep strings matching a pattern with multithread.}
 \usage{
 re2_psubset(input, pattern, anchor = 0, grain_size = 1e+05, ...)
+
+re2_psubset(input, pattern, anchor = 0, ...) <- value
 }
 \arguments{
 \item{input}{a character vector}
@@ -16,6 +19,8 @@ re2_psubset(input, pattern, anchor = 0, grain_size = 1e+05, ...)
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms.}
 
 \item{...}{further arguments passed to or from other methods.}
+
+\item{value}{character vector to be substituted with; replacement function only}
 }
 \value{
 A character vector.
