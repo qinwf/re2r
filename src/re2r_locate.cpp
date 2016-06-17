@@ -75,17 +75,15 @@ struct LocateP : public Worker
     optstring& input;
     vector<tuple<size_t,size_t>>& output;
     RE2& tt;
-    RE2::Options& opt;
 
-    LocateP(optstring&  input_, vector<tuple<size_t,size_t>>& output_, RE2& tt_, RE2::Options& opt_)
-        : input(input_), output(output_), tt(tt_), opt(opt_){}
+    LocateP(optstring&  input_, vector<tuple<size_t,size_t>>& output_, RE2& tt_)
+        : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](tr2::optional<string>& x) -> tuple<size_t,size_t>{
+                       [this](tr2::optional<string>& x) -> tuple<size_t,size_t>{
                            if (!bool(x)){
                                return make_tuple(NA_INTEGER,NA_INTEGER);
                            }
@@ -95,7 +93,7 @@ struct LocateP : public Worker
                            size_t lastIndex = 0;
                            StringPiece match;
 
-                           if (! pattern.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
+                           if (! tt.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
                                return make_tuple(NA_INTEGER,NA_INTEGER);
                            } else {
                                 if (match.size()){
@@ -130,17 +128,15 @@ struct LocateAllP : public Worker
     optstring& input;
     vector<vector<tuple<size_t,size_t>>>& output;
     RE2& tt;
-    RE2::Options& opt;
 
-    LocateAllP(optstring&  input_, vector<vector<tuple<size_t,size_t>>>& output_, RE2& tt_, RE2::Options& opt_)
-        : input(input_), output(output_), tt(tt_), opt(opt_){}
+    LocateAllP(optstring&  input_, vector<vector<tuple<size_t,size_t>>>& output_, RE2& tt_)
+        : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](tr2::optional<string>& x) -> vector<tuple<size_t,size_t>>{
+                       [this](tr2::optional<string>& x) -> vector<tuple<size_t,size_t>>{
                            vector<tuple<size_t,size_t>> res;
                            if (!bool(x)){
                                res.push_back(make_tuple(NA_INTEGER,NA_INTEGER));
@@ -153,7 +149,7 @@ struct LocateAllP : public Worker
                            size_t headn = 0;
                            auto str_size = x.value().length();
 
-                           while ( lastIndex < str_size && pattern.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
+                           while ( lastIndex < str_size && tt.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
                                if (match.size()){
                                    string mstring = match.as_string();
                                    size_t len_mstring = utf8_length(mstring.c_str());
@@ -323,10 +319,10 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr, SEXP colsname){
 }
 
 // [[Rcpp::export]]
-SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size){
+SEXP cpp_locate(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel, size_t grain_size){
     string errmsg;
 
-    RE2* ptr = &(regexp->regexp);
+    RE2* ptr = regexp;
 
     SEXP colsname = Shield<SEXP>((Rf_allocVector(VECSXP, 2)));
     SET_VECTOR_ELT(colsname, 1, CharacterVector::create("start","end"));
@@ -345,7 +341,7 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
         if (!all){
             vector<tuple<size_t,size_t>> res(input.size());
 
-            LocateP pobj(inputv, res, *ptr, *(regexp->options));
+            LocateP pobj(inputv, res, *ptr);
             parallelFor(0, input.size(), pobj , grain_size);
             Shield<SEXP> tempres(toprotect_loc_matrix(res));
             set_colnames(tempres, colsname);
@@ -353,7 +349,7 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool para
         } else {
             vector<vector<tuple<size_t,size_t>>> res(input.size());
 
-            LocateAllP pobj(inputv, res, *ptr, *(regexp->options));
+            LocateAllP pobj(inputv, res, *ptr);
             parallelFor(0, input.size(), pobj, grain_size);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));

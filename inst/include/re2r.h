@@ -98,19 +98,7 @@ RCPP_EXCEPTION_CLASS(ErrorRewriteString, std::string("rewrite string error: ") +
 
 // RCPP_EXCEPTION_CLASS(ErrorAnchorType, std::string("anchor type error: ") + messages)
 
-struct RE2Obj{
-    RE2 regexp;
-    unique_ptr<RE2::Options> options;
-
-
-    RE2Obj(unique_ptr<RE2::Options> opt,
-           string pattern):
-           regexp(StringPiece(pattern), *opt),
-           options(move(opt)){
-    }
-};
-
-XPtr<RE2Obj> cpp_re2_compile(const char* pattern,
+XPtr<RE2> cpp_re2_compile(const char* pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,

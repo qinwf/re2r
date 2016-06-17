@@ -28,14 +28,16 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// [[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
+using namespace RcppParallel;
+
 #include "../inst/include/re2r.h"
 #include "../inst/include/re2/regexp.h"
 #include <tuple>
 #include <memory>
 
-// [[Rcpp::depends(RcppParallel)]]
-#include <RcppParallel.h>
-using namespace RcppParallel;
+
 
 #define thr(code) case RE2::ErrorCode::code: throw code(msg); break;
 
@@ -60,7 +62,7 @@ void check_compile_error(RE2::ErrorCode code_,const string& msg){
     }
 }
 
-XPtr<RE2Obj> cpp_re2_compile_one(string pattern,
+XPtr<RE2> cpp_re2_compile_one(string pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,
@@ -76,68 +78,46 @@ XPtr<RE2Obj> cpp_re2_compile_one(string pattern,
                           int64_t max_mem_value)
 {
 
-    auto options = unique_ptr<RE2::Options>(new RE2::Options());
+    RE2::Options options;
 
     RE2::Options::Encoding enc_value;
     enc_value = (utf_8_value == true) ? RE2::Options::EncodingUTF8 : RE2::Options::EncodingLatin1;
-    options->set_encoding(enc_value);
+    options.set_encoding(enc_value);
 
-    options->set_log_errors(log_errors_value);
-    options->set_posix_syntax(posix_syntax_value);
-    options->set_case_sensitive(case_sensitive_value);
-    options->set_dot_nl(dot_nl_value);
-    options->set_literal(literal_value);
-    options->set_longest_match(longest_match_value);
-    options->set_max_mem(max_mem_value);
-    options->set_never_nl(never_nl_value);
-    options->set_never_capture(never_capture_value);
+    options.set_log_errors(log_errors_value);
+    options.set_posix_syntax(posix_syntax_value);
+    options.set_case_sensitive(case_sensitive_value);
+    options.set_dot_nl(dot_nl_value);
+    options.set_literal(literal_value);
+    options.set_longest_match(longest_match_value);
+    options.set_max_mem(max_mem_value);
+    options.set_never_nl(never_nl_value);
+    options.set_never_capture(never_capture_value);
 
-    if(options->posix_syntax() == true){
-        options->set_one_line(one_line_value);
-        options->set_perl_classes(perl_classes_value);
-        options->set_word_boundary(word_boundary_value);
+    if(options.posix_syntax() == true){
+        options.set_one_line(one_line_value);
+        options.set_perl_classes(perl_classes_value);
+        options.set_word_boundary(word_boundary_value);
     }
 
-    auto regobj =
-        XPtr<RE2Obj>(
-            new RE2Obj(
-                    move(options),
-                    pattern
-            )
-        );
-    RE2* ptr = &regobj->regexp;
+    auto ptr =
+        XPtr<RE2>(
+            new RE2(StringPiece(pattern.c_str(),
+                                (int) strlen(pattern.c_str())),
+                                options
+            ));
+
     if (!ptr->ok()) {
         // long code = (long) regexp->error_code();
         // const std::string &msg = regexp->error();
         check_compile_error(ptr->error_code(), ptr->error_arg());
     }
 
-    return regobj;
+    return ptr;
 }
 
 inline LogicalVector btd(bool input){
     return wrap(input);
-}
-
-// [[Rcpp::export]]
-SEXP cpp_get_options(XPtr<RE2Obj>& ptr){
-    List rptr(13);
-    auto re2ptr = ptr.get();
-    unique_ptr<RE2::Options>& opt = re2ptr->options;
-    rptr[0] = btd(opt->utf8());
-    rptr[1] = btd(opt->posix_syntax());
-    rptr[2] = btd(opt->case_sensitive());
-    rptr[3] = btd(opt->dot_nl());
-    rptr[4] = btd(opt->literal());
-    rptr[5] = btd(opt->longest_match());
-    rptr[6] = btd(opt->never_nl());
-    rptr[7] = btd(opt->never_capture());
-    rptr[8] = btd(opt->one_line());
-    rptr[9] = btd(opt->perl_classes());
-    rptr[10] = btd(opt->word_boundary());
-    rptr[11] = btd(opt->log_errors());
-    rptr[12] = (double) opt->max_mem();
-    return rptr;
 }
 
 // [[Rcpp::export]]
@@ -214,14 +194,14 @@ SEXP cpp_re2_compile(CharacterVector input,
 //' get_expression_size(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_expression_size(XPtr<RE2Obj>& regexp){
-    return regexp->regexp.ProgramSize();
+int get_expression_size(XPtr<RE2>& regexp){
+    return regexp->ProgramSize();
 }
 
 // [[Rcpp::export]]
-SEXP cpp_get_pattern(XPtr<RE2Obj>& ptr){
+SEXP cpp_get_pattern(XPtr<RE2>& ptr){
     SEXP res = PROTECT( Rf_allocVector(STRSXP,1));
-    string ress =ptr->regexp.pattern();
+    string ress =ptr->pattern();
     SET_STRING_ELT(res, 0, Rf_mkCharLenCE( ress.c_str(),  strlen(ress.c_str()), CE_UTF8));
     UNPROTECT(1);
     return res;
@@ -240,13 +220,13 @@ SEXP cpp_get_pattern(XPtr<RE2Obj>& ptr){
 //' get_number_of_groups(regexp)
 //' @export
 // [[Rcpp::export]]
-int get_number_of_groups(XPtr<RE2Obj>& regexp){
-    return regexp->regexp.NumberOfCapturingGroups();
+int get_number_of_groups(XPtr<RE2>& regexp){
+    return regexp->NumberOfCapturingGroups();
 }
 
 // [[Rcpp::export]]
-SEXP cpp_get_named_groups(XPtr<RE2Obj>& ptr){
-    return wrap(get_groups_name(&ptr->regexp,ptr->regexp.NumberOfCapturingGroups()));
+SEXP cpp_get_named_groups(XPtr<RE2>& ptr){
+    return wrap(get_groups_name(ptr,ptr->NumberOfCapturingGroups()));
 }
 
 struct QuoteMetaP : public Worker
@@ -309,21 +289,19 @@ struct ReplaceP : public Worker
 {
     optstring& input;
     RE2& tt;
-    RE2::Options& opt;
     string& rewrite;
 
-    ReplaceP(optstring&  input_, RE2& tt_, RE2::Options& opt_, string& rewrite_)
-        : input(input_), tt(tt_), opt(opt_), rewrite(rewrite_){}
+    ReplaceP(optstring&  input_, RE2& tt_, string& rewrite_)
+        : input(input_), tt(tt_),  rewrite(rewrite_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::for_each(input.begin() + begin,
                        input.begin() + end,
-                       [this,&pattern](tr2::optional<string>& x){
+                       [this](tr2::optional<string>& x){
                            if (!bool(x)){
                                return;
                            }
-                           pattern.Replace(& x.value(), pattern, rewrite);
+                           tt.Replace(& x.value(), tt, rewrite);
 
                            });
     }
@@ -334,22 +312,20 @@ struct ReplaceGlobalP : public Worker
     optstring& input;
     vector<size_t>& count;
     RE2& tt;
-    RE2::Options& opt;
     string& rewrite;
 
-    ReplaceGlobalP(optstring&  input_,vector<size_t>& count_, RE2& tt_, RE2::Options& opt_,string& rewrite_)
-        : input(input_), count(count_), tt(tt_), opt(opt_),rewrite(rewrite_){}
+    ReplaceGlobalP(optstring&  input_,vector<size_t>& count_, RE2& tt_, string& rewrite_)
+        : input(input_), count(count_), tt(tt_),rewrite(rewrite_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        count.begin() + begin,
-                      [this,&pattern](tr2::optional<string>& x){
+                      [this](tr2::optional<string>& x){
                           if (!bool(x)){
                               return 0;
                           }
-                          return pattern.GlobalReplace(&x.value(), pattern, rewrite);
+                          return tt.GlobalReplace(&x.value(), tt, rewrite);
                           });
     }
 };
@@ -357,10 +333,10 @@ struct ReplaceGlobalP : public Worker
 
 
 // [[Rcpp::export]]
-SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size){
+SEXP cpp_replace(CharacterVector input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size){
     string errmsg;
     auto inputv = as_vec_opt_string(input);
-    RE2* ptr = &(regexp->regexp);
+    RE2* ptr = regexp;
 
     if(! ptr->CheckRewriteString(rewrite, &errmsg)){
         throw ErrorRewriteString(errmsg);
@@ -379,7 +355,7 @@ SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, b
         } else{
 
             optstring res(input.size());
-            ReplaceP pobj(inputv, *ptr, *(regexp->options), rewrite);
+            ReplaceP pobj(inputv, *ptr, rewrite);
             parallelFor(0, input.size(), pobj, grain_size);
             return   toprotect_optstring_sexp(inputv);
         }
@@ -396,7 +372,7 @@ SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, b
             }
         } else {
             count.resize(input.size());
-            ReplaceGlobalP pobj(inputv, count, *ptr, *(regexp->options), rewrite);
+            ReplaceGlobalP pobj(inputv, count, *ptr, rewrite);
             parallelFor(0, input.size(), pobj, grain_size);
         }
 
@@ -411,22 +387,20 @@ struct ExtractP : public Worker
     optstring& input;
     optstring& output;
     RE2& tt;
-    RE2::Options& opt;
 
-    ExtractP(optstring&  input_, optstring& output_, RE2& tt_, RE2::Options& opt_)
-        : input(input_), output(output_), tt(tt_), opt(opt_){}
+    ExtractP(optstring&  input_, optstring& output_, RE2& tt_)
+        : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this, &pattern](tr2::optional<string>& x) -> tr2::optional<string>{
+                       [this](tr2::optional<string>& x) -> tr2::optional<string>{
                            if(!bool(x)){
                                return tr2::nullopt;
                            }
                            StringPiece match;
-                           if (! pattern.Match( x.value(), 0 , x.value().length(), RE2::UNANCHORED, &match, 1)) {
+                           if (! tt.Match( x.value(), 0 , x.value().length(), RE2::UNANCHORED, &match, 1)) {
                                return tr2::nullopt;
                            } else {
                                return tr2::make_optional(match.as_string());
@@ -442,18 +416,16 @@ struct ExtractAllP : public Worker
     optstring& input;
     vector<tr2::optional<vector<string>>>& output;
     RE2& tt;
-    RE2::Options& opt;
 
     ExtractAllP(optstring&  input_, vector<tr2::optional<vector<string>>>& output_,
-                RE2& tt_, RE2::Options& opt_)
-        : input(input_), output(output_), tt(tt_), opt(opt_){}
+                RE2& tt_)
+        : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this, &pattern](tr2::optional<string>& x) -> tr2::optional<vector<string>>{
+                       [this](tr2::optional<string>& x) -> tr2::optional<vector<string>>{
                            if(!bool(x)){
                                return tr2::nullopt;
                            }
@@ -463,7 +435,7 @@ struct ExtractAllP : public Worker
                            StringPiece str(x.value());
                            size_t lastIndex = 0;
 
-                           while (pattern.Match(str, lastIndex , x.value().length(), RE2::UNANCHORED, &match, 1)){
+                           while (tt.Match(str, lastIndex , x.value().length(), RE2::UNANCHORED, &match, 1)){
                                lastIndex = match.data() - str.data() + match.size();
                                res.push_back(match.as_string());
                            }
@@ -474,10 +446,10 @@ struct ExtractAllP : public Worker
 };
 
 // [[Rcpp::export]]
-SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size){
+SEXP cpp_extract(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel, size_t grain_size){
     string errmsg;
 
-    RE2* ptr = &(regexp->regexp);
+    RE2* ptr = regexp;
     SEXP inputx = input;
 
     if (! parallel || input.size() < grain_size){
@@ -548,13 +520,13 @@ SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool par
         if (!all){
             optstring res(input.size());
 
-            ExtractP pobj(inputv, res, *ptr, *(regexp->options));
+            ExtractP pobj(inputv, res, *ptr);
             parallelFor(0, input.size(), pobj, grain_size);
             return toprotect_optstring_sexp(res);
         } else {
             vector<tr2::optional<vector<string>>> res(input.size());
 
-            ExtractAllP pobj(inputv, res, *ptr, *(regexp->options));
+            ExtractAllP pobj(inputv, res, *ptr);
             parallelFor(0, input.size(), pobj, grain_size);
 
             Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
@@ -586,15 +558,15 @@ inline string numbertostring ( T Number )
 }
 
 // [[Rcpp::export]]
-SEXP cpp_get_program_fanout(XPtr<RE2Obj>& regexp){
+SEXP cpp_get_program_fanout(XPtr<RE2>& regexp){
     map<int,int> res;
-    regexp->regexp.ProgramFanout(&res);
+    regexp->ProgramFanout(&res);
     return(wrap(res));
 }
 
 // [[Rcpp::export]]
-SEXP cpp_regex_to_string(XPtr<RE2Obj>& regexp){
-    auto ptr = regexp->regexp.Regexp();
+SEXP cpp_regex_to_string(XPtr<RE2>& regexp){
+    auto ptr = regexp->Regexp();
     string mstring = ptr->ToString();
     SEXP res = PROTECT( Rf_allocVector(STRSXP,1));
     SET_STRING_ELT(res, 0, Rf_mkCharLenCE(mstring.c_str(),  strlen(mstring.c_str()) , CE_UTF8));
@@ -603,7 +575,7 @@ SEXP cpp_regex_to_string(XPtr<RE2Obj>& regexp){
 }
 
 // [[Rcpp::export]]
-LogicalVector cpp_regex_mimicsPCRE(XPtr<RE2Obj>& regexp){
-    auto ptr = regexp->regexp.Regexp();
+LogicalVector cpp_regex_mimicsPCRE(XPtr<RE2>& regexp){
+    auto ptr = regexp->Regexp();
     return wrap(ptr->MimicsPCRE());
 }

@@ -1,4 +1,4 @@
 ## We want C++11 as it gets us 'long long' as well
 CXX_STD = CXX11
-PKG_CPPFLAGS = -I../inst/include -DNDEBUG -DNO_RE2_THREADS
+PKG_CPPFLAGS = -I../inst/include -DNDEBUG
 PKG_LIBS += $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")

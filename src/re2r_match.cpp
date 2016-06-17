@@ -28,11 +28,11 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "../inst/include/re2r.h"
-
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 using namespace RcppParallel;
+
+#include "../inst/include/re2r.h"
 
 #include <cstddef>
 
@@ -292,22 +292,20 @@ struct BoolP : public Worker
     vector<tr2::optional<string>>& input;
     RVector<int> output;
     RE2& tt;
-    RE2::Options& opt;
     const RE2::Anchor anchor_type;
 
-    BoolP (vector<tr2::optional<string>>&  input_,RVector<int> output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor&  anchor_type_)
-        : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
+    BoolP (vector<tr2::optional<string>>&  input_,RVector<int> output_, RE2& tt_,const RE2::Anchor&  anchor_type_)
+        : input(input_), output(output_), tt(tt_),anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](tr2::optional<string>& x)->int{
+                       [this](tr2::optional<string>& x)->int{
                            if (!bool(x)){
                                 return NA_LOGICAL;
                            }
-                           return pattern.Match(x.value(), 0, (int) x.value().length(),
+                           return tt.Match(x.value(), 0, (int) x.value().length(),
                                                 anchor_type, nullptr, 0);
                        });
     }
@@ -316,13 +314,12 @@ struct BoolP : public Worker
 
 SEXP cpp_detect_parallel(CharacterVector& input,
                 RE2* pattern,
-                RE2::Options& opt,
                 RE2::Anchor anchor_type,
                 size_t grain_size){
     LogicalVector reso(input.size());
     RVector<int> res(reso);
     auto inputv = as_vec_opt_string(input);
-    BoolP pobj(inputv, res, *pattern, opt, anchor_type);
+    BoolP pobj(inputv, res, *pattern, anchor_type);
     parallelFor(0, input.size(), pobj, grain_size);
     return wrap(reso);
 }
@@ -333,22 +330,20 @@ struct NoCaptureP : public Worker
     vector<tr2::optional<string>>& input;
     optstring& output;
     RE2& tt;
-    RE2::Options& opt;
     const RE2::Anchor anchor_type;
 
-    NoCaptureP (vector<tr2::optional<string>>&  input_, optstring& output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor&  anchor_type_)
-        : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
+    NoCaptureP (vector<tr2::optional<string>>&  input_, optstring& output_, RE2& tt_, const RE2::Anchor&  anchor_type_)
+        : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         std::transform(input.begin() + begin,
                        input.begin() + end,
                        output.begin() + begin,
-                       [this,&pattern](tr2::optional<string>& x) -> tr2::optional<string>{
+                       [this](tr2::optional<string>& x) -> tr2::optional<string>{
                            if (!bool(x)){
                                return tr2::nullopt;
                            }
-                           if (pattern.Match(x.value(), 0, (int) x.value().length(),
+                           if (tt.Match(x.value(), 0, (int) x.value().length(),
                                              anchor_type, nullptr, 0)){
                                return tr2::make_optional(x.value());
                            } else {
@@ -390,13 +385,12 @@ SEXP cpp_match_nocapture(CharacterVector& input,
 
 SEXP cpp_match_nocapture_parallel(CharacterVector& input,
                          RE2* pattern,
-                         RE2::Options& opt,
                          RE2::Anchor anchor_type,
                          size_t grain_size){
     optstring res(input.size());
     auto inputv = as_vec_opt_string(input);
 
-    NoCaptureP pobj(inputv, res, *pattern, opt, anchor_type);
+    NoCaptureP pobj(inputv, res, *pattern, anchor_type);
     parallelFor(0, inputv.size(), pobj, grain_size);
 
     return toprotect_optstring_to_charmat(res);
@@ -473,7 +467,7 @@ SEXP cpp_match_not_all(CharacterVector& input,
 
 
 #define INIT_ARGS_PTR                                              \
-auto cap_nums = pattern.NumberOfCapturingGroups();                 \
+auto cap_nums = tt.NumberOfCapturingGroups();                 \
 auto argv =  unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);       \
 auto args =  unique_ptr<RE2::Arg*[]>(new RE2::Arg*[cap_nums]);     \
 auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]); \
@@ -490,7 +484,7 @@ for (int nn = 0; nn != cap_nums; nn++){                            \
 std::transform(input.begin() + begin,                                                              \
                input.begin() + end,                                                                \
                output.begin() + begin,                                                             \
-               [this,cap_nums,piece_ptr,args_ptr, &pattern](tr2::optional<string>& x) -> optstring{\
+               [this,cap_nums,piece_ptr,args_ptr](tr2::optional<string>& x) -> optstring{\
                    if (!bool(x)){                                                                  \
                        return fill_opt_res(cap_nums, piece_ptr, false) ;                           \
                    }                                                                               \
@@ -500,21 +494,19 @@ struct UnValue : public Worker{
     vector<tr2::optional<string>>& input;
     vector<optstring>& output;
     RE2& tt;
-    RE2::Options& opt;
     const RE2::Anchor& anchor_type;
 
-    UnValue(vector<tr2::optional<string>>&  input_, vector<optstring>& output_, RE2& tt_, RE2::Options& opt_, const RE2::Anchor& anchor_type_)
-        : input(input_), output(output_), tt(tt_), opt(opt_), anchor_type(anchor_type_){}
+    UnValue(vector<tr2::optional<string>>&  input_, vector<optstring>& output_, RE2& tt_, const RE2::Anchor& anchor_type_)
+        : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         INIT_ARGS_PTR
 
             if (anchor_type == RE2::ANCHOR_BOTH){
                 UNVALUE_BLOCK
                 return fill_opt_res(cap_nums,
                                     piece_ptr,
-                                    pattern.FullMatchN(x.value(), pattern, args_ptr, cap_nums));
+                                    tt.FullMatchN(x.value(), tt, args_ptr, cap_nums));
 
             });
     } else if (anchor_type == RE2::ANCHOR_START){
@@ -522,14 +514,14 @@ struct UnValue : public Worker{
         StringPiece tmpstring(x.value());
         return fill_opt_res(cap_nums,
                             piece_ptr,
-                            pattern.ConsumeN(&tmpstring, tt, args_ptr, cap_nums));
+                            tt.ConsumeN(&tmpstring, tt, args_ptr, cap_nums));
 
     });
 } else { // RE2::UNANCHORED
     UNVALUE_BLOCK
     return fill_opt_res(cap_nums,
                         piece_ptr,
-                        pattern.PartialMatchN(x.value(), pattern, args_ptr, cap_nums));
+                        tt.PartialMatchN(x.value(), tt, args_ptr, cap_nums));
 });
     }
     }
@@ -538,7 +530,6 @@ struct UnValue : public Worker{
 
 SEXP cpp_match_not_all_parallel(CharacterVector& input,
                        RE2* pattern,
-                       RE2::Options& opt,
                        RE2::Anchor anchor_type,
                        vector<string>& groups_name,
                        int cap_nums,
@@ -546,7 +537,7 @@ SEXP cpp_match_not_all_parallel(CharacterVector& input,
     vector<optstring> output(input.size());
     auto inputv = as_vec_opt_string(input);
 
-    UnValue pobj(inputv, output, *pattern, opt,anchor_type);
+    UnValue pobj(inputv, output, *pattern, anchor_type);
     parallelFor(0, input.size(), pobj, grain_size);
     Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output,cap_nums));
 
@@ -650,26 +641,24 @@ struct MatValue : public Worker{
     vector<tr2::optional<string>>& input;
     vector<tr2::optional<optstring>>& output;
     RE2& tt;
-    RE2::Options& opt;
     const RE2::Anchor& anchor_type;
 
-    MatValue(vector<tr2::optional<string>>&  input_, vector<tr2::optional<optstring>>& output_, RE2& tt_, RE2::Options& opt_,const RE2::Anchor& anchor_type_)
-        : input(input_), output(output_),tt(tt_), opt(opt_), anchor_type(anchor_type_){}
+    MatValue(vector<tr2::optional<string>>&  input_, vector<tr2::optional<optstring>>& output_, RE2& tt_, const RE2::Anchor& anchor_type_)
+        : input(input_), output(output_),tt(tt_), anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        RE2 pattern(tt.pattern(),opt);
         INIT_ARGS_PTR
             if (anchor_type != RE2::UNANCHORED){
                 std::transform(input.begin() + begin,
                                input.begin() + end,
                                output.begin() + begin,
-                               [this,cap_nums,piece_ptr,args_ptr,&pattern](tr2::optional<string>& ind) -> tr2::optional<optstring>{
+                               [this,cap_nums,piece_ptr,args_ptr](tr2::optional<string>& ind) -> tr2::optional<optstring>{
                                    if (!bool(ind)){
                                        return tr2::nullopt;
                                    }
                                    INIT_LISTI
 
-                                   while (RE2::ConsumeN(&todo_str, pattern, args_ptr, cap_nums)) {
+                                   while (RE2::ConsumeN(&todo_str,tt, args_ptr, cap_nums)) {
                                        cnt+=1;
                                        fill_list_res(cap_nums, piece_ptr, optinner, cnt);
 
@@ -686,13 +675,13 @@ struct MatValue : public Worker{
                 std::transform(input.begin() + begin,
                                input.begin() + end,
                                output.begin() + begin,
-                               [this,cap_nums,piece_ptr,args_ptr,&pattern](tr2::optional<string>& ind) -> tr2::optional<optstring>{
+                               [this,cap_nums,piece_ptr,args_ptr](tr2::optional<string>& ind) -> tr2::optional<optstring>{
                                    if (!bool(ind)){
                                        return tr2::nullopt;
                                    }
                                    INIT_LISTI
 
-                                   while (RE2::FindAndConsumeN(&todo_str, pattern, args_ptr, cap_nums)) {
+                                   while (RE2::FindAndConsumeN(&todo_str, tt, args_ptr, cap_nums)) {
                                        cnt+=1;
                                        fill_list_res(cap_nums, piece_ptr, optinner, cnt);
 
@@ -711,7 +700,6 @@ struct MatValue : public Worker{
 
 SEXP cpp_match_all_parallel(CharacterVector& input,
                        RE2* pattern,
-                       RE2::Options& opt,
                        RE2::Anchor anchor_type,
                        vector<string>& groups_name,
                        int cap_nums,
@@ -722,7 +710,7 @@ SEXP cpp_match_all_parallel(CharacterVector& input,
     vector<tr2::optional<optstring>> res(input.size());
     auto inputv = as_vec_opt_string(input);
 
-    MatValue pobj(inputv, res, *pattern, opt, anchor_type);
+    MatValue pobj(inputv, res, *pattern, anchor_type);
     parallelFor(0, input.size(), pobj,grain_size);
 
     Shield<SEXP>  new_dimnames((Rf_allocVector(VECSXP, 2)));
@@ -743,7 +731,7 @@ SEXP cpp_match_all_parallel(CharacterVector& input,
 
 // [[Rcpp::export]]
 SEXP cpp_match(CharacterVector input,
-               XPtr<RE2Obj>& ptr,
+               XPtr<RE2>& ptr,
                bool value,
                size_t anchor,
                bool all,
@@ -751,14 +739,14 @@ SEXP cpp_match(CharacterVector input,
                size_t grain_size){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
-    RE2* pattern = &(ptr->regexp);
+    RE2* pattern = ptr;
 
     if (value == false){
 
         if (!parallel || input.size() < grain_size){
             return cpp_detect(input, pattern, anchor_type);
         } else {
-            return cpp_detect_parallel(input, pattern, *(ptr->options), anchor_type,grain_size);
+            return cpp_detect_parallel(input, pattern, anchor_type,grain_size);
         }
 
     } else{
@@ -769,7 +757,7 @@ SEXP cpp_match(CharacterVector input,
                 return cpp_match_nocapture(input, pattern, anchor_type);
                 // no capture group return
             } else {
-                return cpp_match_nocapture_parallel(input, pattern, *(ptr->options), anchor_type, grain_size);
+                return cpp_match_nocapture_parallel(input, pattern, anchor_type, grain_size);
             }
         }
 
@@ -787,11 +775,11 @@ SEXP cpp_match(CharacterVector input,
 
         if (parallel && input.size() > grain_size){
             if (all){
-                return cpp_match_all_parallel(input,pattern,*(ptr->options),
+                return cpp_match_all_parallel(input,pattern,
                                               anchor_type,
                                               groups_name,cap_nums, grain_size);
             } else {
-                return cpp_match_not_all_parallel(input,pattern,*(ptr->options),
+                return cpp_match_not_all_parallel(input,pattern,
                                                   anchor_type,
                                                   groups_name,cap_nums, grain_size);
             }

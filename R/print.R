@@ -32,13 +32,12 @@
 
 #' Print information about a pre-compiled regular expression
 #' @param x a pre-compiled regular expression
-#' @param options print options for the pre-compiled regular expression
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2("(.*)@([^.]*)")
 #' re2("(?P<name>sd)")
 #' @export
-print.re2c = function(x, options = FALSE, ...) {
+print.re2c = function(x, ...) {
     cat("re2 pre-compiled regular expression\n\n")
     cat("pattern: ")
     cat(get_pattern(x))
@@ -52,9 +51,5 @@ print.re2c = function(x, options = FALSE, ...) {
     cat("expression size: ")
     cat(get_expression_size(x))
     cat("\n")
-    if (options == TRUE) {
-        cat("options: \n\n")
-        print(get_options(x))
-    }
     invisible(x)
 }

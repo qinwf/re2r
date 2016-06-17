@@ -32,8 +32,8 @@
 #include "../inst/include/re2/regexp.h"
 
 // [[Rcpp::export]]
-SEXP cpp_regex_simplify(XPtr<RE2Obj>& regexp){
-    auto ptr = regexp->regexp.Regexp();
+SEXP cpp_regex_simplify(XPtr<RE2>& regexp){
+    auto ptr = regexp->Regexp();
     re2::Regexp* sre = ptr->Simplify();
 
     string pattern = sre->ToString();

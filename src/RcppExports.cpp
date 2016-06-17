@@ -7,13 +7,13 @@
 using namespace Rcpp;
 
 // cpp_locate
-SEXP cpp_locate(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size);
+SEXP cpp_locate(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_locate(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
@@ -22,13 +22,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_match
-SEXP cpp_match(CharacterVector input, XPtr<RE2Obj>& ptr, bool value, size_t anchor, bool all, bool parallel, size_t grain_size);
+SEXP cpp_match(CharacterVector input, XPtr<RE2>& ptr, bool value, size_t anchor, bool all, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_match(SEXP inputSEXP, SEXP ptrSEXP, SEXP valueSEXP, SEXP anchorSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     Rcpp::traits::input_parameter< bool >::type value(valueSEXP);
     Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
@@ -39,40 +39,29 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_regex_simplify
-SEXP cpp_regex_simplify(XPtr<RE2Obj>& regexp);
+SEXP cpp_regex_simplify(XPtr<RE2>& regexp);
 RcppExport SEXP re2r_cpp_regex_simplify(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     __result = Rcpp::wrap(cpp_regex_simplify(regexp));
     return __result;
 END_RCPP
 }
 // cpp_split
-SEXP cpp_split(CharacterVector input, XPtr<RE2Obj>& ptr, NumericVector part, bool fixed, bool parallel, size_t grain_size);
+SEXP cpp_split(CharacterVector input, XPtr<RE2>& ptr, NumericVector part, bool fixed, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP ptrSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type part(partSEXP);
     Rcpp::traits::input_parameter< bool >::type fixed(fixedSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
     __result = Rcpp::wrap(cpp_split(input, ptr, part, fixed, parallel, grain_size));
-    return __result;
-END_RCPP
-}
-// cpp_get_options
-SEXP cpp_get_options(XPtr<RE2Obj>& ptr);
-RcppExport SEXP re2r_cpp_get_options(SEXP ptrSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
-    __result = Rcpp::wrap(cpp_get_options(ptr));
     return __result;
 END_RCPP
 }
@@ -101,45 +90,45 @@ BEGIN_RCPP
 END_RCPP
 }
 // get_expression_size
-int get_expression_size(XPtr<RE2Obj>& regexp);
+int get_expression_size(XPtr<RE2>& regexp);
 RcppExport SEXP re2r_get_expression_size(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     __result = Rcpp::wrap(get_expression_size(regexp));
     return __result;
 END_RCPP
 }
 // cpp_get_pattern
-SEXP cpp_get_pattern(XPtr<RE2Obj>& ptr);
+SEXP cpp_get_pattern(XPtr<RE2>& ptr);
 RcppExport SEXP re2r_cpp_get_pattern(SEXP ptrSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     __result = Rcpp::wrap(cpp_get_pattern(ptr));
     return __result;
 END_RCPP
 }
 // get_number_of_groups
-int get_number_of_groups(XPtr<RE2Obj>& regexp);
+int get_number_of_groups(XPtr<RE2>& regexp);
 RcppExport SEXP re2r_get_number_of_groups(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     __result = Rcpp::wrap(get_number_of_groups(regexp));
     return __result;
 END_RCPP
 }
 // cpp_get_named_groups
-SEXP cpp_get_named_groups(XPtr<RE2Obj>& ptr);
+SEXP cpp_get_named_groups(XPtr<RE2>& ptr);
 RcppExport SEXP re2r_cpp_get_named_groups(SEXP ptrSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
     __result = Rcpp::wrap(cpp_get_named_groups(ptr));
     return __result;
 END_RCPP
@@ -158,13 +147,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_replace
-SEXP cpp_replace(CharacterVector input, XPtr<RE2Obj>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size);
+SEXP cpp_replace(CharacterVector input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
     Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
@@ -174,13 +163,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_extract
-SEXP cpp_extract(CharacterVector input, XPtr<RE2Obj>& regexp, bool all, bool parallel, size_t grain_size);
+SEXP cpp_extract(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
@@ -189,34 +178,34 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_get_program_fanout
-SEXP cpp_get_program_fanout(XPtr<RE2Obj>& regexp);
+SEXP cpp_get_program_fanout(XPtr<RE2>& regexp);
 RcppExport SEXP re2r_cpp_get_program_fanout(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     __result = Rcpp::wrap(cpp_get_program_fanout(regexp));
     return __result;
 END_RCPP
 }
 // cpp_regex_to_string
-SEXP cpp_regex_to_string(XPtr<RE2Obj>& regexp);
+SEXP cpp_regex_to_string(XPtr<RE2>& regexp);
 RcppExport SEXP re2r_cpp_regex_to_string(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     __result = Rcpp::wrap(cpp_regex_to_string(regexp));
     return __result;
 END_RCPP
 }
 // cpp_regex_mimicsPCRE
-LogicalVector cpp_regex_mimicsPCRE(XPtr<RE2Obj>& regexp);
+LogicalVector cpp_regex_mimicsPCRE(XPtr<RE2>& regexp);
 RcppExport SEXP re2r_cpp_regex_mimicsPCRE(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< XPtr<RE2Obj>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
     __result = Rcpp::wrap(cpp_regex_mimicsPCRE(regexp));
     return __result;
 END_RCPP
