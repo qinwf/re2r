@@ -342,7 +342,6 @@ struct ReplaceGlobalP : public Worker
                        res_replace.begin() + end,
                        count.begin() + begin,
                       [this, &index](tr2::optional<string>& x){
-
                           auto ptr = tt[index % tt.size()];
                           auto rewritei = rewrite[index % rewrite.size()];
                           x = input[index % input.size()];

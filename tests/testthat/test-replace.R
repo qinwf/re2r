@@ -133,12 +133,15 @@ test_that("replce vectorize",{
 
     for (ind in replace_list) {
 
-
         expect_identical(suppressWarnings(re2_replace(ind[[3]], ind[[1]], ind[[2]])), ind[[4]])
+        expect_identical(suppressWarnings(re2_preplace(ind[[3]], ind[[1]], ind[[2]])), ind[[4]])
+        expect_true(identical(suppressWarnings(re2_preplace(ind[[3]], ind[[1]], ind[[2]],grain_size = 1) ) , suppressWarnings(re2_replace(ind[[3]], ind[[1]], ind[[2]])))
+        )
 
         res = suppressWarnings(re2_replace_all(ind[[3]], ind[[1]], ind[[2]]))
         expect_identical(as.character(res), ind[[5]])
         expect_identical(attr(res, "count"), ind[[6]])
+        expect_identical(res, suppressWarnings(re2_preplace_all(ind[[3]], ind[[1]], ind[[2]], grain_size = 1)))
 
         # vectorize warning
         if(ind[[7]] == TRUE){
