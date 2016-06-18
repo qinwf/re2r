@@ -66,8 +66,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_re2_compile
-SEXP cpp_re2_compile(CharacterVector input, bool log_errors_value, bool utf_8_value, bool posix_syntax_value, bool case_sensitive_value, bool dot_nl_value, bool literal_value, bool longest_match_value, bool never_nl_value, bool never_capture_value, bool one_line_value, bool perl_classes_value, bool word_boundary_value, int64_t max_mem_value);
-RcppExport SEXP re2r_cpp_re2_compile(SEXP inputSEXP, SEXP log_errors_valueSEXP, SEXP utf_8_valueSEXP, SEXP posix_syntax_valueSEXP, SEXP case_sensitive_valueSEXP, SEXP dot_nl_valueSEXP, SEXP literal_valueSEXP, SEXP longest_match_valueSEXP, SEXP never_nl_valueSEXP, SEXP never_capture_valueSEXP, SEXP one_line_valueSEXP, SEXP perl_classes_valueSEXP, SEXP word_boundary_valueSEXP, SEXP max_mem_valueSEXP) {
+SEXP cpp_re2_compile(CharacterVector input, bool log_errors_value, bool utf_8_value, bool posix_syntax_value, bool case_sensitive_value, bool dot_nl_value, bool literal_value, bool longest_match_value, bool never_nl_value, bool never_capture_value, bool one_line_value, bool perl_classes_value, bool word_boundary_value, int64_t max_mem_value, bool simplify_value);
+RcppExport SEXP re2r_cpp_re2_compile(SEXP inputSEXP, SEXP log_errors_valueSEXP, SEXP utf_8_valueSEXP, SEXP posix_syntax_valueSEXP, SEXP case_sensitive_valueSEXP, SEXP dot_nl_valueSEXP, SEXP literal_valueSEXP, SEXP longest_match_valueSEXP, SEXP never_nl_valueSEXP, SEXP never_capture_valueSEXP, SEXP one_line_valueSEXP, SEXP perl_classes_valueSEXP, SEXP word_boundary_valueSEXP, SEXP max_mem_valueSEXP, SEXP simplify_valueSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -85,7 +85,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type perl_classes_value(perl_classes_valueSEXP);
     Rcpp::traits::input_parameter< bool >::type word_boundary_value(word_boundary_valueSEXP);
     Rcpp::traits::input_parameter< int64_t >::type max_mem_value(max_mem_valueSEXP);
-    __result = Rcpp::wrap(cpp_re2_compile(input, log_errors_value, utf_8_value, posix_syntax_value, case_sensitive_value, dot_nl_value, literal_value, longest_match_value, never_nl_value, never_capture_value, one_line_value, perl_classes_value, word_boundary_value, max_mem_value));
+    Rcpp::traits::input_parameter< bool >::type simplify_value(simplify_valueSEXP);
+    __result = Rcpp::wrap(cpp_re2_compile(input, log_errors_value, utf_8_value, posix_syntax_value, case_sensitive_value, dot_nl_value, literal_value, longest_match_value, never_nl_value, never_capture_value, one_line_value, perl_classes_value, word_boundary_value, max_mem_value, simplify_value));
     return __result;
 END_RCPP
 }
@@ -147,18 +148,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_replace
-SEXP cpp_replace(CharacterVector input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size);
-RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewriteSEXP, SEXP global_SEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
+SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_, bool global_, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_replace(SEXP inputSEXP, SEXP regexpSEXP, SEXP rewrite_SEXP, SEXP global_SEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
-    Rcpp::traits::input_parameter< string& >::type rewrite(rewriteSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type rewrite_(rewrite_SEXP);
     Rcpp::traits::input_parameter< bool >::type global_(global_SEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
-    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite, global_, parallel, grain_size));
+    __result = Rcpp::wrap(cpp_replace(input, regexp, rewrite_, global_, parallel, grain_size));
     return __result;
 END_RCPP
 }

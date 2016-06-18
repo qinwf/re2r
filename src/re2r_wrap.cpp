@@ -134,11 +134,12 @@ SEXP cpp_re2_compile(CharacterVector input,
                           bool one_line_value,
                           bool perl_classes_value,
                           bool word_boundary_value,
-                          int64_t max_mem_value){
+                          int64_t max_mem_value,
+                          bool simplify_value){
     if (input.size() == 0){
         return R_NilValue;
     }
-    if (input.size() == 1){
+    if (simplify_value && input.size() == 1){
         if (*input.begin() == NA_STRING){
             return R_NilValue;
         }else {
@@ -288,97 +289,189 @@ SEXP cpp_quote_meta(CharacterVector input, bool parallel, size_t grain_size){
 struct ReplaceP : public Worker
 {
     optstring& input;
-    RE2& tt;
-    string& rewrite;
+    optstring& res_replace;
+    vector<RE2*>& tt;
+    optstring& rewrite;
 
-    ReplaceP(optstring&  input_, RE2& tt_, string& rewrite_)
-        : input(input_), tt(tt_),  rewrite(rewrite_){}
+    ReplaceP(optstring&  input_, vector<RE2*>& tt_, optstring& rewrite_, optstring& res_replace_)
+        : input(input_), res_replace(res_replace_), tt(tt_),  rewrite(rewrite_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        std::for_each(input.begin() + begin,
-                       input.begin() + end,
-                       [this](tr2::optional<string>& x){
+        size_t index = begin;
+        std::for_each(res_replace.begin() + begin,
+                      res_replace.begin() + end,
+                       [this,&index](tr2::optional<string>& x){
+                           x = input[index % input.size()];
                            if (!bool(x)){
+                               index++;
                                return;
                            }
-                           tt.Replace(& x.value(), tt, rewrite);
+                           RE2* pattern = tt[index % tt.size()];
+                           auto rewritei = rewrite[index % rewrite.size()];
+                           if (!bool(rewritei)){
+                               if (pattern->Match( x.value() ,0, strlen(x.value().c_str()),
+                                               RE2::UNANCHORED, nullptr, 0)){
+                                   x = tr2::nullopt;
+                               }
+                               index++;
+                               return;
+                           }
 
+                           pattern->Replace(& x.value(), *pattern, rewritei.value());
+                           index++;
+                           return;
                            });
+
     }
 };
 
 struct ReplaceGlobalP : public Worker
 {
     optstring& input;
+    optstring& res_replace;
     vector<size_t>& count;
-    RE2& tt;
-    string& rewrite;
+    vector<RE2*>& tt;
+    optstring& rewrite;
 
-    ReplaceGlobalP(optstring&  input_,vector<size_t>& count_, RE2& tt_, string& rewrite_)
-        : input(input_), count(count_), tt(tt_),rewrite(rewrite_){}
+    ReplaceGlobalP(optstring&  input_,vector<size_t>& count_, vector<RE2*>& tt_, optstring& rewrite_,optstring& res_replace_)
+        : input(input_), res_replace(res_replace_), count(count_), tt(tt_),rewrite(rewrite_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        std::transform(input.begin() + begin,
-                       input.begin() + end,
+        size_t index = begin;
+        std::transform(res_replace.begin() + begin,
+                       res_replace.begin() + end,
                        count.begin() + begin,
-                      [this](tr2::optional<string>& x){
-                          if (!bool(x)){
+                      [this, &index](tr2::optional<string>& x){
+
+                          auto ptr = tt[index % tt.size()];
+                          auto rewritei = rewrite[index % rewrite.size()];
+                          x = input[index % input.size()];
+                          if(!bool(x)){
+                              index++;
                               return 0;
                           }
-                          return tt.GlobalReplace(&x.value(), tt, rewrite);
+                          if (!bool(rewritei)){
+
+                              if (ptr->Match( x.value() ,0, strlen(x.value().c_str()),
+                                              RE2::UNANCHORED, nullptr, 0)){
+                                  x = tr2::nullopt;
+                              }
+                              index++;
+                              return 0;
+                          }
+                          index++;
+                          return ptr->GlobalReplace(&x.value(),*ptr,rewritei.value());
                           });
     }
 };
 
 
 
+
 // [[Rcpp::export]]
-SEXP cpp_replace(CharacterVector input, XPtr<RE2>& regexp, string& rewrite, bool global_, bool parallel, size_t grain_size){
+SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_, bool global_, bool parallel, size_t grain_size){
     string errmsg;
     auto inputv = as_vec_opt_string(input);
-    RE2* ptr = regexp;
+    auto rewrite = as_vec_opt_string(rewrite_);
+    vector<RE2*> ptrv;
+    build_regex_vector(regexp, ptrv);
+    auto nrecycle = re2r_recycling_rule(true, 3, input.size(), ptrv.size(), rewrite.size());
 
-    if(! ptr->CheckRewriteString(rewrite, &errmsg)){
-        throw ErrorRewriteString(errmsg);
+    for (auto i = 0;
+              i != nrecycle ;
+              i++)
+    {
+        auto ptr = ptrv[i% ptrv.size()];
+        auto rewritei = rewrite[i % rewrite.size()];
+        if (bool(rewritei)){
+            if(! ptr->CheckRewriteString(rewritei.value(), &errmsg)){
+                throw ErrorRewriteString(errmsg);
+            }
+        }
     }
 
     if(!global_) {
+
+        vector<tr2::optional<string>> replace_res;
+        replace_res.reserve(nrecycle);
+
         if (!parallel || input.size() < grain_size){
-            for(tr2::optional<string>& ind : inputv) {
-                if(!bool(ind)){
+            for (auto i = 0;
+                 i != nrecycle ;
+                 i++)
+            {
+                auto ptr = ptrv[i% ptrv.size()];
+                auto rewritei = rewrite[i % rewrite.size()];
+                replace_res.push_back(inputv[i % input.size()]);
+                tr2::optional<string>& stri = replace_res.back();
+
+                if(!bool(stri)){
                     continue;
                 }
-                ptr->Replace(&ind.value(),*ptr,rewrite);
+                if (!bool(rewritei)){
+                    if (ptr->Match( stri.value() ,0, strlen(stri.value().c_str()),
+                                    RE2::UNANCHORED, nullptr, 0)){
+                        stri = tr2::nullopt;
+                    }
+                    continue;
+                }
+                ptr->Replace(&stri.value(),*ptr, rewritei.value());
             }
-            return toprotect_optstring_sexp(inputv);
-
+            CharacterVector res( toprotect_optstring_sexp(replace_res));
+            return res;
         } else{
-
-            optstring res(input.size());
-            ReplaceP pobj(inputv, *ptr, rewrite);
-            parallelFor(0, input.size(), pobj, grain_size);
-            return   toprotect_optstring_sexp(inputv);
-        }
+             optstring replace_res(nrecycle);
+             ReplaceP pobj(inputv, ptrv, rewrite, replace_res);
+             parallelFor(0, replace_res.size(), pobj, grain_size);
+             CharacterVector res( toprotect_optstring_sexp(replace_res));
+             return res;
+         }
     }
     else {
         vector<size_t> count;
-        if (!parallel || input.size() < grain_size){
-            count.reserve(input.size());
-            for(tr2::optional<string>& ind : inputv) {
-                if(!bool(ind)){
-                    count.push_back(0);
-                }
-                count.push_back(ptr->GlobalReplace(&ind.value(),*ptr,rewrite));
-            }
-        } else {
-            count.resize(input.size());
-            ReplaceGlobalP pobj(inputv, count, *ptr, rewrite);
-            parallelFor(0, input.size(), pobj, grain_size);
-        }
+        count.reserve(nrecycle);
 
-        CharacterVector res( toprotect_optstring_sexp(inputv));
-        res.attr("count") = count;
-        return res;
+        if (!parallel || input.size() < grain_size){
+
+            vector<tr2::optional<string>> replace_res;
+            replace_res.reserve(nrecycle);
+
+            for (auto i = 0;
+                 i != nrecycle ;
+                 i++)
+            {
+                auto ptr = ptrv[i % ptrv.size()];
+                auto rewritei = rewrite[i % rewrite.size()];
+                replace_res.push_back(inputv[i % input.size()]);
+                tr2::optional<string>& stri = replace_res.back();
+                if(!bool(stri)){
+                    count.push_back(0);
+                    continue;
+                }
+                if (!bool(rewritei)){
+                    count.push_back(0);
+                    if (ptr->Match( stri.value() ,0, strlen(stri.value().c_str()),
+                                RE2::UNANCHORED, nullptr, 0)){
+                        stri = tr2::nullopt;
+                    }
+                    continue;
+                }
+                count.push_back(ptr->GlobalReplace(&stri.value(),*ptr,rewritei.value()));
+            }
+            CharacterVector res( toprotect_optstring_sexp(replace_res));
+            res.attr("count") = count;
+            return res;
+        } else {
+             vector<tr2::optional<string>> replace_res(nrecycle);
+             count.resize(input.size());
+             ReplaceGlobalP pobj(inputv, count, ptrv, rewrite,replace_res);
+             parallelFor(0, replace_res.size(), pobj, grain_size);
+
+             CharacterVector res( toprotect_optstring_sexp(replace_res));
+             res.attr("count") = count;
+             return res;
+         }
+
     }
 }
 

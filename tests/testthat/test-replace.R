@@ -91,3 +91,59 @@ test_that("re2_replace", {
     expect_identical(re2_preplace_all(input = c("a","aa", NA), pattern = "a", rewrite = "b", grain_size = 1), structure(c("b", "bb", NA), count = c(1, 2, 0)))
 })
 
+test_that("replce vectorize",{
+    replace_list = list(
+        list( c("a+", "b"),
+              c("x", "y"),
+              c("abacada", "aaa", "fdsueo"),
+              c("xbacada", "aaa", "fdsueo"),
+              c("xbxcxdx", "aaa", "fdsueo"),
+              c(4,0,0) ,
+              TRUE),
+        list( c("a+", "bb"),
+              c("x", "y"),
+              c("abacada", "bb", "fasueo"),
+              c("xbacada", "y", "fxsueo"),
+              c("xbxcxdx", "y", "fxsueo"),
+              c(4,1,1) ,
+              TRUE),
+        list( c("a+", "bb", "c"),
+              c("x", "y"),
+              c("abacada", "bb", "fcsuco"),
+              c("xbacada", "y", "fxsuco"),
+              c("xbxcxdx", "y", "fxsuxo"),
+              c(4,1,2) ,
+              TRUE)
+        ,
+        list( c("a+", "bb", "c"),
+              c("x", "y", "zz"),
+              c("abacada", "bb", "fcsuco"),
+              c("xbacada", "y", "fzzsuco"),
+              c("xbxcxdx", "y", "fzzsuzzo"),
+              c(4,1,2) ,
+              FALSE),
+        list( rep(c("a+", "bb", "c"),1000),
+              rep(c("x", "y", "zz"),1000),
+              rep(c("abacada", "bb", "fcsuco"),1000),
+              rep(c("xbacada", "y", "fzzsuco"),1000),
+              rep(c("xbxcxdx", "y", "fzzsuzzo"),1000),
+              rep(c(4,1,2),1000) ,
+              FALSE)
+    )
+
+    for (ind in replace_list) {
+
+
+        expect_identical(suppressWarnings(re2_replace(ind[[3]], ind[[1]], ind[[2]])), ind[[4]])
+
+        res = suppressWarnings(re2_replace_all(ind[[3]], ind[[1]], ind[[2]]))
+        expect_identical(as.character(res), ind[[5]])
+        expect_identical(attr(res, "count"), ind[[6]])
+
+        # vectorize warning
+        if(ind[[7]] == TRUE){
+            expect_warning(re2_replace_all(ind[[3]], ind[[1]], ind[[2]]))
+        }
+
+    }
+})

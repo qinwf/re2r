@@ -8,7 +8,7 @@ re2(pattern, utf_8 = TRUE, case_sensitive = TRUE, posix_syntax = FALSE,
   dot_nl = FALSE, literal = FALSE, longest_match = FALSE,
   never_nl = FALSE, never_capture = FALSE, one_line = FALSE,
   perl_classes = FALSE, word_boundary = FALSE, log_error = FALSE,
-  max_mem = 8388608)
+  max_mem = 8388608, simplify = TRUE)
 }
 \arguments{
 \item{pattern}{regular expression pattern}
@@ -38,6 +38,8 @@ re2(pattern, utf_8 = TRUE, case_sensitive = TRUE, posix_syntax = FALSE,
 \item{log_error}{(false) log syntax and execution errors}
 
 \item{max_mem}{(see details)  approx. max memory footprint of RE2}
+
+\item{simplify}{(true) return a object instead of a list when pattern length is 1.}
 }
 \value{
 a pre-compiled regular expression

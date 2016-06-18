@@ -48,3 +48,68 @@ SEXP toprotect_optstring_sexp(const optstring& input){
     UNPROTECT(1);
     return x;
 }
+
+void build_regex_vector(SEXP regexp,vector<RE2*>& ptrv){
+    if (TYPEOF(regexp) == EXTPTRSXP){
+
+        XPtr<RE2> rptr = as<XPtr<RE2>>(regexp);
+        ptrv.push_back(rptr);
+
+    } else if (TYPEOF(regexp) == VECSXP){
+
+        auto len = Rf_xlength(regexp);
+        ptrv.reserve(len);
+        for(auto it = 0; it != len; it++){
+            XPtr<RE2> rptr = as<XPtr<RE2>>(VECTOR_ELT(regexp, it));
+            ptrv.push_back(rptr);
+        }
+
+    } else{
+        stop("expecting a pre-compiled RE2 object.");
+    }
+}
+
+// see stri__recycling_rule https://github.com/gagolews/stringi/blob/0d49dca84fbe703afa596e5ba0e6f223720dfa87/src/stri_common.cpp
+
+#define MSG__WARN_RECYCLING_RULE \
+"longer object length is not a multiple of shorter object length"
+
+R_xlen_t re2r_recycling_rule(bool enableWarning, int n, ...)
+{
+    R_xlen_t nsm = 0;
+    va_list arguments;
+
+    va_start(arguments, n);
+    for (R_len_t i = 0; i < n; ++i) {
+        R_len_t curlen = va_arg(arguments, R_len_t);
+        if (curlen <= 0)
+            return 0;
+        if (curlen > nsm)
+            nsm = curlen;
+    }
+    va_end(arguments);
+
+    if (enableWarning) {
+        va_start(arguments, n);
+        for (R_len_t i = 0; i < n; ++i) {
+            R_len_t curlen = va_arg(arguments, R_len_t);
+            if (nsm % curlen != 0) {
+                Rf_warning(MSG__WARN_RECYCLING_RULE);
+                break;
+            }
+        }
+        va_end(arguments);
+    }
+
+    return nsm;
+}
+
+R_xlen_t vectorize_next(R_xlen_t i, R_xlen_t nrecycle, R_xlen_t n) {
+    if (i == nrecycle - 1 - (nrecycle%n))
+        return nrecycle; // this is the end
+    i = i + n;
+    if (i >= nrecycle)
+        return (i % n) + 1;
+    else
+        return i;
+}

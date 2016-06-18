@@ -119,4 +119,10 @@ SEXP toprotect_vec_string_sexp(const vector<string>& input);
 vector<tr2::optional<string>> as_vec_opt_string(CharacterVector& input);
 vector<string> get_groups_name(RE2* pattern, int cap_nums);
 
+R_xlen_t re2r_recycling_rule(bool enableWarning, int n, ...);
+
+R_xlen_t vectorize_next(R_xlen_t i, R_xlen_t nrecycle, R_xlen_t n);
+
+void build_regex_vector(SEXP regexp, vector<RE2*>& ptrv);
+
 #endif

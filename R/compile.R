@@ -47,6 +47,7 @@
 #' @param perl_classes     (false) allow Perl's \\d \\s \\w \\D \\S \\W, when posix_syntax == false this features are always enabled
 #' @param word_boundary    (false) allow Perl's \\b \\B (word boundary and not), when posix_syntax == false this features are always enabled
 #' @param one_line         (false) ^ and $ only match beginning and end of text, when posix_syntax == false this features are always enabled
+#' @param simplify         (true) return a object instead of a list when pattern length is 1.
 #' @return a pre-compiled regular expression
 #' @details
 #' The max_mem option controls how much memory can be used
@@ -104,7 +105,8 @@ re2 = function(pattern,
                perl_classes = FALSE,
                word_boundary = FALSE,
                log_error = FALSE,
-               max_mem = 8388608) {
+               max_mem = 8388608,
+               simplify = TRUE) {
 
     cpp_re2_compile(
         stri_enc_toutf8(pattern),
@@ -120,7 +122,9 @@ re2 = function(pattern,
         one_line_value = one_line,
         perl_classes_value = perl_classes,
         word_boundary_value = word_boundary,
-        max_mem_value = max_mem
+        max_mem_value = max_mem,
+        simplify_value = simplify
+
     )
 }
 
