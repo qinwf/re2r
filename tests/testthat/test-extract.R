@@ -21,3 +21,21 @@ test_that("check rewrite", {
     expect_identical(re2_pextract_all(c("baz", "barxbar_sbar bar",NA),c("bar"), grain_size = 1), list(NULL, c("bar", "bar", "bar", "bar"), NULL))
 
 })
+
+test_that("vectorize extract",{
+    extract_list = list(
+        list(c("baz","bar"), "bar",c(NA,"bar")),
+        list(c("baz","bar"), c("baz","bar"),c("baz","bar")),
+        list(c("baz"), c("baz","bar"),c("baz",NA))
+    )
+
+    for (ind in extract_list){
+        expect_identical(re2_extract(ind[[1]], ind[[2]]), ind[[3]])
+        expect_identical(re2_pextract(ind[[1]], ind[[2]]), ind[[3]])
+        expect_identical(re2_pextract(ind[[1]], ind[[2]],grain_size = 1), ind[[3]])
+    }
+
+    expect_warning(re2_extract(c("sd","ab","cd"), c("ab","af")))
+    expect_warning(re2_pextract(c("sd","ab","cd"), c("ab","af")))
+    expect_warning(re2_pextract(c("sd","ab","cd"), c("ab","af"), grain_size = 1))
+})

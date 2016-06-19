@@ -164,13 +164,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_extract
-SEXP cpp_extract(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel, size_t grain_size);
+SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel, size_t grain_size);
 RcppExport SEXP re2r_cpp_extract(SEXP inputSEXP, SEXP regexpSEXP, SEXP allSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2>& >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< bool >::type all(allSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
