@@ -491,6 +491,7 @@ struct ExtractP : public Worker
                       [this,&index](tr2::optional<string>& x){
                            auto inputi = input[index % input.size()];
                            auto ptr = tt[index % tt.size()];
+                           index++;
 
                            if(!bool(inputi)){
                                x = tr2::nullopt;
@@ -526,6 +527,7 @@ struct ExtractAllP : public Worker
                        [this,&index](tr2::optional<vector<string>>& x) {
                            auto inputi = input[index % input.size()];
                            auto ptr = tt[index % tt.size()];
+                           index++;
 
                            if(!bool(inputi)){
                                x = tr2::nullopt;
@@ -544,6 +546,7 @@ struct ExtractAllP : public Worker
                            }
 
                             x = tr2::make_optional(res);
+
                             return;
                        });
     }

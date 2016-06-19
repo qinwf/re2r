@@ -28,7 +28,6 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #' Locate a pattern in strings.
 #'
 #' If the match is of length 0, (e.g. from a special match like $) end will be one character less than start.
@@ -44,12 +43,6 @@ re2_locate = function(input, pattern, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    if (get_pattern(pattern) == "") {
-        return(stringi::stri_locate_first_boundaries(
-            input,
-            opts_brkiter = stringi::stri_opts_brkiter("character"))
-        )
-    }
     cpp_locate(stri_enc_toutf8(input), pattern, FALSE, FALSE,1)
 }
 
@@ -59,14 +52,6 @@ re2_locate_all = function(input, pattern, ...) {
 
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
-    }
-    if (get_pattern(pattern) == "") {
-        return(stringi::stri_locate_all_boundaries(
-            input,
-            omit_no_match = TRUE,
-            opts_brkiter = stringi::stri_opts_brkiter("character")
-        )
-        )
     }
     cpp_locate(stri_enc_toutf8(input), pattern, TRUE, FALSE,1)
 }
@@ -88,12 +73,7 @@ re2_plocate = function(input, pattern,
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    if (get_pattern(pattern) == "") {
-        return(stringi::stri_locate_first_boundaries(
-            input,
-            opts_brkiter = stringi::stri_opts_brkiter("character"))
-        )
-    }
+
     cpp_locate(stri_enc_toutf8(input), pattern, FALSE, TRUE,grain_size)
 }
 
@@ -103,14 +83,6 @@ re2_plocate_all = function(input, pattern,
                            grain_size = 100000, ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
-    }
-    if (get_pattern(pattern) == "") {
-        return(stringi::stri_locate_all_boundaries(
-            input,
-            omit_no_match = TRUE,
-            opts_brkiter = stringi::stri_opts_brkiter("character")
-        )
-        )
     }
     cpp_locate(stri_enc_toutf8(input), pattern, TRUE, TRUE,grain_size)
 }

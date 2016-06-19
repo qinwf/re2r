@@ -74,27 +74,33 @@ struct LocateP : public Worker
 {
     optstring& input;
     vector<tuple<size_t,size_t>>& output;
-    RE2& tt;
+    vector<RE2*>& tt;
 
-    LocateP(optstring&  input_, vector<tuple<size_t,size_t>>& output_, RE2& tt_)
+    LocateP(optstring&  input_, vector<tuple<size_t,size_t>>& output_,  vector<RE2*>& tt_)
         : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        std::transform(input.begin() + begin,
-                       input.begin() + end,
-                       output.begin() + begin,
-                       [this](tr2::optional<string>& x) -> tuple<size_t,size_t>{
-                           if (!bool(x)){
-                               return make_tuple(NA_INTEGER,NA_INTEGER);
+        size_t index = begin;
+        std::for_each(output.begin() + begin,
+                      output.begin() + end,
+                       [this, &index](tuple<size_t,size_t>&  x){
+                           auto inputi = input[index % input.size()];
+                           auto ptr = tt[index % tt.size()];
+                           index++;
+
+                           if (!bool(inputi)){
+                               x = make_tuple(NA_INTEGER,NA_INTEGER);
+                               return;
                            }
+
                            size_t headn = 0;
-                           StringPiece str(x.value());
-                           auto str_size = x.value().length();
+                           StringPiece str(inputi.value());
+                           auto str_size = inputi.value().length();
                            size_t lastIndex = 0;
                            StringPiece match;
 
-                           if (! tt.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
-                               return make_tuple(NA_INTEGER,NA_INTEGER);
+                           if (! ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
+                               x =  make_tuple(NA_INTEGER,NA_INTEGER);
                            } else {
                                 if (match.size()){
                                     string mstring = match.as_string();
@@ -108,16 +114,16 @@ struct LocateP : public Worker
                                     headn += len_mstring;
 
                                     size_t tail_s = (size_t) headn;
-                                    return make_tuple(head_s, tail_s);
+                                    x = make_tuple(head_s, tail_s);
                                 } else {
                                     string headz = StringPiece(str.data() + lastIndex, match.data() - str.data() - lastIndex).as_string();
                                     size_t len_head = utf8_length(headz.c_str());
                                     headn += len_head;
-                                    return make_tuple(headn+1, headn);
+                                    x = make_tuple(headn+1, headn);
                                 }
 
                            }
-
+                            return;
                        });
     }
 };
@@ -127,29 +133,34 @@ struct LocateAllP : public Worker
 {
     optstring& input;
     vector<vector<tuple<size_t,size_t>>>& output;
-    RE2& tt;
+    vector<RE2*>& tt;
 
-    LocateAllP(optstring&  input_, vector<vector<tuple<size_t,size_t>>>& output_, RE2& tt_)
+    LocateAllP(optstring&  input_, vector<vector<tuple<size_t,size_t>>>& output_,  vector<RE2*>& tt_)
         : input(input_), output(output_), tt(tt_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        std::transform(input.begin() + begin,
-                       input.begin() + end,
-                       output.begin() + begin,
-                       [this](tr2::optional<string>& x) -> vector<tuple<size_t,size_t>>{
+        size_t index = begin;
+        std::for_each(output.begin() + begin,
+                       output.begin() + end,
+                       [this, &index](vector<tuple<size_t,size_t>>& x){
+                           auto inputi = input[index % input.size()];
+                           auto ptr = tt[index % tt.size()];
+                           index++;
+
                            vector<tuple<size_t,size_t>> res;
-                           if (!bool(x)){
+                           if (!bool(inputi)){
                                res.push_back(make_tuple(NA_INTEGER,NA_INTEGER));
-                               return res;
+                               x = res;
+                               return ;
                            }
                            StringPiece match;
 
-                           StringPiece str(x.value());
+                           StringPiece str(inputi.value());
                            size_t lastIndex = 0;
                            size_t headn = 0;
-                           auto str_size = x.value().length();
+                           auto str_size = inputi.value().length();
 
-                           while ( lastIndex < str_size && tt.Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
+                           while ( lastIndex < str_size && ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)){
                                if (match.size()){
                                    string mstring = match.as_string();
                                    size_t len_mstring = utf8_length(mstring.c_str());
@@ -181,26 +192,29 @@ struct LocateAllP : public Worker
                                }
                            }
 
-                           return res;
+                           x = res;
+                           return;
                        });
     }
 };
 
-SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr, SEXP colsname){
+SEXP cpp_locate_not_all(CharacterVector& input, vector<RE2*>& ptrv, SEXP colsname, size_t nrecycle){
     SEXP inputx = input;
     StringPiece match;
 
-    Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, input.size(),2));
+    Shield<SEXP>  xs(Rf_allocMatrix(INTSXP, nrecycle,2));
     set_colnames(xs, colsname);
     SEXP x = xs;
 
     string headstr ;
 
-    for(auto it = 0; it!= input.size(); it++){
-        auto rstr = STRING_ELT(inputx, it);
+    for(auto it = 0; it!= nrecycle; it++){
+        auto rstr = STRING_ELT(inputx, it % input.size());
+        auto ptr = ptrv[it % ptrv.size()];
+
         if (rstr == NA_STRING){
-            INTEGER(x)[it + input.size() *0] = NA_INTEGER;
-            INTEGER(x)[it + input.size() *1] = NA_INTEGER;
+            INTEGER(x)[it + nrecycle *0] = NA_INTEGER;
+            INTEGER(x)[it + nrecycle *1] = NA_INTEGER;
             continue;
         }
         auto r_char = R_CHAR(rstr);
@@ -211,8 +225,8 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr, SEXP colsname){
         auto str_size = strlen(r_char);
         size_t lastIndex = 0;
         if (! ptr->Match(str, lastIndex , str_size, RE2::UNANCHORED, &match, 1)) {
-            INTEGER(x)[it + input.size() *0] = NA_INTEGER;
-            INTEGER(x)[it + input.size() *1] = NA_INTEGER;
+            INTEGER(x)[it + nrecycle *0] = NA_INTEGER;
+            INTEGER(x)[it + nrecycle *1] = NA_INTEGER;
             continue;
         } else {
             if(match.size()){
@@ -224,10 +238,10 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr, SEXP colsname){
                 size_t len_head = utf8_length(headz.c_str());
                 headn += len_head;
 
-                INTEGER(x)[it + input.size()*0] = headn+1 ;
+                INTEGER(x)[it + nrecycle*0] = headn+1 ;
                 headn += len_mstring;
 
-                INTEGER(x)[it + input.size()*1] = headn;
+                INTEGER(x)[it + nrecycle*1] = headn;
                 continue;
             } else {
 
@@ -235,9 +249,9 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr, SEXP colsname){
                 size_t len_head = utf8_length(headz.c_str());
                 headn += len_head;
 
-                INTEGER(x)[it + input.size()*0] =  headn+1 ;
+                INTEGER(x)[it + nrecycle*0] =  headn+1 ;
 
-                INTEGER(x)[it + input.size()*1] =  headn;
+                INTEGER(x)[it + nrecycle*1] =  headn;
                 continue;
             }
 
@@ -246,11 +260,11 @@ SEXP cpp_locate_not_all(CharacterVector& input, RE2* ptr, SEXP colsname){
     return x;
 }
 
-SEXP cpp_locate_all(CharacterVector& input, RE2* ptr, SEXP colsname){
+SEXP cpp_locate_all(CharacterVector& input, vector<RE2*>& ptrv, SEXP colsname, size_t nrecycle){
     SEXP inputx = input;
 
     StringPiece match;
-    Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
+    Shield<SEXP>  xs(Rf_allocVector(VECSXP, nrecycle));
     SEXP x = xs;
 
     Shield<SEXP>  na_matrixx(Rf_allocMatrix(INTSXP, 1,2));
@@ -260,8 +274,10 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr, SEXP colsname){
     set_colnames(na_matrix, colsname);
 
     string headstr ;
-    for(auto it = 0; it!= input.size(); it++){
-        auto rstr = STRING_ELT(inputx, it);
+    for(auto it = 0; it!= nrecycle; it++){
+        auto rstr = STRING_ELT(inputx, it % input.size());
+        auto ptr = ptrv[it % ptrv.size()];
+
         if (rstr == NA_STRING){
             SET_VECTOR_ELT(x, it, na_matrix);
             continue;
@@ -319,19 +335,21 @@ SEXP cpp_locate_all(CharacterVector& input, RE2* ptr, SEXP colsname){
 }
 
 // [[Rcpp::export]]
-SEXP cpp_locate(CharacterVector input, XPtr<RE2>& regexp, bool all, bool parallel, size_t grain_size){
+    SEXP cpp_locate(CharacterVector input, SEXP regexp, bool all, bool parallel, size_t grain_size){
     string errmsg;
 
-    RE2* ptr = regexp;
+    vector<RE2*> ptrv;
+    build_regex_vector(regexp, ptrv);
+    auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
 
     SEXP colsname = Shield<SEXP>((Rf_allocVector(VECSXP, 2)));
     SET_VECTOR_ELT(colsname, 1, CharacterVector::create("start","end"));
 
     if (! parallel || input.size() < grain_size){
         if (!all){
-            return cpp_locate_not_all(input, ptr, colsname);
+            return cpp_locate_not_all(input, ptrv, colsname, nrecycle);
         } else { // not parallel ,all
-            return cpp_locate_all(input, ptr, colsname);
+            return cpp_locate_all(input, ptrv, colsname, nrecycle);
         }
     } else{
         // parallel
@@ -339,20 +357,20 @@ SEXP cpp_locate(CharacterVector input, XPtr<RE2>& regexp, bool all, bool paralle
         auto inputv = as_vec_opt_string(input);
 
         if (!all){
-            vector<tuple<size_t,size_t>> res(input.size());
+            vector<tuple<size_t,size_t>> res(nrecycle);
 
-            LocateP pobj(inputv, res, *ptr);
-            parallelFor(0, input.size(), pobj , grain_size);
+            LocateP pobj(inputv, res, ptrv);
+            parallelFor(0, nrecycle, pobj , grain_size);
             Shield<SEXP> tempres(toprotect_loc_matrix(res));
             set_colnames(tempres, colsname);
             return tempres;
         } else {
-            vector<vector<tuple<size_t,size_t>>> res(input.size());
+            vector<vector<tuple<size_t,size_t>>> res(nrecycle);
 
-            LocateAllP pobj(inputv, res, *ptr);
-            parallelFor(0, input.size(), pobj, grain_size);
+            LocateAllP pobj(inputv, res, ptrv);
+            parallelFor(0, nrecycle, pobj, grain_size);
 
-            Shield<SEXP>  xs(Rf_allocVector(VECSXP, input.size()));
+            Shield<SEXP>  xs(Rf_allocVector(VECSXP, nrecycle));
             SEXP x = xs;
 
             R_xlen_t index = 0;
