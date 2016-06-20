@@ -76,3 +76,16 @@ test_that("Stringi test cases",{
 
 
 })
+
+test_that("vectorize split",{
+    split_test = list(
+        list("a_b_c_d", c("","_"),list(c("a", "_", "b", "_", "c", "_", "d"), c("a", "b", "c", "d")))
+    )
+    for (ind in split_test) {
+        expect_identical(re2_split(ind[[1]],ind[[2]]), ind[[3]])
+        expect_identical(re2_psplit(ind[[1]],ind[[2]]), ind[[3]])
+        expect_identical(re2_psplit(ind[[1]],ind[[2]],grain_size = 1), ind[[3]])
+
+    }
+
+})

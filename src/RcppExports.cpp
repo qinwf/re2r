@@ -50,18 +50,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_split
-SEXP cpp_split(CharacterVector input, XPtr<RE2>& ptr, NumericVector part, bool fixed, bool parallel, size_t grain_size);
-RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP ptrSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
+SEXP cpp_split(CharacterVector input, SEXP regexp, NumericVector part, bool fixed, bool parallel, size_t grain_size);
+RcppExport SEXP re2r_cpp_split(SEXP inputSEXP, SEXP regexpSEXP, SEXP partSEXP, SEXP fixedSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
-    Rcpp::traits::input_parameter< XPtr<RE2>& >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type part(partSEXP);
     Rcpp::traits::input_parameter< bool >::type fixed(fixedSEXP);
     Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
     Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
-    __result = Rcpp::wrap(cpp_split(input, ptr, part, fixed, parallel, grain_size));
+    __result = Rcpp::wrap(cpp_split(input, regexp, part, fixed, parallel, grain_size));
     return __result;
 END_RCPP
 }
