@@ -267,15 +267,18 @@ RE2::Anchor get_anchor_type(size_t anchor){
 // begin real work
 
 
+
 SEXP cpp_detect(CharacterVector& input,
-                RE2* pattern,
-                RE2::Anchor anchor_type){
+                vector<RE2*>& ptrv,
+                RE2::Anchor anchor_type,
+                size_t nrecycle){
 
     SEXP inputx = input;
-    LogicalVector res(input.size());
+    LogicalVector res(nrecycle);
     auto resi  = res.begin();
-    for(auto it = 0; it != input.size(); it++, resi ++){
-        auto rstr = STRING_ELT(inputx, it);
+    for(auto it = 0; it != nrecycle; it++, resi ++){
+        auto rstr = STRING_ELT(inputx, it % input.size());
+        auto pattern = ptrv[it % ptrv.size()];
         if (rstr == NA_STRING){
             *resi = NA_LOGICAL;
             continue;
@@ -291,38 +294,46 @@ struct BoolP : public Worker
 {
     vector<tr2::optional<string>>& input;
     RVector<int> output;
-    RE2& tt;
+    vector<RE2*>& tt;
     const RE2::Anchor anchor_type;
 
-    BoolP (vector<tr2::optional<string>>&  input_,RVector<int> output_, RE2& tt_,const RE2::Anchor&  anchor_type_)
+    BoolP (vector<tr2::optional<string>>&  input_,RVector<int> output_, vector<RE2*>& tt_,const RE2::Anchor&  anchor_type_)
         : input(input_), output(output_), tt(tt_),anchor_type(anchor_type_){}
 
     void operator()(std::size_t begin, std::size_t end) {
-        std::transform(input.begin() + begin,
-                       input.begin() + end,
-                       output.begin() + begin,
-                       [this](tr2::optional<string>& x)->int{
-                           if (!bool(x)){
-                                return NA_LOGICAL;
-                           }
-                           return tt.Match(x.value(), 0, (int) x.value().length(),
-                                                anchor_type, nullptr, 0);
-                       });
+        size_t index = begin;
+        std::for_each(output.begin() + begin,
+                      output.begin() + end,
+                      [this,&index](int& x){
+                          auto inputi = input[index % input.size()];
+                          auto ptr = tt[index % tt.size()];
+                          index++;
+
+                          if (!bool(inputi)){
+                              x = NA_LOGICAL;
+                              return;
+                          }
+                          x = ptr->Match(inputi.value(), 0, (int) inputi.value().length(),
+                                         anchor_type, nullptr, 0);
+                          return;
+                      });
     }
 };
 
 
 SEXP cpp_detect_parallel(CharacterVector& input,
-                RE2* pattern,
-                RE2::Anchor anchor_type,
-                size_t grain_size){
-    LogicalVector reso(input.size());
+                         vector<RE2*>& pattern,
+                         RE2::Anchor anchor_type,
+                         size_t grain_size,
+                         size_t nrecycle){
+    LogicalVector reso(nrecycle);
     RVector<int> res(reso);
     auto inputv = as_vec_opt_string(input);
-    BoolP pobj(inputv, res, *pattern, anchor_type);
-    parallelFor(0, input.size(), pobj, grain_size);
+    BoolP pobj(inputv, res, pattern, anchor_type);
+    parallelFor(0, nrecycle, pobj, grain_size);
     return wrap(reso);
 }
+
 
 
 struct NoCaptureP : public Worker
@@ -731,7 +742,7 @@ SEXP cpp_match_all_parallel(CharacterVector& input,
 
 // [[Rcpp::export]]
 SEXP cpp_match(CharacterVector input,
-               XPtr<RE2>& ptr,
+               SEXP regexp,
                bool value,
                size_t anchor,
                bool all,
@@ -739,17 +750,37 @@ SEXP cpp_match(CharacterVector input,
                size_t grain_size){
     RE2::Anchor anchor_type = get_anchor_type(anchor);
 
-    RE2* pattern = ptr;
 
     if (value == false){
 
+        vector<RE2*> ptrv;
+        build_regex_vector(regexp, ptrv);
+        auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
+
         if (!parallel || input.size() < grain_size){
-            return cpp_detect(input, pattern, anchor_type);
+            return cpp_detect(input, ptrv, anchor_type,nrecycle);
         } else {
-            return cpp_detect_parallel(input, pattern, anchor_type,grain_size);
+            return cpp_detect_parallel(input, ptrv, anchor_type,grain_size,nrecycle);
         }
 
     } else{
+        RE2* pattern;
+
+        if (TYPEOF(regexp) == EXTPTRSXP){
+
+            XPtr<RE2> rptr = as<XPtr<RE2>>(regexp);
+            pattern = rptr;
+
+        } else if (TYPEOF(regexp) == VECSXP &&  Rf_xlength(regexp) > 0){
+            if (Rf_xlength(regexp) != 1) {
+                warning("only the first pattern is used for pattern matching.");
+            }
+            XPtr<RE2> rptr = as<XPtr<RE2>>(VECTOR_ELT(regexp, 0));
+            pattern = rptr;
+        } else{
+            stop("expecting a pre-compiled RE2 object.");
+        }
+
         auto cap_nums = pattern->NumberOfCapturingGroups();
 
         if ( cap_nums == 0){

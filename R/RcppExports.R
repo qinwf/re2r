@@ -5,8 +5,8 @@ cpp_locate <- function(input, regexp, all, parallel, grain_size) {
     .Call('re2r_cpp_locate', PACKAGE = 're2r', input, regexp, all, parallel, grain_size)
 }
 
-cpp_match <- function(input, ptr, value, anchor, all, parallel, grain_size) {
-    .Call('re2r_cpp_match', PACKAGE = 're2r', input, ptr, value, anchor, all, parallel, grain_size)
+cpp_match <- function(input, regexp, value, anchor, all, parallel, grain_size) {
+    .Call('re2r_cpp_match', PACKAGE = 're2r', input, regexp, value, anchor, all, parallel, grain_size)
 }
 
 cpp_regex_simplify <- function(regexp) {

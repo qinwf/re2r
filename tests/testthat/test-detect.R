@@ -327,3 +327,16 @@ sdsd",re2("^sdsd$", posix_syntax = T)))
     expect_true(!re2_detect("s
 sdsd",re2("^sdsd$", posix_syntax = T, one_line = T)))
 })
+
+test_that("vectorize detect",{
+    detect_list  = list(
+        list(
+            c("a","b"),c("a","b"),c(TRUE,TRUE)
+        )
+    )
+    for (ind in detect_list){
+       expect_identical( re2_detect(ind[[1]], ind[[2]]), ind[[3]])
+       expect_identical( re2_pdetect(ind[[1]], ind[[2]]), ind[[3]])
+       expect_identical( re2_pdetect(ind[[1]], ind[[2]]), ind[[3]])
+    }
+})
