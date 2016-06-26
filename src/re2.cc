@@ -26,11 +26,6 @@ namespace re2 {
 static const int kMaxArgs = 16;
 static const int kVecSize = 1+kMaxArgs;
 
-const VariadicFunction2<bool, const StringPiece&, const RE2&, RE2::Arg, RE2::FullMatchN> RE2::FullMatch = {};
-const VariadicFunction2<bool, const StringPiece&, const RE2&, RE2::Arg, RE2::PartialMatchN> RE2::PartialMatch = {};
-const VariadicFunction2<bool, StringPiece*, const RE2&, RE2::Arg, RE2::ConsumeN> RE2::Consume = {};
-const VariadicFunction2<bool, StringPiece*, const RE2&, RE2::Arg, RE2::FindAndConsumeN> RE2::FindAndConsume = {};
-
 // This will trigger LNK2005 error in MSVC.
 #ifndef _MSC_VER
 const int RE2::Options::kDefaultMaxMem;  // initialized in re2.h
@@ -52,22 +47,11 @@ RE2::Options::Options(RE2::CannedOptions opt)
     one_line_(false) {
 }
 
-// static empty things for use as const references.
-// To avoid global constructors, initialized on demand.
-GLOBAL_MUTEX(empty_mutex);
-static const string *empty_string;
-static const map<string, int> *empty_named_groups;
-static const map<int, string> *empty_group_names;
-
-static void InitEmpty() {
-  GLOBAL_MUTEX_LOCK(empty_mutex);
-  if (empty_string == NULL) {
-    empty_string = new string;
-    empty_named_groups = new map<string, int>;
-    empty_group_names = new map<int, string>;
-  }
-  GLOBAL_MUTEX_UNLOCK(empty_mutex);
-}
+// static empty objects for use as const references.
+// To avoid global constructors, allocated in RE2::Init().
+static const string* empty_string;
+static const map<string, int>* empty_named_groups;
+static const map<int, string>* empty_group_names;
 
 // Converts from Regexp error code to RE2 error code.
 // Maybe some day they will diverge.  In any event, this
@@ -174,19 +158,24 @@ int RE2::Options::ParseFlags() const {
 }
 
 void RE2::Init(const StringPiece& pattern, const Options& options) {
-  mutex_ = new Mutex;
+  static std::once_flag empty_once;
+  std::call_once(empty_once, []() {
+    empty_string = new string;
+    empty_named_groups = new map<string, int>;
+    empty_group_names = new map<int, string>;
+  });
+
   pattern_ = pattern.as_string();
   options_.Copy(options);
-  InitEmpty();
-  error_ = empty_string;
-  error_code_ = NoError;
-  suffix_regexp_ = NULL;
   entire_regexp_ = NULL;
+  suffix_regexp_ = NULL;
   prog_ = NULL;
   rprog_ = NULL;
+  error_ = empty_string;
+  error_code_ = NoError;
+  num_captures_ = -1;
   named_groups_ = NULL;
   group_names_ = NULL;
-  num_captures_ = -1;
 
   RegexpStatus status;
   entire_regexp_ = Regexp::Parse(
@@ -194,14 +183,13 @@ void RE2::Init(const StringPiece& pattern, const Options& options) {
     static_cast<Regexp::ParseFlags>(options_.ParseFlags()),
     &status);
   if (entire_regexp_ == NULL) {
-    if (error_ == empty_string)
-      error_ = new string(status.Text());
     if (options_.log_errors()) {
       LOG(ERROR) << "Error parsing '" << trunc(pattern_) << "': "
                  << status.Text();
     }
-    error_arg_ = status.error_arg().as_string();
+    error_ = new string(status.Text());
     error_code_ = RegexpErrorToRE2(status.code());
+    error_arg_ = status.error_arg().as_string();
     return;
   }
 
@@ -235,17 +223,15 @@ void RE2::Init(const StringPiece& pattern, const Options& options) {
 
 // Returns rprog_, computing it if needed.
 re2::Prog* RE2::ReverseProg() const {
-  MutexLock l(mutex_);
-  if (rprog_ == NULL && error_ == empty_string) {
+  std::call_once(rprog_once_, [this]() {
     rprog_ = suffix_regexp_->CompileToReverseProg(options_.max_mem()/3);
     if (rprog_ == NULL) {
       if (options_.log_errors())
         LOG(ERROR) << "Error reverse compiling '" << trunc(pattern_) << "'";
       error_ = new string("pattern too large - reverse compile failed");
       error_code_ = RE2::ErrorPatternTooLarge;
-      return NULL;
     }
-  }
+  });
   return rprog_;
 }
 
@@ -254,7 +240,6 @@ RE2::~RE2() {
     suffix_regexp_->Decref();
   if (entire_regexp_)
     entire_regexp_->Decref();
-  delete mutex_;
   delete prog_;
   delete rprog_;
   if (error_ != empty_string)
@@ -291,37 +276,32 @@ int RE2::ProgramFanout(map<int, int>* histogram) const {
 // Returns num_captures_, computing it if needed, or -1 if the
 // regexp wasn't valid on construction.
 int RE2::NumberOfCapturingGroups() const {
-  MutexLock l(mutex_);
-  if (suffix_regexp_ == NULL)
-    return -1;
-  if (num_captures_ == -1)
-    num_captures_ = suffix_regexp_->NumCaptures();
+  std::call_once(num_captures_once_, [this]() {
+    if (suffix_regexp_ != NULL)
+      num_captures_ = suffix_regexp_->NumCaptures();
+  });
   return num_captures_;
 }
 
 // Returns named_groups_, computing it if needed.
 // const map<string, int>& RE2::NamedCapturingGroups() const {
-//   MutexLock l(mutex_);
-//   if (!ok())
-//     return *empty_named_groups;
-//   if (named_groups_ == NULL) {
-//     named_groups_ = suffix_regexp_->NamedCaptures();
+//   std::call_once(named_groups_once_, [this]() {
+//     if (suffix_regexp_ != NULL)
+//       named_groups_ = suffix_regexp_->NamedCaptures();
 //     if (named_groups_ == NULL)
 //       named_groups_ = empty_named_groups;
-//   }
+//   });
 //   return *named_groups_;
 // }
 
 // Returns group_names_, computing it if needed.
 const map<int, string>& RE2::CapturingGroupNames() const {
-  MutexLock l(mutex_);
-  if (!ok())
-    return *empty_group_names;
-  if (group_names_ == NULL) {
-    group_names_ = suffix_regexp_->CaptureNames();
+  std::call_once(group_names_once_, [this]() {
+    if (suffix_regexp_ != NULL)
+      group_names_ = suffix_regexp_->CaptureNames();
     if (group_names_ == NULL)
       group_names_ = empty_group_names;
-  }
+  });
   return *group_names_;
 }
 
@@ -447,10 +427,10 @@ int RE2::GlobalReplace(string *str,
 //   int nvec = 1 + MaxSubmatch(rewrite);
 //   if (nvec > arraysize(vec))
 //     return false;
-//
+
 //   if (!re.Match(text, 0, text.size(), UNANCHORED, vec, nvec))
 //     return false;
-//
+
 //   out->clear();
 //   return re.Rewrite(out, rewrite, vec, nvec);
 // }
@@ -1010,7 +990,7 @@ static const int kMaxNumberLength = 32;
 //       str++;
 //     }
 //   }
-//
+
 //   // Although buf has a fixed maximum size, we can still handle
 //   // arbitrarily large integers correctly by omitting leading zeros.
 //   // (Numbers that are still too long will be out of range.)
@@ -1025,21 +1005,21 @@ static const int kMaxNumberLength = 32;
 //     n--;
 //     str++;
 //   }
-//
+
 //   if (n >= 3 && str[0] == '0' && str[1] == '0') {
 //     while (n >= 3 && str[2] == '0') {
 //       n--;
 //       str++;
 //     }
 //   }
-//
+
 //   if (neg) {  // make room in buf for -
 //     n++;
 //     str--;
 //   }
-//
+
 //   if (n > nbuf-1) return "";
-//
+
 //   memmove(buf, str, n);
 //   if (neg) {
 //     buf[0] = '-';
@@ -1078,7 +1058,7 @@ static const int kMaxNumberLength = 32;
 //    // them.  This module is more strict and treats them as errors.
 //    return false;
 //   }
-//
+
 //   char* end;
 //   errno = 0;
 //   unsigned long r = strtoul(str, &end, radix);
@@ -1154,7 +1134,7 @@ static const int kMaxNumberLength = 32;
 //   *(reinterpret_cast<int64*>(dest)) = r;
 //   return true;
 // }
-//
+
 // bool RE2::Arg::parse_ulonglong_radix(const char* str,
 //                                     int n,
 //                                     void* dest,
@@ -1201,11 +1181,11 @@ static const int kMaxNumberLength = 32;
 //   }
 //   return true;
 // }
-//
+
 // bool RE2::Arg::parse_double(const char* str, int n, void* dest) {
 //   return parse_double_float(str, n, false, dest);
 // }
-//
+
 // bool RE2::Arg::parse_float(const char* str, int n, void* dest) {
 //   return parse_double_float(str, n, true, dest);
 // }
@@ -1224,7 +1204,7 @@ static const int kMaxNumberLength = 32;
   bool RE2::Arg::parse_##name##_cradix(const char* str, int n, void* dest) { \
     return parse_##name##_radix(str, n, dest, 0);                           \
   }
-//
+
 // DEFINE_INTEGER_PARSERS(short);
 // DEFINE_INTEGER_PARSERS(ushort);
 // DEFINE_INTEGER_PARSERS(int);
