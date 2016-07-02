@@ -19,3 +19,5 @@ compare.xlsx
 list.xlsx
 listo.xlsx
 CMakeLists.txt
+src-i386/
+src-x64/
