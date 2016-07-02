@@ -5,16 +5,22 @@
 \alias{re2_split_fixed}
 \title{Split strings with a pattern.}
 \usage{
-re2_split(input, pattern, part = Inf, ...)
+re2_split(string, pattern, part = Inf, parallel = FALSE,
+  grain_size = 1e+05, ...)
 
-re2_split_fixed(input, pattern, part, ...)
+re2_split_fixed(string, pattern, part, parallel = FALSE, grain_size = 1e+05,
+  ...)
 }
 \arguments{
-\item{input}{a character vector}
+\item{string}{a character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{part}{number of pieces to return. Default (Inf) uses all possible split positions.}
+
+\item{parallel}{use multithread}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
 \item{...}{further arguments passed to or from other methods.}
 }
