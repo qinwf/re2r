@@ -5,18 +5,24 @@
 \alias{re2_replace_all}
 \title{Replace a pattern in strings.}
 \usage{
-re2_replace(input, pattern, rewrite, ...)
+re2_replace(string, pattern, replacement, parallel = FALSE,
+  grain_size = 1e+05, ...)
 
-re2_replace_all(input, pattern, rewrite, ...)
+re2_replace_all(string, pattern, replacement, parallel = FALSE,
+  grain_size = 1e+05, ...)
 }
 \arguments{
-\item{input}{a character vector}
+\item{string}{input character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{rewrite}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
+\item{replacement}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{parallel}{use multithread}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
+
+\item{...}{further arguments passed to or from other methods}
 }
 \value{
 a character vector
@@ -26,7 +32,7 @@ Replace the first match of "pattern" in "str" with "rewrite".
 Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
 used to insert text matching corresponding parenthesized group
 from the pattern.  \\0 in "rewrite" refers to the entire matching
-text.
+text. Vectorised over string, pattern and replacement.
 }
 \examples{
 regexp = re2("b+")
