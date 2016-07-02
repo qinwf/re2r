@@ -5,14 +5,18 @@
 \alias{re2_locate_all}
 \title{Locate a pattern in strings.}
 \usage{
-re2_locate(input, pattern, ...)
+re2_locate(string, pattern, parallel = FALSE, grain_size = 1e+05, ...)
 
-re2_locate_all(input, pattern, ...)
+re2_locate_all(string, pattern, parallel = FALSE, grain_size = 1e+05, ...)
 }
 \arguments{
-\item{input}{a character vector}
+\item{string}{a character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
+
+\item{parallel}{use multithread}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
 \item{...}{further arguments passed to or from other methods.}
 }
