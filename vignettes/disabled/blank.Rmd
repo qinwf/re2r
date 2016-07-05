@@ -1,3 +1,1 @@
-## Disabled
-
-This vignette is disabled by default. See https://qinwenfeng.com/re2r_doc .
+Benchmarks are disabled by default for CRAN. See https://qinwenfeng.com/re2r_doc for the result.

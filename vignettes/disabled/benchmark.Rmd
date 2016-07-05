@@ -1,3 +1,12 @@
+---
+date: "`r Sys.Date()`"
+title: re2r Benchmark
+output: html_document
+vignette: >
+  %\VignetteIndexEntry{benchmark on re2r}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
 
 ```{r options, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(
@@ -16,6 +25,13 @@ library(microbenchmark)
 library(ggplot2)
 library(directlabels)
 ```
+
+
++ TRE - TRE in R base
++ PRCE - Perl Compatible Regular Expressions in R base
++ ICU - ICU with stringi
++ RE2n - RE2 with string pattern
++ RE2c - RE2 with pre-compiled regular expression
 
 ## Repetitions
 

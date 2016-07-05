@@ -18,6 +18,7 @@ library(re2r)
 2. When to use RE
 3. How to use RE with re2r
 4. RE packages in R
+5. Benchmark
 
 ## What is Regular Expression
 
@@ -157,34 +158,18 @@ And this will also give us more option for the pattern. run `help(re2)` to get m
 ```{r}
 regexp = re2("test", case_sensitive = FALSE)
 print(regexp)
-regexp %<~% "(?P<first>1*)"
-regexp
 ```
 
-`%<~%` is a operator to create a new RE2 object.
-
-```{r}
-regexp = re2("test",case_sensitive = FALSE)
-re2_detect("TEST", regexp)
-re2_replace( "TEST", regexp, "ops")
-```
-
-If you come from the **Perl** world, you may be insterested in `%=~%`  `%!~%`.
-
-```{r}
-"TEST" %=~% regexp
-"TEST" %!~% regexp
-```
 
 ### 5. Multithread
 
-There are functions that will use multithread to test the strings.
+Use optional parameter `parallel` to enable multithread support.
 
 ```r
-re2_pmatch()
-re2_pdetect()
-re2_preplace()
-re2_pextract()
+re2_match()
+re2_detect()
+re2_replace()
+re2_extract()
 ```
 
 See R package help page for more detail. 
@@ -214,3 +199,7 @@ Although being slightly different to use (because of the design of the engines),
 ## Want to learn more?
 
 For more examples, you can check out [RE2 Examples](./re2r-examples.html) vignette.
+
+## Benchmarks
+
+Benchmarks are disabled by default for CRAN. See https://qinwenfeng.com/re2r_doc for the results by Travis-CI.
