@@ -28,71 +28,43 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#' Find matched groups from strings.
+
+#' Test a pattern in strings, and return boolean.
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param string a character vector
 #' @param anchor UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.
-#' @param parallel multithreading support
-#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
+#' @param parallel use multithread
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
 #' @param ... further arguments passed to or from other methods.
 #' @examples
+#' re2_detect("one", "(o.e)")
+#' re2_detect("123-234-2222", "\\d\\d\\d-\\d\\d\\d-\\d\\d\\d\\d")
 #'
-#' test_string = "this is just one test";
-#' re2_match(test_string, "(o.e)")
+#' words = c("sunny","beach","happy","really")
+#' re2_detect(words, "y")
+#' re2_detect(words, "^b")
+#' re2_detect(words, "[abc]")
 #'
-#' (res = re2_match(test_string, "(o.e)"))
-#' str(res)
-#'
-#' (res = re2_match(test_string, "(?P<testname>this)( is)"))
-#' str(res)
-#'
-#' (res = re2_match_all(test_string, "(is)"))
-#'
-#' test_string = c("this is just one test", "the second test");
-#' (res = re2_match_all(test_string, "(is)"))
-#'
-#' test_string = c("this is just one test", "the second test")
-#' (res = re2_match(test_string, "is"))
-#'
-#' regexp = re2("test",case_sensitive = FALSE)
-#' re2_match("TEST", regexp)
+#' # vectorize
+#' (res = re2_detect("This", letters))
+#' letters[res]
 #'
 #' @export
-re2_match = function(string,
-                     pattern,
-                     anchor = UNANCHORED,
-                     parallel = FALSE,
-                     grain_size = 100000,
-                     ...) {
+re2_detect = function(string,
+                      pattern,
+                      anchor = UNANCHORED,
+                      parallel = FALSE,
+                      grain_size = 100000,
+                      ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
     cpp_match(stri_enc_toutf8(string),
               regexp = pattern,
-              value = TRUE,
+              value = FALSE,
               anchor = anchor,
               all = FALSE,
-              parallel = parallel,
-              grain_size = grain_size)
-}
-
-#' @export
-#' @rdname re2_match
-re2_match_all = function(string,
-                         pattern,
-                         anchor = UNANCHORED,
-                         parallel = FALSE,
-                         grain_size = 100000,
-                         ...) {
-    if (is.character(pattern)) {
-        pattern = re2(pattern, ...)
-    }
-    cpp_match(stri_enc_toutf8(string),
-              regexp = pattern,
-              value = TRUE,
-              anchor = anchor,
-              all = TRUE,
               parallel = parallel,
               grain_size = grain_size)
 }

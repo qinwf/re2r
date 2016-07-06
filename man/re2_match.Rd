@@ -5,21 +5,18 @@
 \alias{re2_match_all}
 \title{Find matched groups from strings.}
 \usage{
-re2_match(input, pattern, anchor = 0, value = TRUE, all = FALSE,
-  parallel = FALSE, grain_size = 1, ...)
+re2_match(string, pattern, anchor = UNANCHORED, parallel = FALSE,
+  grain_size = 1e+05, ...)
 
-re2_match_all(input, pattern, anchor = 0, ...)
+re2_match_all(string, pattern, anchor = UNANCHORED, parallel = FALSE,
+  grain_size = 1e+05, ...)
 }
 \arguments{
-\item{input}{a character vector}
+\item{string}{a character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
-
-\item{value}{return value instead of bool result}
-
-\item{all}{find all matches instead of the first match. When value is true, a matched character matrix or a list will be returned.}
+\item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
 
 \item{parallel}{multithreading support}
 
