@@ -5,16 +5,19 @@
 \alias{re2_subset<-}
 \title{Keep strings matching a pattern.}
 \usage{
-re2_subset(input, pattern, anchor = 0, ...)
+re2_subset(input, pattern, anchor = 0, parallel = FALSE,
+  grain_size = 1e+05, ...)
 
-re2_subset(input, pattern, anchor = 0, ...) <- value
+re2_subset(input, pattern, anchor = 0, parallel, grain_size, ...) <- value
 }
 \arguments{
-\item{input}{a character vector}
-
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{anchor}{a positive number. 0: no anchor. 1: anchor match at the beginning of the string. 2 or larger number: anchor match at the beginning and the end of the string.}
+\item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
+
+\item{parallel}{use multithread}
+
+\item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
 \item{...}{further arguments passed to or from other methods.}
 
