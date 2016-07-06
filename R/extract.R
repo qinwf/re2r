@@ -36,50 +36,32 @@
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
+#' @param parallel use multithread
+#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_extract("yabba dabba doo", "(.)")
 #' @export
-re2_extract = function(input, pattern, ...) {
+re2_extract = function(input,
+                       pattern,
+                       parallel = FALSE,
+                       grain_size = 100000,
+                       ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE,1)
+    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE, 1)
 }
 
 #' @rdname re2_extract
 #' @export
-re2_extract_all = function(input, pattern, ...) {
+re2_extract_all = function(input,
+                           pattern,
+                           parallel = FALSE,
+                           grain_size = 100000,
+                           ...) {
     if (is.character(pattern)) {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE,1)
-}
-
-#' Extract a pattern in strings with multithread.
-#'
-#' Like re2_preplace, except that if the pattern matches, substring is copied into the result. The non-matching
-#' portions of "text" are ignored.
-#'
-#' @param pattern a pre-compiled regular expression or a string
-#' @param input a character vector
-#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
-#' @param ... further arguments passed to or from other methods.
-#' @examples
-#' re2_pextract("yabba dabba doo", "(.)")
-#' @export
-re2_pextract = function(input, pattern, grain_size=100000, ...) {
-    if (is.character(pattern)) {
-        pattern = re2(pattern, ...)
-    }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, TRUE,grain_size)
-}
-
-#' @rdname re2_pextract
-#' @export
-re2_pextract_all = function(input, pattern, grain_size = 100000,...) {
-    if (is.character(pattern)) {
-        pattern = re2(pattern, ...)
-    }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, TRUE,grain_size)
+    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE, 1)
 }
