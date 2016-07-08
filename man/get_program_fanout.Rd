@@ -2,9 +2,7 @@
 % Please edit documentation in R/fanout.R
 \name{get_program_fanout}
 \alias{get_program_fanout}
-\title{Get program fanout
-Outputs the program fanout as a histogram bucketed by powers of 2.
-Returns the number of the largest non-empty bucket.}
+\title{Get program fanout}
 \usage{
 get_program_fanout(regexp)
 }
@@ -12,8 +10,17 @@ get_program_fanout(regexp)
 \item{regexp}{a pre-compiled regular expression}
 }
 \description{
-Get program fanout
-Outputs the program fanout as a histogram bucketed by powers of 2.
-Returns the number of the largest non-empty bucket.
+Return the program fanout as a histogram bucketed by powers of 2.
+}
+\examples{
+re1 = re2("(?:(?:(?:(?:(?:.)?){1})*)+)")
+re10 = re2("(?:(?:(?:(?:(?:.)?){10})*)+)")
+re100 = re2("(?:(?:(?:(?:(?:.)?){100})*)+)")
+re1000 = re2("(?:(?:(?:(?:(?:.)?){1000})*)+)")
+
+get_program_fanout(re1)
+get_program_fanout(re10)
+get_program_fanout(re100)
+get_program_fanout(re1000)
 }
 

@@ -30,9 +30,19 @@
 
 
 #' Get program fanout
-#' Outputs the program fanout as a histogram bucketed by powers of 2.
-#' Returns the number of the largest non-empty bucket.
+#'
+#' Return the program fanout as a histogram bucketed by powers of 2.
 #' @param regexp a pre-compiled regular expression
+#' @examples
+#' re1 = re2("(?:(?:(?:(?:(?:.)?){1})*)+)")
+#' re10 = re2("(?:(?:(?:(?:(?:.)?){10})*)+)")
+#' re100 = re2("(?:(?:(?:(?:(?:.)?){100})*)+)")
+#' re1000 = re2("(?:(?:(?:(?:(?:.)?){1000})*)+)")
+#'
+#' get_program_fanout(re1)
+#' get_program_fanout(re10)
+#' get_program_fanout(re100)
+#' get_program_fanout(re1000)
 #' @export
 get_program_fanout = function(regexp) {
     res = cpp_get_program_fanout(regexp)
