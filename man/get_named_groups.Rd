@@ -2,7 +2,7 @@
 % Please edit documentation in R/compile.R
 \name{get_named_groups}
 \alias{get_named_groups}
-\title{Return capturing names with indices.}
+\title{Return capturing names for a pre-compiled regular expression.}
 \usage{
 get_named_groups(regexp)
 }
@@ -10,14 +10,18 @@ get_named_groups(regexp)
 \item{regexp}{a pre-compiled regular expression}
 }
 \value{
-capturing names with indices.
+capturing names
 }
 \description{
-The map records the index of the leftmost group with the given name.
+Return capturing names.
 }
 \examples{
-regexp = re2("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
+get_named_groups(re2("(a)(?P<name>b)"))
+
+regexp = re2("(?P<A>exprA(?P<B>exprB)(?P<C>exprC))((expr5)(?P<D>exprD))")
+
+print(regexp)
 (res = get_named_groups(regexp))
-names(res)
+re2_match("exprAexprBexprCexpr5exprD", regexp)
 }
 

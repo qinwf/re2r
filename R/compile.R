@@ -134,6 +134,8 @@ re2 = function(pattern,
 #' @examples
 #' regexp = re2("1")
 #' get_pattern(regexp)
+#'
+#' get_pattern(re2("^(?P<abc>abc)a"))
 #' @return a string
 #' @export
 get_pattern = function(regexp) {
@@ -141,15 +143,20 @@ get_pattern = function(regexp) {
     res
 }
 
-#' Return capturing names with indices.
+#' Return capturing names for a pre-compiled regular expression.
 #'
-#' The map records the index of the leftmost group with the given name.
+#' Return capturing names.
+#'
 #' @param regexp a pre-compiled regular expression
-#' @return capturing names with indices.
+#' @return capturing names
 #' @examples
-#' regexp = re2("(?P<A>expr(?P<B>expr)(?P<C>expr))((expr)(?P<D>expr))")
+#' get_named_groups(re2("(a)(?P<name>b)"))
+#'
+#' regexp = re2("(?P<A>exprA(?P<B>exprB)(?P<C>exprC))((expr5)(?P<D>exprD))")
+#'
+#' print(regexp)
 #' (res = get_named_groups(regexp))
-#' names(res)
+#' re2_match("exprAexprBexprCexpr5exprD", regexp)
 #' @export
 get_named_groups = function(regexp) {
     res = cpp_get_named_groups(regexp)
@@ -158,19 +165,16 @@ get_named_groups = function(regexp) {
 
 #' Escapes all potentially meaningful regexp characters in  'unquoted'.
 #'
-#' The returned string, used as a regular expression, will exactly match the original string.  For example,
-#'
-#'           1.5-2.0
-#'
-#' may become:
-#'
-#'           1\\.5\-2\\.0
+#' The returned string, used as a regular expression, will exactly match the original string.
 #'
 #' @param unquoted unquoted string
 #' @param parallel multithreading support
 #' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
 #' @examples
 #' quote_meta(c("1.2","abc"))
+#' re2_detect("1+2", "1+2")
+#' re2_detect("1+2", quote_meta("1+2"))
+#' re2_detect("1+2", re2("1+2",literal = TRUE))
 #' @return quoted string
 #' @export
 quote_meta = function(unquoted, parallel = FALSE, grain_size = 100000) {

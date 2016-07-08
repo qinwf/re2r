@@ -20,5 +20,10 @@ does not count: if the regexp is "(a)(b)", returns 2.
 \examples{
 regexp = re2("1")
 get_number_of_groups(regexp)
+
+get_number_of_groups(re2("((?P<a>123)(12))"))
+
+# uncaptured groups
+get_number_of_groups(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 }
 

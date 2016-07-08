@@ -17,16 +17,12 @@ quote_meta(unquoted, parallel = FALSE, grain_size = 1e+05)
 quoted string
 }
 \description{
-The returned string, used as a regular expression, will exactly match the original string.  For example,
-}
-\details{
-1.5-2.0
-
-may become:
-
-1\\.5\-2\\.0
+The returned string, used as a regular expression, will exactly match the original string.
 }
 \examples{
 quote_meta(c("1.2","abc"))
+re2_detect("1+2", "1+2")
+re2_detect("1+2", quote_meta("1+2"))
+re2_detect("1+2", re2("1+2",literal = TRUE))
 }
 
