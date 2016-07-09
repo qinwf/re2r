@@ -61,8 +61,9 @@ void check_compile_error(RE2::ErrorCode code_,const string& msg){
         default: return; break;
     }
 }
+typedef tr2::optional<unique_ptr<RE2>> OptRE2;
 
-XPtr<RE2> cpp_re2_compile_one(string pattern,
+XPtr<OptRE2> cpp_re2_compile_one(string pattern,
                           bool log_errors_value,
                           bool utf_8_value,
                           bool posix_syntax_value,
@@ -100,17 +101,21 @@ XPtr<RE2> cpp_re2_compile_one(string pattern,
         options.set_word_boundary(word_boundary_value);
     }
 
-    auto ptr =
-        XPtr<RE2>(
-            new RE2(StringPiece(pattern.c_str(),
-                                (int) strlen(pattern.c_str())),
-                                options
-            ));
+    XPtr<OptRE2> ptr
+        (
 
-    if (!ptr->ok()) {
+            new tr2::optional<unique_ptr<RE2>>(tr2::in_place, unique_ptr<RE2>(
+                    new RE2(StringPiece(pattern.c_str(),(int) strlen(pattern.c_str())),
+                                        options)
+                                       )
+                                       )
+        );
+    unique_ptr<RE2>& ptrx = (*ptr).value();
+
+    if (!ptrx->ok()) {
         // long code = (long) regexp->error_code();
         // const std::string &msg = regexp->error();
-        check_compile_error(ptr->error_code(), ptr->error_arg());
+        check_compile_error(ptrx->error_code(), ptrx->error_arg());
     }
 
     return ptr;
@@ -137,11 +142,11 @@ SEXP cpp_re2_compile(CharacterVector input,
                           int64_t max_mem_value,
                           bool simplify_value){
     if (input.size() == 0){
-        return R_NilValue;
+        return XPtr<OptRE2>(new tr2::optional<unique_ptr<RE2>>(tr2::nullopt));
     }
     if (simplify_value && input.size() == 1){
         if (*input.begin() == NA_STRING){
-            return R_NilValue;
+            return XPtr<OptRE2>(new tr2::optional<unique_ptr<RE2>>(tr2::nullopt));
         }else {
 
             Shield<SEXP> res(cpp_re2_compile_one(R_CHAR(STRING_ELT(input, 0)),log_errors_value,utf_8_value,
@@ -163,9 +168,12 @@ SEXP cpp_re2_compile(CharacterVector input,
             auto rstr = STRING_ELT(inputx, it);
 
             if (rstr  == NA_STRING){
-                SET_VECTOR_ELT(res,it, R_NilValue);
+                XPtr<OptRE2> resi(new tr2::optional<unique_ptr<RE2>>(tr2::nullopt));
+                Rf_setAttrib( resi, R_ClassSymbol,  re2c);
+                SET_VECTOR_ELT(res, it, resi);
                 continue;
             }
+
             auto r_char = R_CHAR(rstr);
             Shield<SEXP> resi(cpp_re2_compile_one(r_char,log_errors_value,utf_8_value,
                                         posix_syntax_value,case_sensitive_value,
@@ -191,8 +199,9 @@ SEXP cpp_re2_compile(CharacterVector input,
 //' @param regexp a pre-compiled regular expression
 //' @return a integer
 //' @examples
-//' regexp = re2("1")
-//' get_expression_size(regexp)
+//' get_expression_size(re2("1"))
+//' get_expression_size(re2("(1)"))
+//' get_expression_size(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 //' @export
 // [[Rcpp::export]]
 int get_expression_size(XPtr<RE2>& regexp){
@@ -219,6 +228,11 @@ SEXP cpp_get_pattern(XPtr<RE2>& ptr){
 //' @examples
 //' regexp = re2("1")
 //' get_number_of_groups(regexp)
+//'
+//' get_number_of_groups(re2("((?P<a>123)(12))"))
+//'
+//' # uncaptured groups
+//' get_number_of_groups(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 //' @export
 // [[Rcpp::export]]
 int get_number_of_groups(XPtr<RE2>& regexp){

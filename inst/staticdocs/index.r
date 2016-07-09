@@ -7,14 +7,7 @@ sd_section("Match",
     "re2_match",
     "re2_replace",
     "re2_split",
-    "re2_subset",
-    "re2_pdetect",
-    "re2_pextract",
-    "re2_plocate",
-    "re2_pmatch",
-    "re2_preplace",
-    "re2_psplit",
-    "re2_psubset"
+    "re2_subset"
   )
 )
 
@@ -31,13 +24,6 @@ sd_section("Compile RE2 Regular Expression",
   )
 )
 
-sd_section("Operators",
-  "Regular Expression Operators",
-  c(
-    "%=~%",
-    "%<~%"
-  )
-)
 
 sd_section("Utilities",
   "Helper Functions",

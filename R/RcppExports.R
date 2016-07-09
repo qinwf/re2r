@@ -29,8 +29,9 @@ cpp_re2_compile <- function(input, log_errors_value, utf_8_value, posix_syntax_v
 #' @param regexp a pre-compiled regular expression
 #' @return a integer
 #' @examples
-#' regexp = re2("1")
-#' get_expression_size(regexp)
+#' get_expression_size(re2("1"))
+#' get_expression_size(re2("(1)"))
+#' get_expression_size(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 #' @export
 get_expression_size <- function(regexp) {
     .Call('re2r_get_expression_size', PACKAGE = 're2r', regexp)
@@ -51,6 +52,11 @@ cpp_get_pattern <- function(ptr) {
 #' @examples
 #' regexp = re2("1")
 #' get_number_of_groups(regexp)
+#'
+#' get_number_of_groups(re2("((?P<a>123)(12))"))
+#'
+#' # uncaptured groups
+#' get_number_of_groups(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 #' @export
 get_number_of_groups <- function(regexp) {
     .Call('re2r_get_number_of_groups', PACKAGE = 're2r', regexp)
