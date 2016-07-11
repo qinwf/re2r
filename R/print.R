@@ -38,7 +38,11 @@
 #' re2("(?P<name>sd)")
 #' @export
 print.re2c = function(x, ...) {
+
     cat("re2 pre-compiled regular expression\n\n")
+    if(is_re2c_na(x)){
+        cat("NA string pattern\n")
+    }
     cat("pattern: ")
     cat(get_pattern(x))
     cat("\n")
