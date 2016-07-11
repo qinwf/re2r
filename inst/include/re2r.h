@@ -36,7 +36,17 @@
 using namespace Rcpp;
 using namespace std;
 
+// [[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
+using namespace RcppParallel;
+
+
+#include <memory>
+#include <tuple>
+
+#include <re2/regexp.h>
 #include <re2/re2.h>
+
 using re2::RE2;
 using re2::StringPiece;
 
@@ -124,5 +134,10 @@ R_xlen_t re2r_recycling_rule(bool enableWarning, int n, ...);
 R_xlen_t vectorize_next(R_xlen_t i, R_xlen_t nrecycle, R_xlen_t n);
 
 void build_regex_vector(SEXP regexp, vector<RE2*>& ptrv);
+
+
+typedef unique_ptr<RE2> RE2p;
+typedef tr2::optional<RE2p> OptRE2;
+
 
 #endif

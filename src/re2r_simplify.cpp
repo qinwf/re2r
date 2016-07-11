@@ -28,20 +28,21 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "../inst/include/re2r.h"
 #include "../inst/include/re2/regexp.h"
+#include "../inst/include/re2r.h"
 
 // [[Rcpp::export]]
-SEXP cpp_regex_simplify(XPtr<RE2>& regexp){
-    auto ptr = regexp->Regexp();
-    re2::Regexp* sre = ptr->Simplify();
+SEXP cpp_regex_simplify(XPtr<RE2> &regexp) {
+  auto ptr = regexp->Regexp();
+  re2::Regexp *sre = ptr->Simplify();
 
-    string pattern = sre->ToString();
-    sre->Decref();
+  string pattern = sre->ToString();
+  sre->Decref();
 
-    SEXP res = PROTECT( Rf_allocVector(STRSXP,1));
+  SEXP res = PROTECT(Rf_allocVector(STRSXP, 1));
 
-    SET_STRING_ELT(res, 0, Rf_mkCharLenCE(pattern.c_str(),  strlen(pattern.c_str()) , CE_UTF8));
-    UNPROTECT(1);
-    return res;
+  SET_STRING_ELT(res, 0, Rf_mkCharLenCE(pattern.c_str(),
+                                        strlen(pattern.c_str()), CE_UTF8));
+  UNPROTECT(1);
+  return res;
 }
