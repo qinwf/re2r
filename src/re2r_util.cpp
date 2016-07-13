@@ -52,19 +52,21 @@ SEXP toprotect_optstring_sexp(const optstring &input) {
   return x;
 }
 
-void build_regex_vector(SEXP regexp, vector<RE2 *> &ptrv) {
+#define INVALID_ERROR_STRING "Invalid pointer for RE2 object. Please create a new RE2 object when R is restarted."
+
+void build_regex_vector(SEXP regexp, vector<OptRE2*> &ptrv) {
   if (TYPEOF(regexp) == EXTPTRSXP) {
-
-    XPtr<RE2> rptr = as<XPtr<RE2>>(regexp);
-    ptrv.push_back(rptr);
-
+    auto ptr = R_ExternalPtrAddr(regexp);
+    if(ptr == nullptr) stop(INVALID_ERROR_STRING);
+    ptrv.push_back((OptRE2 *)ptr);
   } else if (TYPEOF(regexp) == VECSXP) {
 
     auto len = Rf_xlength(regexp);
     ptrv.reserve(len);
     for (auto it = 0; it != len; it++) {
-      XPtr<RE2> rptr = as<XPtr<RE2>>(VECTOR_ELT(regexp, it));
-      ptrv.push_back(rptr);
+      auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, it));
+      if(ptr == nullptr) stop(INVALID_ERROR_STRING);
+      ptrv.push_back((OptRE2 *) ptr);
     }
 
   } else {
