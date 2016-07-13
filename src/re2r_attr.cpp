@@ -37,8 +37,8 @@ template <typename T> inline string numbertostring(T Number) {
 }
 
 // [[Rcpp::export]]
-SEXP cpp_get_program_fanout(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+SEXP cpp_get_program_fanout(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
     map<int, int> res;
     ptr->value()->ProgramFanout(&res);
@@ -49,11 +49,11 @@ SEXP cpp_get_program_fanout(XPtr<OptRE2> &regexp) {
 }
 
 // [[Rcpp::export]]
-SEXP cpp_regex_to_string(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+SEXP cpp_regex_to_string(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
 
-    string mstring = regexp->value()->Regexp()->ToString();
+    string mstring = ptr->value()->Regexp()->ToString();
     Shield<SEXP> res(Rf_allocVector(STRSXP, 1));
     SET_STRING_ELT(res, 0, Rf_mkCharLenCE(mstring.c_str(),
                                           strlen(mstring.c_str()), CE_UTF8));
@@ -64,10 +64,10 @@ SEXP cpp_regex_to_string(XPtr<OptRE2> &regexp) {
 }
 
 // [[Rcpp::export]]
-LogicalVector cpp_regex_mimicsPCRE(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+LogicalVector cpp_regex_mimicsPCRE(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
-    auto ptri = regexp->value()->Regexp();
+    auto ptri = ptr->value()->Regexp();
     return wrap(ptri->MimicsPCRE());
   } else {
     return NA_LOGICAL;
@@ -92,8 +92,8 @@ LogicalVector cpp_regex_mimicsPCRE(XPtr<OptRE2> &regexp) {
 //' get_number_of_groups(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 //' @export
 // [[Rcpp::export]]
-int get_number_of_groups(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+int get_number_of_groups(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
     return ptr->value()->NumberOfCapturingGroups();
   } else {
@@ -102,8 +102,8 @@ int get_number_of_groups(XPtr<OptRE2> &regexp) {
 }
 
 // [[Rcpp::export]]
-SEXP cpp_get_named_groups(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+SEXP cpp_get_named_groups(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
     return wrap(get_groups_name(ptr->value().get(),
                                 ptr->value()->NumberOfCapturingGroups()));
@@ -125,8 +125,8 @@ SEXP cpp_get_named_groups(XPtr<OptRE2> &regexp) {
 //' get_expression_size(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 //' @export
 // [[Rcpp::export]]
-int get_expression_size(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+int get_expression_size(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
     return ptr->value()->ProgramSize();
   } else {
@@ -144,8 +144,8 @@ int get_expression_size(XPtr<OptRE2> &regexp) {
 //' is_re2c_na(re2(NA))
 //' @export
 // [[Rcpp::export]]
-LogicalVector is_re2c_na(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+LogicalVector is_re2c_na(SEXP regexp) {
+  INIT_ptr
   LogicalVector res(1);
   if (bool(*ptr)) {
     res[0] = Rboolean::FALSE;
@@ -157,8 +157,8 @@ LogicalVector is_re2c_na(XPtr<OptRE2> &regexp) {
 }
 
 // [[Rcpp::export]]
-SEXP cpp_get_pattern(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+SEXP cpp_get_pattern(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
     Shield<SEXP> res(Rf_allocVector(STRSXP, 1));
     string ress = ptr->value()->pattern();
@@ -180,8 +180,8 @@ SEXP cpp_get_pattern(XPtr<OptRE2> &regexp) {
 //' get_options(re2("test"))
 //' @export
 // [[Rcpp::export]]
-SEXP get_options(XPtr<OptRE2> &regexp) {
-  OptRE2 *ptr = regexp.get();
+SEXP get_options(SEXP regexp) {
+  INIT_ptr
   if (bool(*ptr)) {
     List res(13);
     CharacterVector name = CharacterVector::create(
@@ -205,7 +205,7 @@ SEXP get_options(XPtr<OptRE2> &regexp) {
     res.attr("names") = name;
     return res;
   } else {
-    return List::create(R_NilValue);
+    return List(0);
   }
 }
 
