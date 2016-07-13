@@ -56,6 +56,12 @@ namespace tr2 = std::experimental;
 
 typedef vector<tr2::optional<string>> optstring;
 
+#define INIT_ptr \
+if(R_ExternalPtrAddr(regexp) == nullptr){ \
+    stop("Invalid pointer for RE2 object. Please create a new RE2 object when R is restarted."); \
+} \
+OptRE2 *ptr = as<XPtr<OptRE2>>(regexp).get();
+
 // exception
 
 #define RCPP_EXCEPTION_CLASS(__CLASS__,__WHAT__)                               \
@@ -133,11 +139,13 @@ R_xlen_t re2r_recycling_rule(bool enableWarning, int n, ...);
 
 R_xlen_t vectorize_next(R_xlen_t i, R_xlen_t nrecycle, R_xlen_t n);
 
-void build_regex_vector(SEXP regexp, vector<RE2*>& ptrv);
-
-
 typedef unique_ptr<RE2> RE2p;
 typedef tr2::optional<RE2p> OptRE2;
+
+void build_regex_vector(SEXP regexp, vector<RE2*>& ptrv);
+void build_regex_vector(SEXP regexp, vector<OptRE2*> &ptrv);
+
+
 
 
 #endif
