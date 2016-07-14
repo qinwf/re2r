@@ -52,12 +52,15 @@ SEXP toprotect_optstring_sexp(const optstring &input) {
   return x;
 }
 
-#define INVALID_ERROR_STRING "Invalid pointer for RE2 object. Please create a new RE2 object when R is restarted."
+#define INVALID_ERROR_STRING                                                   \
+  "Invalid pointer for RE2 object. Please create a new RE2 object when R is "  \
+  "restarted."
 
-void build_regex_vector(SEXP regexp, vector<OptRE2*> &ptrv) {
+void build_regex_vector(SEXP regexp, vector<OptRE2 *> &ptrv) {
   if (TYPEOF(regexp) == EXTPTRSXP) {
     auto ptr = R_ExternalPtrAddr(regexp);
-    if(ptr == nullptr) stop(INVALID_ERROR_STRING);
+    if (ptr == nullptr)
+      stop(INVALID_ERROR_STRING);
     ptrv.push_back((OptRE2 *)ptr);
   } else if (TYPEOF(regexp) == VECSXP) {
 
@@ -65,8 +68,9 @@ void build_regex_vector(SEXP regexp, vector<OptRE2*> &ptrv) {
     ptrv.reserve(len);
     for (auto it = 0; it != len; it++) {
       auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, it));
-      if(ptr == nullptr) stop(INVALID_ERROR_STRING);
-      ptrv.push_back((OptRE2 *) ptr);
+      if (ptr == nullptr)
+        stop(INVALID_ERROR_STRING);
+      ptrv.push_back((OptRE2 *)ptr);
     }
 
   } else {
