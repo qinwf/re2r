@@ -38,38 +38,38 @@ template <typename T> inline string numbertostring(T Number) {
 
 // [[Rcpp::export]]
 SEXP cpp_get_program_fanout(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
+  INIT_ptr if (bool(*ptr)) {
     map<int, int> res;
     ptr->value()->ProgramFanout(&res);
     return (wrap(res));
-  } else {
+  }
+  else {
     return R_NilValue;
   }
 }
 
 // [[Rcpp::export]]
 SEXP cpp_regex_to_string(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
+  INIT_ptr if (bool(*ptr)) {
 
     string mstring = ptr->value()->Regexp()->ToString();
     Shield<SEXP> res(Rf_allocVector(STRSXP, 1));
     SET_STRING_ELT(res, 0, Rf_mkCharLenCE(mstring.c_str(),
                                           strlen(mstring.c_str()), CE_UTF8));
     return res;
-  } else {
+  }
+  else {
     return CharacterVector(NA_STRING);
   }
 }
 
 // [[Rcpp::export]]
 LogicalVector cpp_regex_mimicsPCRE(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
+  INIT_ptr if (bool(*ptr)) {
     auto ptri = ptr->value()->Regexp();
     return wrap(ptri->MimicsPCRE());
-  } else {
+  }
+  else {
     return NA_LOGICAL;
   }
 }
@@ -93,21 +93,19 @@ LogicalVector cpp_regex_mimicsPCRE(SEXP regexp) {
 //' @export
 // [[Rcpp::export]]
 int get_number_of_groups(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
-    return ptr->value()->NumberOfCapturingGroups();
-  } else {
+  INIT_ptr if (bool(*ptr)) { return ptr->value()->NumberOfCapturingGroups(); }
+  else {
     return NA_INTEGER;
   }
 }
 
 // [[Rcpp::export]]
 SEXP cpp_get_named_groups(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
+  INIT_ptr if (bool(*ptr)) {
     return wrap(get_groups_name(ptr->value().get(),
                                 ptr->value()->NumberOfCapturingGroups()));
-  } else {
+  }
+  else {
     return CharacterVector(NA_STRING);
   }
 }
@@ -126,10 +124,8 @@ SEXP cpp_get_named_groups(SEXP regexp) {
 //' @export
 // [[Rcpp::export]]
 int get_expression_size(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
-    return ptr->value()->ProgramSize();
-  } else {
+  INIT_ptr if (bool(*ptr)) { return ptr->value()->ProgramSize(); }
+  else {
     return NA_INTEGER;
   }
 }
@@ -145,8 +141,7 @@ int get_expression_size(SEXP regexp) {
 //' @export
 // [[Rcpp::export]]
 LogicalVector is_re2c_na(SEXP regexp) {
-  INIT_ptr
-  LogicalVector res(1);
+  INIT_ptr LogicalVector res(1);
   if (bool(*ptr)) {
     res[0] = Rboolean::FALSE;
     return res;
@@ -158,14 +153,14 @@ LogicalVector is_re2c_na(SEXP regexp) {
 
 // [[Rcpp::export]]
 SEXP cpp_get_pattern(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
+  INIT_ptr if (bool(*ptr)) {
     Shield<SEXP> res(Rf_allocVector(STRSXP, 1));
     string ress = ptr->value()->pattern();
     SET_STRING_ELT(res, 0,
                    Rf_mkCharLenCE(ress.c_str(), strlen(ress.c_str()), CE_UTF8));
     return res;
-  } else {
+  }
+  else {
     return CharacterVector(NA_STRING);
   }
 }
@@ -181,8 +176,7 @@ SEXP cpp_get_pattern(SEXP regexp) {
 //' @export
 // [[Rcpp::export]]
 SEXP get_options(SEXP regexp) {
-  INIT_ptr
-  if (bool(*ptr)) {
+  INIT_ptr if (bool(*ptr)) {
     List res(13);
     CharacterVector name = CharacterVector::create(
         "utf_8", "case_sensitive", "posix_syntax", "dot_nl", "literal",
@@ -204,7 +198,8 @@ SEXP get_options(SEXP regexp) {
     res[12] = options.max_mem();
     res.attr("names") = name;
     return res;
-  } else {
+  }
+  else {
     return List(0);
   }
 }
