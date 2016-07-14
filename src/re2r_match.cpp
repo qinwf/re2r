@@ -269,7 +269,7 @@ RE2::Anchor get_anchor_type(size_t anchor) {
 
 // begin real work
 
-SEXP cpp_detect(CharacterVector &input, vector<RE2 *> &ptrv,
+SEXP cpp_detect(CharacterVector &input, vector<OptRE2 *> &ptrv,
                 RE2::Anchor anchor_type, size_t nrecycle) {
 
   SEXP inputx = input;
@@ -277,11 +277,13 @@ SEXP cpp_detect(CharacterVector &input, vector<RE2 *> &ptrv,
   auto resi = res.begin();
   for (auto it = 0; it != nrecycle; it++, resi++) {
     auto rstr = STRING_ELT(inputx, it % input.size());
-    auto pattern = ptrv[it % ptrv.size()];
-    if (rstr == NA_STRING) {
+    auto optpattern = ptrv[it % ptrv.size()];
+    if (rstr == NA_STRING || !bool(*optpattern)) {
       *resi = NA_LOGICAL;
       continue;
     }
+    auto pattern = optpattern->value().get();
+
     auto r_char = R_CHAR(rstr);
     *resi = pattern->Match(r_char, 0, strlen(r_char), anchor_type, nullptr, 0);
   }
@@ -291,11 +293,11 @@ SEXP cpp_detect(CharacterVector &input, vector<RE2 *> &ptrv,
 struct BoolP : public Worker {
   vector<tr2::optional<string>> &input;
   RVector<int> output;
-  vector<RE2 *> &tt;
+  vector<OptRE2 *> &tt;
   const RE2::Anchor anchor_type;
 
   BoolP(vector<tr2::optional<string>> &input_, RVector<int> output_,
-        vector<RE2 *> &tt_, const RE2::Anchor &anchor_type_)
+        vector<OptRE2 *> &tt_, const RE2::Anchor &anchor_type_)
       : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_) {}
 
   void operator()(std::size_t begin, std::size_t end) {
@@ -303,13 +305,14 @@ struct BoolP : public Worker {
     std::for_each(
         output.begin() + begin, output.begin() + end, [this, &index](int &x) {
           auto inputi = input[index % input.size()];
-          auto ptr = tt[index % tt.size()];
+          auto optptr = tt[index % tt.size()];
           index++;
 
-          if (!bool(inputi)) {
+          if (!bool(inputi) || !bool(*optptr)) {
             x = NA_LOGICAL;
             return;
           }
+          auto ptr = optptr->value().get();
           x = ptr->Match(inputi.value(), 0, (int)inputi.value().length(),
                          anchor_type, nullptr, 0);
           return;
@@ -317,7 +320,7 @@ struct BoolP : public Worker {
   }
 };
 
-SEXP cpp_detect_parallel(CharacterVector &input, vector<RE2 *> &pattern,
+SEXP cpp_detect_parallel(CharacterVector &input, vector<OptRE2 *> &pattern,
                          RE2::Anchor anchor_type, size_t grain_size,
                          size_t nrecycle) {
   LogicalVector reso(nrecycle);
@@ -728,7 +731,7 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
 
   if (value == false) {
 
-    vector<RE2 *> ptrv;
+    vector<OptRE2 *> ptrv;
     build_regex_vector(regexp, ptrv);
     auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
 

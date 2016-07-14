@@ -33,10 +33,10 @@
 struct ReplaceP : public Worker {
   optstring &input;
   optstring &res_replace;
-  vector<RE2 *> &tt;
+  vector<OptRE2 *> &tt;
   optstring &rewrite;
 
-  ReplaceP(optstring &input_, vector<RE2 *> &tt_, optstring &rewrite_,
+  ReplaceP(optstring &input_, vector<OptRE2 *> &tt_, optstring &rewrite_,
            optstring &res_replace_)
       : input(input_), res_replace(res_replace_), tt(tt_), rewrite(rewrite_) {}
 
@@ -45,11 +45,12 @@ struct ReplaceP : public Worker {
     std::for_each(res_replace.begin() + begin, res_replace.begin() + end,
                   [this, &index](tr2::optional<string> &x) {
                     x = input[index % input.size()];
-                    if (!bool(x)) {
+                    OptRE2 *optpattern = tt[index % tt.size()];
+                    if (!bool(x) || !bool(*optpattern)) {
                       index++;
                       return;
                     }
-                    RE2 *pattern = tt[index % tt.size()];
+                    auto pattern = optpattern->value().get();
                     auto rewritei = rewrite[index % rewrite.size()];
                     if (!bool(rewritei)) {
                       if (pattern->Match(x.value(), 0,
@@ -72,11 +73,12 @@ struct ReplaceGlobalP : public Worker {
   optstring &input;
   optstring &res_replace;
   vector<size_t> &count;
-  vector<RE2 *> &tt;
+  vector<OptRE2 *> &tt;
   optstring &rewrite;
 
-  ReplaceGlobalP(optstring &input_, vector<size_t> &count_, vector<RE2 *> &tt_,
-                 optstring &rewrite_, optstring &res_replace_)
+  ReplaceGlobalP(optstring &input_, vector<size_t> &count_,
+                 vector<OptRE2 *> &tt_, optstring &rewrite_,
+                 optstring &res_replace_)
       : input(input_), res_replace(res_replace_), count(count_), tt(tt_),
         rewrite(rewrite_) {}
 
@@ -85,13 +87,15 @@ struct ReplaceGlobalP : public Worker {
     std::transform(
         res_replace.begin() + begin, res_replace.begin() + end,
         count.begin() + begin, [this, &index](tr2::optional<string> &x) {
-          auto ptr = tt[index % tt.size()];
+          auto optptr = tt[index % tt.size()];
           auto rewritei = rewrite[index % rewrite.size()];
           x = input[index % input.size()];
-          if (!bool(x)) {
+          if (!bool(x) || !bool(*optptr)) {
             index++;
             return 0;
           }
+          auto ptr = optptr->value().get();
+
           if (!bool(rewritei)) {
 
             if (ptr->Match(x.value(), 0, strlen(x.value().c_str()),
@@ -113,16 +117,16 @@ SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_,
   string errmsg;
   auto inputv = as_vec_opt_string(input);
   auto rewrite = as_vec_opt_string(rewrite_);
-  vector<RE2 *> ptrv;
+  vector<OptRE2 *> ptrv;
   build_regex_vector(regexp, ptrv);
   auto nrecycle =
       re2r_recycling_rule(true, 3, input.size(), ptrv.size(), rewrite.size());
 
   for (auto i = 0; i != nrecycle; i++) {
-    auto ptr = ptrv[i % ptrv.size()];
+    auto optptr = ptrv[i % ptrv.size()];
     auto rewritei = rewrite[i % rewrite.size()];
-    if (bool(rewritei)) {
-      if (!ptr->CheckRewriteString(rewritei.value(), &errmsg)) {
+    if (bool(rewritei) && bool(*optptr)) {
+      if (!optptr->value()->CheckRewriteString(rewritei.value(), &errmsg)) {
         throw ErrorRewriteString(errmsg);
       }
     }
@@ -135,14 +139,16 @@ SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_,
 
     if (!parallel || input.size() < grain_size) {
       for (auto i = 0; i != nrecycle; i++) {
-        auto ptr = ptrv[i % ptrv.size()];
+        auto optptr = ptrv[i % ptrv.size()];
         auto rewritei = rewrite[i % rewrite.size()];
         replace_res.push_back(inputv[i % input.size()]);
         tr2::optional<string> &stri = replace_res.back();
 
-        if (!bool(stri)) {
+        if (!bool(stri) || !bool(*optptr)) {
           continue;
         }
+        auto ptr = optptr->value().get();
+
         if (!bool(rewritei)) {
           if (ptr->Match(stri.value(), 0, strlen(stri.value().c_str()),
                          RE2::UNANCHORED, nullptr, 0)) {
@@ -171,14 +177,17 @@ SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_,
       replace_res.reserve(nrecycle);
 
       for (auto i = 0; i != nrecycle; i++) {
-        auto ptr = ptrv[i % ptrv.size()];
+        auto optptr = ptrv[i % ptrv.size()];
         auto rewritei = rewrite[i % rewrite.size()];
         replace_res.push_back(inputv[i % input.size()]);
         tr2::optional<string> &stri = replace_res.back();
-        if (!bool(stri)) {
+
+        if (!bool(stri) || !bool(optptr)) {
           count.push_back(0);
           continue;
         }
+        auto ptr = optptr->value().get();
+
         if (!bool(rewritei)) {
           count.push_back(0);
           if (ptr->Match(stri.value(), 0, strlen(stri.value().c_str()),

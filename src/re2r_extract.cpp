@@ -33,9 +33,9 @@
 struct ExtractP : public Worker {
   optstring &input;
   optstring &output;
-  vector<RE2 *> &tt;
+  vector<OptRE2 *> &tt;
 
-  ExtractP(optstring &input_, optstring &output_, vector<RE2 *> &tt_)
+  ExtractP(optstring &input_, optstring &output_, vector<OptRE2 *> &tt_)
       : input(input_), output(output_), tt(tt_) {}
 
   void operator()(std::size_t begin, std::size_t end) {
@@ -44,13 +44,14 @@ struct ExtractP : public Worker {
     std::for_each(output.begin() + begin, output.begin() + end,
                   [this, &index](tr2::optional<string> &x) {
                     auto inputi = input[index % input.size()];
-                    auto ptr = tt[index % tt.size()];
+                    auto optptr = tt[index % tt.size()];
                     index++;
 
-                    if (!bool(inputi)) {
+                    if (!bool(inputi) || !bool(*optptr)) {
                       x = tr2::nullopt;
                       return;
                     }
+                    auto ptr = optptr->value().get();
                     StringPiece match;
                     if (!ptr->Match(inputi.value(), 0, inputi.value().length(),
                                     RE2::UNANCHORED, &match, 1)) {
@@ -66,10 +67,10 @@ struct ExtractP : public Worker {
 struct ExtractAllP : public Worker {
   optstring &input;
   vector<tr2::optional<vector<string>>> &output;
-  vector<RE2 *> &tt;
+  vector<OptRE2 *> &tt;
 
   ExtractAllP(optstring &input_, vector<tr2::optional<vector<string>>> &output_,
-              vector<RE2 *> &tt_)
+              vector<OptRE2 *> &tt_)
       : input(input_), output(output_), tt(tt_) {}
 
   void operator()(std::size_t begin, std::size_t end) {
@@ -78,14 +79,14 @@ struct ExtractAllP : public Worker {
     std::for_each(output.begin() + begin, output.begin() + end,
                   [this, &index](tr2::optional<vector<string>> &x) {
                     auto inputi = input[index % input.size()];
-                    auto ptr = tt[index % tt.size()];
+                    auto optptr = tt[index % tt.size()];
                     index++;
 
-                    if (!bool(inputi)) {
+                    if (!bool(inputi) || !bool(*optptr)) {
                       x = tr2::nullopt;
                       return;
                     }
-
+                    RE2 *ptr = optptr->value().get();
                     StringPiece match;
                     vector<string> res;
 
@@ -109,7 +110,7 @@ struct ExtractAllP : public Worker {
 SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
                  size_t grain_size) {
 
-  vector<RE2 *> ptrv;
+  vector<OptRE2 *> ptrv;
   build_regex_vector(regexp, ptrv);
   auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
   SEXP inputx = input;
@@ -126,13 +127,13 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
       for (auto it = 0; it != nrecycle; it++) {
 
         auto rstr = STRING_ELT(inputx, it % input.size());
-        auto ptr = ptrv[it % ptrv.size()];
+        auto optptr = ptrv[it % ptrv.size()];
 
-        if (rstr == NA_STRING) {
+        if (rstr == NA_STRING || !bool(*optptr)) {
           SET_STRING_ELT(x, it, NA_STRING);
           continue;
         }
-
+        auto ptr = optptr->value().get();
         StringPiece str(R_CHAR(rstr));
         auto str_size = strlen(R_CHAR(rstr));
         size_t lastIndex = 0;
@@ -152,12 +153,14 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
 
       for (auto it = 0; it != nrecycle; it++) {
 
-        auto ptr = ptrv[it % ptrv.size()];
+        auto optptr = ptrv[it % ptrv.size()];
         auto rstr = STRING_ELT(inputx, it % input.size());
-        if (rstr == NA_STRING) {
+
+        if (rstr == NA_STRING || !bool(*optptr)) {
           SET_VECTOR_ELT(x, it, R_NilValue);
           continue;
         }
+        auto ptr = optptr->value().get();
 
         StringPiece str(R_CHAR(rstr));
         auto str_size = strlen(R_CHAR(rstr));
