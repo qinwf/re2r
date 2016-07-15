@@ -1,6 +1,20 @@
 context("compile errors")
 library(stringi)
 
+test_that("compile NA",{
+    expect_na = function(x){expect_true(is.na(x))}
+
+    na_string = re2(NA)
+    expect_na(get_pattern(na_string))
+    expect_na(get_number_of_groups(na_string))
+    expect_na(get_simplify(na_string))
+    expect_na(get_named_groups(na_string))
+    expect_na(get_expression_size(na_string))
+    # NA string pattern return a 0 lenght list
+    expect_equal(length(get_options(na_string)),0)
+    expect_null(get_program_fanout(na_string))
+})
+
 test_that("compile errors", {
     tt = function(pattern, output_string) {
         expect_output(expect_error(re2(pattern, log_error = T), output_string))
