@@ -45,7 +45,7 @@
 #' @export
 get_simplify = function(pattern, ...) {
     stopifnot(length(pattern) == 1)
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_regex_simplify(pattern)

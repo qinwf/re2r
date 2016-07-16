@@ -42,7 +42,7 @@
 #' re2_split("yabba dabba doo", " ")
 #' @export
 re2_split = function(string, pattern, part = Inf, parallel = FALSE, grain_size = 100000, ...) {
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_split(stri_enc_toutf8(string), pattern, part, FALSE,parallel,grain_size)
@@ -51,7 +51,7 @@ re2_split = function(string, pattern, part = Inf, parallel = FALSE, grain_size =
 #' @rdname re2_split
 #' @export
 re2_split_fixed = function(string, pattern, part, parallel = FALSE, grain_size = 100000,  ...) {
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_split(stri_enc_toutf8(string), pattern, part, TRUE, parallel,grain_size)

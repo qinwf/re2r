@@ -47,7 +47,7 @@ re2_extract = function(input,
                        parallel = FALSE,
                        grain_size = 100000,
                        ...) {
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE, 1)
@@ -60,7 +60,7 @@ re2_extract_all = function(input,
                            parallel = FALSE,
                            grain_size = 100000,
                            ...) {
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE, 1)

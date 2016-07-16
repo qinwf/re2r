@@ -65,7 +65,7 @@ re2_match = function(string,
                      parallel = FALSE,
                      grain_size = 100000,
                      ...) {
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_match(stri_enc_toutf8(string),
@@ -85,7 +85,7 @@ re2_match_all = function(string,
                          parallel = FALSE,
                          grain_size = 100000,
                          ...) {
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_match(stri_enc_toutf8(string),

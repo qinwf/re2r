@@ -42,7 +42,7 @@
 #' @export
 re2_locate = function(string, pattern,  parallel = FALSE, grain_size= 100000, ...) {
 
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_locate(stri_enc_toutf8(string), pattern, FALSE, parallel, grain_size)
@@ -52,7 +52,7 @@ re2_locate = function(string, pattern,  parallel = FALSE, grain_size= 100000, ..
 #' @export
 re2_locate_all = function(string, pattern,  parallel = FALSE, grain_size= 100000, ...) {
 
-    if (is.character(pattern)) {
+    if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
     cpp_locate(stri_enc_toutf8(string), pattern, TRUE, parallel, grain_size)
