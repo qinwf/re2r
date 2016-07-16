@@ -52,9 +52,6 @@ SEXP toprotect_optstring_sexp(const optstring &input) {
   return x;
 }
 
-#define INVALID_ERROR_STRING                                                   \
-  "Invalid pointer for RE2 object. Please create a new RE2 object when R is "  \
-  "restarted."
 
 void build_regex_vector(SEXP regexp, vector<OptRE2 *> &ptrv) {
   if (TYPEOF(regexp) == EXTPTRSXP) {

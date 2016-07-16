@@ -56,9 +56,14 @@ namespace tr2 = std::experimental;
 
 typedef vector<tr2::optional<string>> optstring;
 
+
+#define INVALID_ERROR_STRING                                                   \
+"Invalid pointer for RE2 object. Please create a new RE2 object when R is "    \
+"restarted."
+
 #define INIT_ptr \
 if(R_ExternalPtrAddr(regexp) == nullptr){ \
-    stop("Invalid pointer for RE2 object. Please create a new RE2 object when R is restarted."); \
+    stop(INVALID_ERROR_STRING); \
 } \
 OptRE2 *ptr = as<XPtr<OptRE2>>(regexp).get();
 
