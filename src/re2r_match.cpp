@@ -743,23 +743,37 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
     }
 
   } else {
-    RE2 *pattern;
-
+      OptRE2 * optpattern;
     if (TYPEOF(regexp) == EXTPTRSXP) {
-
-      XPtr<RE2> rptr = as<XPtr<RE2>>(regexp);
-      pattern = rptr;
-
-    } else if (TYPEOF(regexp) == VECSXP && Rf_xlength(regexp) > 0) {
-      if (Rf_xlength(regexp) != 1) {
-        warning("only the first pattern is used for pattern matching.");
-      }
-      XPtr<RE2> rptr = as<XPtr<RE2>>(VECTOR_ELT(regexp, 0));
-      pattern = rptr;
+        auto ptr = R_ExternalPtrAddr(regexp);
+        if (ptr == nullptr)
+            stop(INVALID_ERROR_STRING);
+        optpattern = (OptRE2 *)ptr;
     } else {
-      stop("expecting a pre-compiled RE2 object.");
+        if (TYPEOF(regexp) == VECSXP && Rf_xlength(regexp) > 0) {
+            if (Rf_xlength(regexp) != 1) {
+                warning("only the first pattern is used in re2_match() re2_match_all()");
+            }
+            auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, 0));
+            if (ptr == nullptr)
+                stop(INVALID_ERROR_STRING);
+            optpattern = (OptRE2 *)ptr;
+        } else {
+            stop("expecting a pre-compiled RE2 object.");
+        }
     }
 
+    if (!bool(*optpattern)) {
+        if(all){
+            return(List::create(R_NilValue));
+        }else{
+            CharacterMatrix res(input.size(),1);
+            colnames(res) = CharacterVector::create(".match");
+            std::fill(res.begin(), res.end(), NA_STRING);
+            return(res);
+        }
+    }
+    RE2* pattern = optpattern->value().get();
     auto cap_nums = pattern->NumberOfCapturingGroups();
 
     if (cap_nums == 0) {
