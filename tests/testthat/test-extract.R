@@ -1,41 +1,54 @@
 context("check extract")
 
-test_that("check rewrite", {
+test_that("extract one", {
     # from re2_test.cc
-    expect_identical(re2_extract("boris@kremvax.ru", "(.*)@([^.]*)"),"boris@kremvax")
-    expect_identical(re2_pextract("boris@kremvax.ru", "(.*)@([^.]*)"),"boris@kremvax")
+    tt = function(string,pattern,match,stringp = string, patternp = pattern, matchp = match, parallel_rep = TRUE){
+        expect_identical(re2_extract(string, pattern), match)
+        expect_identical(re2_extract(string, pattern, parallel = T), match)
+        expect_identical(re2_extract(stringp, patternp, parallel = T, grain_size = 1), matchp)
+        if(parallel_rep){
+            expect_identical(re2_extract(rep(stringp, 100), rep(patternp, 100), parallel = T, grain_size = 1), rep(matchp, 100))
+        }
+    }
+    # one pattern
+    tt("boris@kremvax.ru", "(.*)@([^.]*)","boris@kremvax",
+       c("boris@kremvax.ru", "happy123@tress.com"),
+       "(.*)@([^.]*)",
+       c("boris@kremvax", "happy123@tress"))
 
-    expect_identical(re2_extract("foo", ".*"),"foo")
-    expect_identical(re2_pextract("foo", ".*"),"foo")
-    expect_identical(re2_pextract(c("foo","foo"), ".*",grain_size = 1),c("foo","foo"))
+    # one pattern with NA
+    input_list = c("this is 911", "Ok, let's do it.", "Call me at 102-232-333")
+    res_list = c("9", NA, "1")
+    tt(input_list, "\\d", res_list,
+       input_list, "\\d", res_list)
 
-    expect_true(is.na(re2_extract("baz", "bar")))
-    expect_true(is.na(re2_pextract("baz", "bar")))
+    # one string multiple pattern
+    input_list = c("this is 911")
+    pattern_list = c("[a-z]+", "\\d", "[a-z]{1,3}")
+    res_list = c("this", "9", "thi")
+    tt(input_list, pattern_list, res_list)
 
-    expect_identical(re2_extract(c("baz", "bar",NA),c("bar")),c(NA, "bar", NA))
-    expect_identical(re2_pextract(c("baz", "bar",NA),c("bar")),c(NA, "bar", NA))
-    expect_identical(re2_pextract(c("baz", "bar",NA),c("bar"), grain_size = 1),c(NA, "bar", NA))
+    tt("foo", ".*", "foo")
 
-    expect_identical(re2_extract_all(c("baz", "barxbar_sbar bar",NA),c("bar")), list(NULL, c("bar", "bar", "bar", "bar"), NULL))
-    expect_identical(re2_pextract_all(c("baz", "barxbar_sbar bar",NA),c("bar")), list(NULL, c("bar", "bar", "bar", "bar"), NULL))
-    expect_identical(re2_pextract_all(c("baz", "barxbar_sbar bar",NA),c("bar"), grain_size = 1), list(NULL, c("bar", "bar", "bar", "bar"), NULL))
+    tt("baz", "bar", NA_character_)
 
+    tt(c("baz", "bar",NA),c("bar"),c(NA, "bar", NA))
+
+    expect_warning(tt(c("sd","abc"), c("a","b","c"), c(NA,"b",NA), parallel_rep = FALSE))
 })
 
-test_that("vectorize extract",{
-    extract_list = list(
-        list(c("baz","bar"), "bar",c(NA,"bar")),
-        list(c("baz","bar"), c("baz","bar"),c("baz","bar")),
-        list(c("baz"), c("baz","bar"),c("baz",NA))
-    )
-
-    for (ind in extract_list){
-        expect_identical(re2_extract(ind[[1]], ind[[2]]), ind[[3]])
-        expect_identical(re2_pextract(ind[[1]], ind[[2]]), ind[[3]])
-        expect_identical(re2_pextract(ind[[1]], ind[[2]],grain_size = 1), ind[[3]])
+test_that("extract all",{
+    tt = function(string,pattern,match,stringp = string, patternp = pattern, matchp = match, parallel_rep = TRUE){
+        expect_identical(re2_extract_all(string, pattern), match)
+        expect_identical(re2_extract_all(string, pattern, parallel = T), match)
+        expect_identical(re2_extract_all(stringp, patternp, parallel = T, grain_size = 1), matchp)
+        if(parallel_rep){
+            expect_identical(re2_extract_all(rep(stringp, 100), rep(patternp, 100), parallel = T, grain_size = 1), rep(matchp, 100))
+        }
     }
 
-    expect_warning(re2_extract(c("sd","ab","cd"), c("ab","af")))
-    expect_warning(re2_pextract(c("sd","ab","cd"), c("ab","af")))
-    expect_warning(re2_pextract(c("sd","ab","cd"), c("ab","af"), grain_size = 1))
+    tt(c("baz", "barxbar_sbar bar",NA),c("bar"), list(character(), c("bar", "bar", "bar", "bar"), character()))
+
+    expect_warning(tt(c("baz", "barxbar_sbar bar",NA),c("bar","ba"), list(character(), c("ba", "ba", "ba", "ba"), character()), parallel_rep = FALSE))
+
 })

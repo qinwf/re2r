@@ -157,7 +157,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
         auto rstr = STRING_ELT(inputx, it % input.size());
 
         if (rstr == NA_STRING || !bool(*optptr)) {
-          SET_VECTOR_ELT(x, it, R_NilValue);
+          SET_VECTOR_ELT(x, it, CharacterVector());
           continue;
         }
         auto ptr = optptr->value().get();
@@ -174,7 +174,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
         }
 
         if (res.empty()) {
-          SET_VECTOR_ELT(x, it, R_NilValue);
+          SET_VECTOR_ELT(x, it, CharacterVector());
         } else {
           SET_VECTOR_ELT(x, it, Shield<SEXP>(toprotect_vec_string_sexp(res)));
         }
@@ -202,7 +202,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
 
       for (tr2::optional<vector<string>> &resi : res) {
         if (!bool(resi) || resi.value().empty()) {
-          SET_VECTOR_ELT(x, index, R_NilValue);
+          SET_VECTOR_ELT(x, index, CharacterVector());
         } else {
           SET_VECTOR_ELT(x, index,
                          Shield<SEXP>(toprotect_vec_string_sexp(resi.value())));
