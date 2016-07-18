@@ -95,6 +95,11 @@ struct ExtractAllP : public Worker {
 
                     while (ptr->Match(str, lastIndex, inputi.value().length(),
                                       RE2::UNANCHORED, &match, 1)) {
+                        if(!match.size()){
+                            size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+                            lastIndex += sym_size;
+                            continue;
+                        }
                       lastIndex = match.data() - str.data() + match.size();
                       res.push_back(match.as_string());
                     }
@@ -117,7 +122,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
 
   if (!parallel || input.size() < grain_size) {
 
-    StringPiece match;
+
 
     if (!all) {
 
@@ -128,14 +133,15 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
 
         auto rstr = STRING_ELT(inputx, it % input.size());
         auto optptr = ptrv[it % ptrv.size()];
-
+        StringPiece match;
         if (rstr == NA_STRING || !bool(*optptr)) {
           SET_STRING_ELT(x, it, NA_STRING);
           continue;
         }
         auto ptr = optptr->value().get();
-        StringPiece str(R_CHAR(rstr));
-        auto str_size = strlen(R_CHAR(rstr));
+        auto r_char = R_CHAR(rstr);
+        StringPiece str(r_char);
+        auto str_size = strlen(r_char);
         size_t lastIndex = 0;
         if (!ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
           SET_STRING_ELT(x, it, NA_STRING);
@@ -161,7 +167,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
           continue;
         }
         auto ptr = optptr->value().get();
-
+        StringPiece match;
         StringPiece str(R_CHAR(rstr));
         auto str_size = strlen(R_CHAR(rstr));
         size_t lastIndex = 0;
@@ -169,6 +175,11 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
 
         while (
             ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
+          if(!match.size()){
+              size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+              lastIndex += sym_size;
+              continue;
+          }
           lastIndex = match.data() - str.data() + match.size();
           res.push_back(match.as_string());
         }

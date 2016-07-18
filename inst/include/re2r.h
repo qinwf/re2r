@@ -150,7 +150,8 @@ typedef tr2::optional<RE2p> OptRE2;
 void build_regex_vector(SEXP regexp, vector<RE2*>& ptrv);
 void build_regex_vector(SEXP regexp, vector<OptRE2*> &ptrv);
 
-
-
+inline size_t getUtf8CharSize(char ch) {
+    return ((0xE5000000 >> ((ch >> 3) & 0x1E)) & 3) + 1;
+}
 
 #endif

@@ -34,10 +34,6 @@
 #include <RcppParallel.h>
 using namespace RcppParallel;
 
-inline size_t getUtf8CharSize(char ch) {
-  return ((0xE5000000 >> ((ch >> 3) & 0x1E)) & 3) + 1;
-}
-
 struct SplitP : public Worker {
   optstring &input;
   vector<tr2::optional<vector<string>>> &output;
