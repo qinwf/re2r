@@ -1,225 +1,227 @@
 context("detect pattern")
 
 test_that("detect pattern",{
+    tt = function(x,y){
+        expect_true(re2_detect(y,x))
+        expect_true(re2_detect(y,x, parallel = T))
+        expect_true(all(re2_detect(rep(y,10000),x, parallel = T, grain_size = 1)))
+    }
     numbers = rawToChar(as.raw(c(0x61, 0x62, 0x63, 0x31, 0x32, 0x33, 0x32, 0x33, 0xc2, 0xbc, 0xc2, 0xbd, 0xc2, 0xbe, 0xe2, 0x82, 0x80)))
-    pattern_list = list(
-    c( "a", "a" ),
-    c( "a", "zyzzyva" ),
-    c( "a+", "aa" ),
-    c( "(a+|b)+", "ab" ),
-    c( "ab|cd", "xabcdx" ),
-    c( "h.*od?", "hello\ngoodbye\n" ),
-    c( "h.*o", "hello\ngoodbye\n" ),
-    c( "h.*o", "goodbye\nhello\n" ),
-    c( "h.*o", "hello world" ),
-    c( "h.*o", "othello, world" ),
-    c( "[^\\s]", "aaaaaaa" ),
-    c( "a", "aaaaaaa" ),
-    c( "a*", "aaaaaaa" ),
-    c( "a*", "" ),
-    c( "ab|cd", "xabcdx" ),
-    c( "a", "cab" ),
-    c( "a*b", "cab" ),
-    c( "((((((((((((((((((((x))))))))))))))))))))", "x" ),
-    c( "[abcd]", "xxxabcdxxx" ),
-    c( "[^x]", "xxxabcdxxx" ),
-    c( "[abcd]+", "xxxabcdxxx" ),
-    c( "[^x]+", "xxxabcdxxx" ),
-    c( "(fo|foo)", "fo" ),
-    c( "(foo|fo)", "foo" ),
+
+    tt( "a", "a" )
+    tt( "a", "zyzzyva" )
+    tt( "a+", "aa" )
+    tt( "(a+|b)+", "ab" )
+    tt( "ab|cd", "xabcdx" )
+    tt( "h.*od?", "hello\ngoodbye\n" )
+    tt( "h.*o", "hello\ngoodbye\n" )
+    tt( "h.*o", "goodbye\nhello\n" )
+    tt( "h.*o", "hello world" )
+    tt( "h.*o", "othello, world" )
+    tt( "[^\\s]", "aaaaaaa" )
+    tt( "a", "aaaaaaa" )
+    tt( "a*", "aaaaaaa" )
+    tt( "a*", "" )
+    tt( "ab|cd", "xabcdx" )
+    tt( "a", "cab" )
+    tt( "a*b", "cab" )
+    tt( "((((((((((((((((((((x))))))))))))))))))))", "x" )
+    tt( "[abcd]", "xxxabcdxxx" )
+    tt( "[^x]", "xxxabcdxxx" )
+    tt( "[abcd]+", "xxxabcdxxx" )
+    tt( "[^x]+", "xxxabcdxxx" )
+    tt( "(fo|foo)", "fo" )
+    tt( "(foo|fo)", "foo" )
 
 
     # Make sure ^ and $ work.
     # The pathological cases didn't work
     # in the original grep code.
-    c( "foo|bar|[A-Z]", "foo" ),
-    c( "^(foo|bar|[A-Z])", "foo" ),
-    c( "(foo|bar|[A-Z])$", "foo" ),
-    c( "^(foo|bar|[A-Z])$", "foo" ),
-    c( "^(foo|bar|[A-Z])$", "bar" ),
-    c( "^(foo|bar|[A-Z])$", "X" ),
-    # c( "^(foo|bar|[A-Z])$", "XY" ),
-    c( "^(fo|foo)$", "fo" ),
-    c( "^(fo|foo)$", "foo" ),
-    c( "^^(fo|foo)$", "fo" ),
-    c( "^^(fo|foo)$", "foo" ),
-    c( "^$", "" ),
-    c( "^^$", "" ),
-    c( "^$$", "" ),
-    c( "^^$$", "" ),
-    c( "^^^^^^^^$$$$$$$$", "" ),
-    c( "^", "x" ),
-    c( "$", "x" ),
+    tt( "foo|bar|[A-Z]", "foo" )
+    tt( "^(foo|bar|[A-Z])", "foo" )
+    tt( "(foo|bar|[A-Z])$", "foo" )
+    tt( "^(foo|bar|[A-Z])$", "foo" )
+    tt( "^(foo|bar|[A-Z])$", "bar" )
+    tt( "^(foo|bar|[A-Z])$", "X" )
+    # tt( "^(foo|bar|[A-Z])$", "XY" )
+    tt( "^(fo|foo)$", "fo" )
+    tt( "^(fo|foo)$", "foo" )
+    tt( "^^(fo|foo)$", "fo" )
+    tt( "^^(fo|foo)$", "foo" )
+    tt( "^$", "" )
+    tt( "^^$", "" )
+    tt( "^$$", "" )
+    tt( "^^$$", "" )
+    tt( "^^^^^^^^$$$$$$$$", "" )
+    tt( "^", "x" )
+    tt( "$", "x" )
 
     # Word boundaries.
-    c( "\\bfoo\\b", "nofoo foo that" ),
-    c( "a\\b", "faoa x" ),
-    c( "\\bbar", "bar x" ),
-    c( "bar\\b", "foobar" ),
-    c( "bar\\b", "foobar\nxxx" ),
-    c( "(foo|bar|[A-Z])\\b", "foo" ),
-    c( "(foo|bar|[A-Z])\\b", "foo\n" ),
-    c( "\\b", "x" ),
-    c( "\\b(foo|bar|[A-Z])", "foo" ),
-    c( "\\b(foo|bar|[A-Z])\\b", "X" ),
-    c( "\\b(foo|bar|[A-Z])\\b", "ffoo bbar N x" ),
-    c( "\\b(fo|foo)\\b", "fo" ),
-    c( "\\b(fo|foo)\\b", "foo" ),
-    c( "\\b\\b", "x" ),
-    c( "\\b$", "x" ),
-    c( "\\b$", "y x" ),
-    c( "\\b.$", "x" ),
-    c( "^\\b(fo|foo)\\b", "fo" ),
-    c( "^\\b(fo|foo)\\b", "foo" ),
-    c( "^\\b", "x" ),
-    c( "^\\b\\b", "x" ),
-    c( "^\\b.$", "x" ),
-    c( "^\\b.\\b$", "x" ),
-    c( "^^^^^^^^\\b.$$$$$$", "x" ),
+    tt( "\\bfoo\\b", "nofoo foo that" )
+    tt( "a\\b", "faoa x" )
+    tt( "\\bbar", "bar x" )
+    tt( "bar\\b", "foobar" )
+    tt( "bar\\b", "foobar\nxxx" )
+    tt( "(foo|bar|[A-Z])\\b", "foo" )
+    tt( "(foo|bar|[A-Z])\\b", "foo\n" )
+    tt( "\\b", "x" )
+    tt( "\\b(foo|bar|[A-Z])", "foo" )
+    tt( "\\b(foo|bar|[A-Z])\\b", "X" )
+    tt( "\\b(foo|bar|[A-Z])\\b", "ffoo bbar N x" )
+    tt( "\\b(fo|foo)\\b", "fo" )
+    tt( "\\b(fo|foo)\\b", "foo" )
+    tt( "\\b\\b", "x" )
+    tt( "\\b$", "x" )
+    tt( "\\b$", "y x" )
+    tt( "\\b.$", "x" )
+    tt( "^\\b(fo|foo)\\b", "fo" )
+    tt( "^\\b(fo|foo)\\b", "foo" )
+    tt( "^\\b", "x" )
+    tt( "^\\b\\b", "x" )
+    tt( "^\\b.$", "x" )
+    tt( "^\\b.\\b$", "x" )
+    tt( "^^^^^^^^\\b.$$$$$$", "x" )
 
     # Non-word boundaries.
-    c( "\\Bfoo\\B", "n foo xfoox that" ),
-    c( "a\\B", "faoa x" ),
-    c( "(foo|bar|[A-Z])\\B", "foox" ),
-    c( "\\B", "" ),
-    c( "\\B(foo|bar|[A-Z])\\B", "xXy" ),
-    c( "\\B(foo|bar|[A-Z])\\B", "XYZ" ),
-    c( "\\B(foo|bar|[A-Z])\\B", "abara" ),
-    c( "\\B(foo|bar|[A-Z])\\B", "xfoo_" ),
-    c( "\\B(foo|bar|[A-Z])\\B", "foo bar vNx" ),
-    c( "\\B(fo|foo)\\B", "xfoo" ),
-    c( "\\B(foo|fo)\\B", "xfooo" ),
-    c( "\\B\\B", "" ),
-    c( "\\B$", "" ),
-    c( "^\\B", "" ),
-    c( "^\\B\\B", "" ),
-    c( "^\\B$", "" ),
-    c( "^^^^^^^^\\B$$$$$$$", "" ),
+    tt( "\\Bfoo\\B", "n foo xfoox that" )
+    tt( "a\\B", "faoa x" )
+    tt( "(foo|bar|[A-Z])\\B", "foox" )
+    tt( "\\B", "" )
+    tt( "\\B(foo|bar|[A-Z])\\B", "xXy" )
+    tt( "\\B(foo|bar|[A-Z])\\B", "XYZ" )
+    tt( "\\B(foo|bar|[A-Z])\\B", "abara" )
+    tt( "\\B(foo|bar|[A-Z])\\B", "xfoo_" )
+    tt( "\\B(foo|bar|[A-Z])\\B", "foo bar vNx" )
+    tt( "\\B(fo|foo)\\B", "xfoo" )
+    tt( "\\B(foo|fo)\\B", "xfooo" )
+    tt( "\\B\\B", "" )
+    tt( "\\B$", "" )
+    tt( "^\\B", "" )
+    tt( "^\\B\\B", "" )
+    tt( "^\\B$", "" )
+    tt( "^^^^^^^^\\B$$$$$$$", "" )
 
     # PCRE uses only ASCII for \b computation.
     # All non-ASCII are *not* word characters.
-    c( "\\bx\\b", "x" ),
-    c( "\\bx\\b", "x>" ),
-    c( "\\bx\\b", "<x" ),
-    c( "\\bx\\b", "<x>" ),
-    c( "\\bx\\b", rawToChar(as.raw(c(0xc2, 0xab, 0x78)))),
-    c( "\\bx\\b", rawToChar(as.raw(c(0x78, 0xc2, 0xbb))) ),
-    c( "\\bx\\b", rawToChar(as.raw(c(0xc2, 0xab, 0x78, 0xc2, 0xbb))) ),
+    tt( "\\bx\\b", "x" )
+    tt( "\\bx\\b", "x>" )
+    tt( "\\bx\\b", "<x" )
+    tt( "\\bx\\b", "<x>" )
+    tt( "\\bx\\b", rawToChar(as.raw(c(0xc2, 0xab, 0x78))))
+    tt( "\\bx\\b", rawToChar(as.raw(c(0x78, 0xc2, 0xbb))) )
+    tt( "\\bx\\b", rawToChar(as.raw(c(0xc2, 0xab, 0x78, 0xc2, 0xbb))) )
 
     # Weird boundary cases.
-    c( "^$^$", "" ),
-    c( "^$^", "" ),
-    c( "$^$", "" ),
+    tt( "^$^$", "" )
+    tt( "^$^", "" )
+    tt( "$^$", "" )
 
-    c( "(foo\\$)", "foo$bar" ),
-    c( "^...$", "abc" ),
+    tt( "(foo\\$)", "foo$bar" )
+    tt( "^...$", "abc" )
 
     # UTF-8
-    c( "^\xe6\x9c\xac$", "\xe6\x9c\xac" ),
-    c( "...", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" ),
-    c( "...", ".\xe6\x9c\xac." ),
+    tt( "^\xe6\x9c\xac$", "\xe6\x9c\xac" )
+    tt( "...", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" )
+    tt( "...", ".\xe6\x9c\xac." )
 
-    c( "\\C\\C\\C", "\xe6\x9c\xac" ),
-    c( "\\C", "\xe6\x9c\xac" ),
-    c( "\\C\\C\\C", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" ),
+    tt( "\\C\\C\\C", "\xe6\x9c\xac" )
+    tt( "\\C", "\xe6\x9c\xac" )
+    tt( "\\C\\C\\C", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" )
 
     # Latin1
-    c( "...", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" ),
-    c( "...", ".\xe6\x9c\xac." ),
+    tt( "...", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e" )
+    tt( "...", ".\xe6\x9c\xac." )
 
     # Perl v Posix
-    c( "\\B(fo|foo)\\B", "xfooo" ),
-    c( "(fo|foo)", "foo" ),
+    tt( "\\B(fo|foo)\\B", "xfooo" )
+    tt( "(fo|foo)", "foo" )
 
     # Octal escapes.
-    c( "\\141", "a" ),
-    c( "\\060", "0" ),
-    c( "\\0600", "00" ),
-    c( "\\608", "08" ),
-    c( "\\01", "\01" ),
-    c( "\\018", "\018" ),
+    tt( "\\141", "a" )
+    tt( "\\060", "0" )
+    tt( "\\0600", "00" )
+    tt( "\\608", "08" )
+    tt( "\\01", "\01" )
+    tt( "\\018", "\018" )
 
     # Hexadecimal escapes
-    c( "\\x{61}", "a" ),
-    c( "\\x61", "a" ),
-    c( "\\x{00000061}", "a" ),
+    tt( "\\x{61}", "a" )
+    tt( "\\x61", "a" )
+    tt( "\\x{00000061}", "a" )
 
     # Unicode scripts.
-    c( "\\p{Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L)) ),
-    c( "\\P{Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  ),
-    c( "\\p{^Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  ),
-    c( "\\P{^Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  ),
+    tt( "\\p{Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L)) )
+    tt( "\\P{Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  )
+    tt( "\\p{^Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  )
+    tt( "\\P{^Greek}+", stringi::stri_enc_fromutf32(c(97L, 945L, 946L, 98L))  )
 
     # Unicode properties.  Nd is decimal number.  N is any number.
-    c( "[^0-9]+",  "abc123" ),
-    c( "\\p{Nd}+", numbers ),
-    c( "\\p{^Nd}+", numbers ),
-    c( "\\P{Nd}+", numbers ),
-    c( "\\P{^Nd}+", numbers ),
-    c( "\\pN+", numbers ),
-    c( "\\p{N}+", numbers ),
-    c( "\\p{^N}+", numbers ),
+    tt( "[^0-9]+",  "abc123" )
+    tt( "\\p{Nd}+", numbers )
+    tt( "\\p{^Nd}+", numbers )
+    tt( "\\P{Nd}+", numbers )
+    tt( "\\P{^Nd}+", numbers )
+    tt( "\\pN+", numbers )
+    tt( "\\p{N}+", numbers )
+    tt( "\\p{^N}+", numbers )
 
-    c( "\\p{Any}+", "abc123" ),
+    tt( "\\p{Any}+", "abc123" )
 
     # Character classes & case folding.
-    c( "(?i)[@-A]+", rawToChar(as.raw(c(0x40, 0x41, 0x61, 0x42))) ),  # matches @Aa but not B
-    c( "(?i)[A-Z]+", "aAzZ" ),
-    c( "(?i)[^\\\\]+", "Aa\\" ),  # \\ is between A-Z and a-z -
+    tt( "(?i)[@-A]+", rawToChar(as.raw(c(0x40, 0x41, 0x61, 0x42))) )  # matches @Aa but not B
+    tt( "(?i)[A-Z]+", "aAzZ" )
+    tt( "(?i)[^\\\\]+", "Aa\\" )  # \\ is between A-Z and a-z -
     # splits the ranges in an interesting way.
 
     # would like to use, but PCRE mishandles in full-match, non-greedy mode
-    # c( "(?i)[\\\\]+", "Aa" ),
+    # tt( "(?i)[\\\\]+", "Aa" )
 
-    c( "(?i)[acegikmoqsuwy]+", "acegikmoqsuwyACEGIKMOQSUWY" ),
+    tt( "(?i)[acegikmoqsuwy]+", "acegikmoqsuwyACEGIKMOQSUWY" )
 
     # Character classes & case folding.
-    c( "[@-A]+", rawToChar(as.raw(c(0x40, 0x41, 0x61, 0x42))) ),
-    c( "[A-Z]+", "aAzZ" ),
-    c( "[^\\\\]+", "Aa\\" ),
-    c( "[acegikmoqsuwy]+", "acegikmoqsuwyACEGIKMOQSUWY" ),
+    tt( "[@-A]+", rawToChar(as.raw(c(0x40, 0x41, 0x61, 0x42))) )
+    tt( "[A-Z]+", "aAzZ" )
+    tt( "[^\\\\]+", "Aa\\" )
+    tt( "[acegikmoqsuwy]+", "acegikmoqsuwyACEGIKMOQSUWY" )
 
     # Anchoring.  (^abc in aabcdef was a former bug)
     # The tester checks for a match in the text and
     # subpieces of the text with a byte removed on either side.
-    c( "^abc", "abcdef" ),
-    c( "abc", "aabcdef" ),
-    c( "^[ay]*[bx]+c", "abcdef" ),
-    c( "^[ay]*[bx]+c", "aabcdef" ),
-    c( "def$", "abcdef" ),
-    c( "def", "abcdeff" ),
-    c( "d[ex][fy]$", "abcdef" ),
-    c( "d[ex][fy]", "abcdeff" ),
-    c( "[dz][ex][fy]$", "abcdef" ),
-    c( "[dz][ex][fy]", "abcdeff" ),
-    c( "(?m)^abc", "abcdef" ),
-    c( "(?m)^[ay]*[bx]+c", "abcdef" ),
-    c( "(?m)def$", "abcdef" ),
-    c( "(?m)def", "abcdeff" ),
-    c( "(?m)d[ex][fy]$", "abcdef" ),
-    c( "(?m)d[ex][fy]", "abcdeff" ),
-    c( "(?m)[dz][ex][fy]$", "abcdef" ),
-    c( "(?m)[dz][ex][fy]", "abcdeff" ),
-    c( "^", "a" ),
-    c( "^^", "a" ),
+    tt( "^abc", "abcdef" )
+    tt( "abc", "aabcdef" )
+    tt( "^[ay]*[bx]+c", "abcdef" )
+    tt( "^[ay]*[bx]+c", "aabcdef" )
+    tt( "def$", "abcdef" )
+    tt( "def", "abcdeff" )
+    tt( "d[ex][fy]$", "abcdef" )
+    tt( "d[ex][fy]", "abcdeff" )
+    tt( "[dz][ex][fy]$", "abcdef" )
+    tt( "[dz][ex][fy]", "abcdeff" )
+    tt( "(?m)^abc", "abcdef" )
+    tt( "(?m)^[ay]*[bx]+c", "abcdef" )
+    tt( "(?m)def$", "abcdef" )
+    tt( "(?m)def", "abcdeff" )
+    tt( "(?m)d[ex][fy]$", "abcdef" )
+    tt( "(?m)d[ex][fy]", "abcdeff" )
+    tt( "(?m)[dz][ex][fy]$", "abcdef" )
+    tt( "(?m)[dz][ex][fy]", "abcdeff" )
+    tt( "^", "a" )
+    tt( "^^", "a" )
 
     # Context.
     # The tester checks for a match in the text and
     # subpieces of the text with a byte removed on either side.
-    c( "a", "a" ),
-    c( "ab*", "a" ),
-    c( "a\\C*", "a" ),
-    c( "a\\C?", "a" ),
-    c( "a\\C*?", "a" ),
-    c( "a\\C??", "a" ),
+    tt( "a", "a" )
+    tt( "ab*", "a" )
+    tt( "a\\C*", "a" )
+    tt( "a\\C?", "a" )
+    tt( "a\\C*?", "a" )
+    tt( "a\\C??", "a" )
 
     # Former bugs.
-    c( "a\\C*|ba\\C", "baba" )
-    )
-    for (x in pattern_list){
-        # print(x)
-        expect_true(re2_detect(x[2],x[1]))
-    }
+    tt( "a\\C*|ba\\C", "baba" )
+
+
 
     case_list = list(
         c( "aa", "aA" ),
@@ -298,7 +300,7 @@ test_that("longest match",{
 })
 
 test_that("utf_8 option",{
-    expect_true(re2_detect(stri_enc_fromutf32(c(20013L, 25991L)),re2(stri_enc_fromutf32(c(20013L, 25991L)),utf_8 = F)))
+    expect_true(re2_detect(stringi::stri_enc_fromutf32(c(20013L, 25991L)),re2(stri_enc_fromutf32(c(20013L, 25991L)),utf_8 = F)))
 })
 
 test_that("literal option",{
@@ -336,7 +338,7 @@ test_that("vectorize detect",{
     )
     for (ind in detect_list){
        expect_identical( re2_detect(ind[[1]], ind[[2]]), ind[[3]])
-       expect_identical( re2_pdetect(ind[[1]], ind[[2]]), ind[[3]])
-       expect_identical( re2_pdetect(ind[[1]], ind[[2]]), ind[[3]])
+       expect_identical( re2_detect(ind[[1]], ind[[2]], parallel = TRUE), ind[[3]])
+       expect_identical( re2_detect(ind[[1]], ind[[2]], parallel = TRUE, grain_size = 1), ind[[3]])
     }
 })
