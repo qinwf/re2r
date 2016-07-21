@@ -48,119 +48,19 @@ template <typename T> inline string NumberToString(T Number) {
   return ss.str();
 }
 
-inline void bump_count(size_t &coli, size_t &rowi, size_t cols) {
-  coli++;
-  if (coli == cols) {
-    coli = 0;
-    rowi++;
-  }
-}
-
-inline void set_colnames(SEXP res, SEXP names) {
-
-  Rf_setAttrib(res, R_DimNamesSymbol, names);
-}
-
-SEXP toprotect_optstring_to_charmat(const optstring &res) {
-
-  Shield<SEXP> resv(Rf_allocMatrix(STRSXP, res.size(), 1));
-  SEXP dims = Rf_getAttrib(resv, R_DimSymbol);
-  SEXP new_dimnames = Shield<SEXP>((Rf_allocVector(VECSXP, Rf_length(dims))));
-  SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create(".match"));
-  set_colnames(resv, new_dimnames);
-
-  SEXP x = resv;
-
-  R_xlen_t index = 0;
-
-  for (auto dd : res) {
-    if (bool(dd)) {
-      SET_STRING_ELT(x, index,
-                     Rf_mkCharLenCE(dd.value().c_str(),
-                                    strlen(dd.value().c_str()), CE_UTF8));
-    } else {
-      SET_STRING_ELT(x, index, NA_STRING);
-    }
-    index++;
-  }
-
-  return resv;
-}
-
-SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
-                                         SEXP groups_name) {
-
-  auto rows = optinner.size() / cols;
-  Shield<SEXP> res(Rf_allocMatrix(STRSXP, rows, cols));
-  SEXP x = res;
-
-  size_t rowi = 0;
-  size_t coli = 0;
-  for (auto dd : optinner) {
-    if (bool(dd)) {
-      SET_STRING_ELT(x, rowi + coli * rows,
-                     Rf_mkCharLenCE(dd.value().c_str(),
-                                    strlen(dd.value().c_str()), CE_UTF8));
-    } else {
-      SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
-    }
-    bump_count(coli, rowi, cols);
-  }
-
-  set_colnames(res, groups_name);
-
-  return res;
-}
-
-void bump_listi(size_t cnt, List::iterator &listi, const optstring &optinner,
-                size_t cols, SEXP groups_name) {
-  if (cnt == 0) { // no one match, all NA return
-    *listi = R_NilValue;
-  } else { // generate CharacterMatrix
-
-    *listi = Shield<SEXP>(
-        toprotect_optstring_to_list_charmat(optinner, cols, groups_name));
-  }
-  listi += 1; // bump times_n !n
-}
-
-SEXP toprotect_vec_optstring_to_charmat(const vector<optstring> &res,
-                                        int cap_nums) {
-  auto rows = res.size();
-  Shield<SEXP> resv(Rf_allocMatrix(STRSXP, rows, cap_nums));
-  SEXP x = resv;
-
-  auto rowi = 0;
-  auto coli = 0;
-  for (auto ind : res) {
-    for (const tr2::optional<string> &dd : ind) {
-      if (bool(dd)) {
-        SET_STRING_ELT(x, rowi + coli * rows,
-                       Rf_mkCharLenCE(dd.value().c_str(),
-                                      strlen(dd.value().c_str()), CE_UTF8));
-      } else {
-        SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
-      }
-    }
-    rowi += 1;
-    coli = 0;
-  }
-  return resv;
-}
-
 vector<string> get_groups_name(RE2 *pattern, int cap_nums) {
   auto groups_name = pattern->CapturingGroupNames();
 
   vector<int> alls;
-  alls.reserve(cap_nums);
+  alls.reserve(cap_nums - 1);
   int cnt = 1;
-  while (cnt <= cap_nums) {
+  while (cnt <= cap_nums - 1) {
     alls.push_back(cnt);
     cnt += 1;
   }
 
   vector<int> nums;
-  nums.reserve(cap_nums);
+  nums.reserve(cap_nums - 1);
 
   vector<string> cap_names;
   cap_names.reserve(cap_nums);
@@ -181,80 +81,12 @@ vector<string> get_groups_name(RE2 *pattern, int cap_nums) {
 
   vector<string> res;
   res.reserve(res.size());
+  res.push_back(".match");
   for (auto it = groups_name.begin(); it != groups_name.end(); it++) {
     res.push_back(it->second);
   }
 
   return res;
-}
-
-void fill_list_res(int cap_nums, StringPiece *piece, optstring &res,
-                   size_t cnt) {
-  auto all_na = true;
-
-  // don't get all na
-  if (cnt > 1) {
-    for (auto it = 0; it != cap_nums; ++it) {
-      if ((piece[it]).data() != NULL) {
-        all_na = false;
-        break;
-      }
-    }
-    if (all_na)
-      return;
-  }
-
-  for (auto it = 0; it != cap_nums; ++it) {
-    if ((piece[it]).data() != NULL) {
-      res.push_back(tr2::make_optional(piece[it].as_string()));
-    } else {
-      res.push_back(tr2::nullopt);
-    }
-  }
-}
-
-optstring fill_opt_res(int cap_nums, StringPiece *piece, bool matched) {
-  optstring res(cap_nums);
-  if (matched) {
-    auto it = res.begin();
-    for (auto i = 0; i != cap_nums; ++i) {
-      if ((piece[i]).data() != NULL) {
-        *it = tr2::make_optional(piece[i].as_string());
-      } else {
-        *it = tr2::nullopt;
-      }
-      it++;
-    }
-  } else {
-    for (auto it = res.begin(); it != res.end(); ++it) {
-      *it = tr2::nullopt;
-    }
-  }
-  return res;
-}
-
-void fill_res(int cap_nums, StringPiece *piece, SEXP x, size_t &rowi,
-              size_t &coli, size_t rows, size_t cols, bool matched) {
-
-  if (matched) {
-    for (auto it = 0; it != cap_nums; ++it) {
-      if ((piece[it]).data() != NULL) {
-        SET_STRING_ELT(x, rowi + coli * rows,
-                       Rf_mkCharLenCE(piece[it].as_string().c_str(),
-                                      strlen(piece[it].as_string().c_str()),
-                                      CE_UTF8));
-      } else {
-        SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
-      }
-
-      bump_count(coli, rowi, cols);
-    }
-  } else {
-    for (size_t it = 0; it != cols; ++it) {
-      SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
-      bump_count(coli, rowi, cols);
-    }
-  }
 }
 
 RE2::Anchor get_anchor_type(size_t anchor) {
@@ -285,7 +117,8 @@ SEXP cpp_detect(CharacterVector &input, vector<OptRE2 *> &ptrv,
     auto pattern = optpattern->value().get();
 
     auto r_char = R_CHAR(rstr);
-    *resi = pattern->Match(r_char, 0, strlen(r_char), anchor_type, nullptr, 0);
+    auto piece = StringPiece(r_char);
+    *resi = pattern->Match(piece, 0, piece.size(), anchor_type, nullptr, 0);
   }
   return wrap(res);
 }
@@ -331,86 +164,34 @@ SEXP cpp_detect_parallel(CharacterVector &input, vector<OptRE2 *> &pattern,
   return wrap(reso);
 }
 
-struct NoCaptureP : public Worker {
-  vector<tr2::optional<string>> &input;
-  optstring &output;
-  RE2 &tt;
-  const RE2::Anchor anchor_type;
+inline void fill_match_not_all(int cap_nums, StringPiece *piece, SEXP x,
+                               size_t &rowi, size_t &coli, size_t rows,
+                               size_t cols, bool matched) {
 
-  NoCaptureP(vector<tr2::optional<string>> &input_, optstring &output_,
-             RE2 &tt_, const RE2::Anchor &anchor_type_)
-      : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_) {}
+  if (matched) {
+    for (auto it = 0; it != cap_nums; ++it) {
+      if ((piece[it]).data() != NULL) {
+        SET_STRING_ELT(x, rowi + coli * rows,
+                       Rf_mkCharLenCE(piece[it].as_string().c_str(),
+                                      strlen(piece[it].as_string().c_str()),
+                                      CE_UTF8));
+      } else {
+        SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
+      }
 
-  void operator()(std::size_t begin, std::size_t end) {
-    std::transform(input.begin() + begin, input.begin() + end,
-                   output.begin() + begin,
-                   [this](tr2::optional<string> &x) -> tr2::optional<string> {
-                     if (!bool(x)) {
-                       return tr2::nullopt;
-                     }
-                     if (tt.Match(x.value(), 0, (int)x.value().length(),
-                                  anchor_type, nullptr, 0)) {
-                       return tr2::make_optional(x.value());
-                     } else {
-                       return tr2::nullopt;
-                     };
-                   });
-  }
-};
-
-SEXP cpp_match_nocapture(CharacterVector &input, RE2 *pattern,
-                         RE2::Anchor anchor_type) {
-  SEXP inputx = input;
-  Shield<SEXP> ress(Rf_allocMatrix(STRSXP, input.size(), 1));
-  SEXP res = ress;
-
-  for (auto it = 0; it != input.size(); it++) {
-    auto rstr = STRING_ELT(inputx, it);
-    if (rstr == NA_STRING) {
-      SET_STRING_ELT(res, it, NA_STRING);
-      continue;
+      bump_count(coli, rowi, cols);
     }
-    auto r_char = R_CHAR(rstr);
-    if (pattern->Match(r_char, 0, strlen(r_char), anchor_type, nullptr, 0)) {
-      SET_STRING_ELT(res, it, STRING_ELT(inputx, it));
-    } else {
-      SET_STRING_ELT(res, it, NA_STRING);
+  } else {
+    for (size_t it = 0; it != cols; ++it) {
+      SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
+      bump_count(coli, rowi, cols);
     }
   }
-  SEXP dims = Rf_getAttrib(res, R_DimSymbol);
-  Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
-  SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create(".match"));
-  set_colnames(res, new_dimnames);
-
-  return res;
 }
-
-SEXP cpp_match_nocapture_parallel(CharacterVector &input, RE2 *pattern,
-                                  RE2::Anchor anchor_type, size_t grain_size) {
-  optstring res(input.size());
-  auto inputv = as_vec_opt_string(input);
-
-  NoCaptureP pobj(inputv, res, *pattern, anchor_type);
-  parallelFor(0, inputv.size(), pobj, grain_size);
-
-  return toprotect_optstring_to_charmat(res);
-}
-
-#define CHECK_NA_STRING                                                        \
-  auto rstr = STRING_ELT(inputx, it);                                          \
-  if (rstr == NA_STRING) {                                                     \
-    SET_STRING_ELT(res, it, NA_STRING);                                        \
-    continue;                                                                  \
-  }                                                                            \
-  auto r_char = R_CHAR(rstr);                                                  \
-                                                                               \
-  for (int pn = 0; pn != cap_nums; pn++)                                       \
-    piece_ptr[pn].clear();
 
 SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
                        RE2::Anchor anchor_type, StringPiece *piece_ptr,
-                       RE2::Arg **args_ptr, vector<string> &groups_name,
-                       int cap_nums) {
+                       vector<string> &groups_name, int cap_nums) {
   const auto cols = groups_name.size();
   const auto rows = input.size();
   size_t rowi = 0;
@@ -421,39 +202,24 @@ SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
       Rf_allocMatrix(STRSXP, input.size(),
                      groups_name.size())); // will be constructed as Matrix
   SEXP res = ress;
-  switch (anchor_type) {
-  case RE2::UNANCHORED:
 
-    for (auto it = 0; it != input.size(); it++) {
-      CHECK_NA_STRING
-
-      for (int pn = 0; pn != cap_nums; pn++)
-        piece_ptr[pn].clear();
-
-      fill_res(cap_nums, piece_ptr, res, rowi, coli, rows, cols,
-               RE2::PartialMatchN(r_char, *pattern, args_ptr, cap_nums));
+  for (auto it = 0; it != input.size(); it++) {
+    auto rstr = STRING_ELT(inputx, it);
+    if (rstr == NA_STRING) {
+      SET_STRING_ELT(res, it, NA_STRING);
+      continue;
     }
-    break;
-  case RE2::ANCHOR_START:
+    auto r_char = R_CHAR(rstr);
 
-    for (auto it = 0; it != input.size(); it++) {
-      CHECK_NA_STRING
+    for (int pn = 0; pn != cap_nums; pn++)
+      piece_ptr[pn].clear();
 
-      for (int pn = 0; pn != cap_nums; pn++)
-        piece_ptr[pn].clear();
-      StringPiece tmpstring(r_char);
-      fill_res(cap_nums, piece_ptr, res, rowi, coli, rows, cols,
-               RE2::ConsumeN(&tmpstring, *pattern, args_ptr, cap_nums));
-    }
-    break;
-  default:
+    for (int pn = 0; pn != cap_nums; pn++)
+      piece_ptr[pn].clear();
 
-    for (auto it = 0; it != input.size(); it++) {
-      CHECK_NA_STRING
-      fill_res(cap_nums, piece_ptr, res, rowi, coli, rows, cols,
-               RE2::FullMatchN(r_char, *pattern, args_ptr, cap_nums));
-    }
-    break;
+    fill_match_not_all(cap_nums, piece_ptr, res, rowi, coli, rows, cols,
+                       pattern->Match(r_char, 0, strlen(r_char), anchor_type,
+                                      piece_ptr, cap_nums));
   }
 
   // generate CharacterMatrix
@@ -461,67 +227,60 @@ SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
   Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
   SET_VECTOR_ELT(new_dimnames, 1,
                  Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
-  set_colnames(res, new_dimnames);
+  Rf_setAttrib(res, R_DimNamesSymbol, new_dimnames);
   return res;
 }
 
-#define INIT_ARGS_PTR                                                          \
-  auto cap_nums = tt.NumberOfCapturingGroups();                                \
-  auto argv = unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);                  \
-  auto args = unique_ptr<RE2::Arg *[]>(new RE2::Arg *[cap_nums]);              \
-  auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);           \
-  auto piece_ptr = piece.get();                                                \
-  auto args_ptr = args.get();                                                  \
-  auto argv_ptr = argv.get();                                                  \
-                                                                               \
-  for (int nn = 0; nn != cap_nums; nn++) {                                     \
-    args_ptr[nn] = &argv_ptr[nn];                                              \
-    argv_ptr[nn] = &piece_ptr[nn];                                             \
-  }
+optstring fill_not_all_parallel(int cap_nums, StringPiece *piece, bool matched) {
+    optstring res(cap_nums);
+    if (matched) {
+        auto it = res.begin();
+        for (auto i = 0; i != cap_nums; ++i) {
+            if ((piece[i]).data() != NULL) {
+                *it = tr2::make_optional(piece[i].as_string());
+            } else {
+                *it = tr2::nullopt;
+            }
+            it++;
+        }
+    } else {
+        for (auto it = res.begin(); it != res.end(); ++it) {
+            *it = tr2::nullopt;
+        }
+    }
+    return res;
+}
 
-#define UNVALUE_BLOCK                                                          \
-std::transform(input.begin() + begin,                                                              \
-               input.begin() + end,                                                                \
-               output.begin() + begin,                                                             \
-               [this,cap_nums,piece_ptr,args_ptr](tr2::optional<string>& x) -> optstring{\
-                   if (!bool(x)){                                                                  \
-                       return fill_opt_res(cap_nums, piece_ptr, false) ;                           \
-                   }                                                                               \
-                   for(int pn = 0; pn!=cap_nums; pn++) piece_ptr[pn].clear();
-
-struct UnValue : public Worker {
+struct NotAllValue : public Worker {
   vector<tr2::optional<string>> &input;
   vector<optstring> &output;
   RE2 &tt;
   const RE2::Anchor &anchor_type;
 
-  UnValue(vector<tr2::optional<string>> &input_, vector<optstring> &output_,
-          RE2 &tt_, const RE2::Anchor &anchor_type_)
+  NotAllValue(vector<tr2::optional<string>> &input_, vector<optstring> &output_,
+              RE2 &tt_, const RE2::Anchor &anchor_type_)
       : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_) {}
 
   void operator()(std::size_t begin, std::size_t end) {
-    INIT_ARGS_PTR
-
-    if (anchor_type == RE2::ANCHOR_BOTH) {
-      UNVALUE_BLOCK
-      return fill_opt_res(cap_nums, piece_ptr,
-                          tt.FullMatchN(x.value(), tt, args_ptr, cap_nums));
-    });
+    auto cap_nums = tt.NumberOfCapturingGroups() + 1;
+    auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
+    auto piece_ptr = piece.get();
+    std::transform(
+        input.begin() + begin, input.begin() + end, output.begin() + begin,
+        [this, cap_nums, piece_ptr](tr2::optional<string> &x) -> optstring {
+          if (!bool(x)) {
+            return fill_not_all_parallel(cap_nums, piece_ptr, false);
+          }
+          for (int pn = 0; pn != cap_nums; pn++)
+            piece_ptr[pn].clear();
+          string &r_char = x.value();
+          return fill_not_all_parallel(cap_nums, piece_ptr,
+                              tt.Match(r_char, 0, r_char.size(), anchor_type,
+                                       piece_ptr, cap_nums));
+        });
   }
-  else if (anchor_type == RE2::ANCHOR_START) {
-    UNVALUE_BLOCK
-    StringPiece tmpstring(x.value());
-    return fill_opt_res(cap_nums, piece_ptr,
-                        tt.ConsumeN(&tmpstring, tt, args_ptr, cap_nums));
-  });
-} else { // RE2::UNANCHORED
-  UNVALUE_BLOCK
-  return fill_opt_res(cap_nums, piece_ptr,
-                      tt.PartialMatchN(x.value(), tt, args_ptr, cap_nums));
-});
 }
-}
-}
+
 ;
 
 SEXP cpp_match_not_all_parallel(CharacterVector &input, RE2 *pattern,
@@ -531,7 +290,7 @@ SEXP cpp_match_not_all_parallel(CharacterVector &input, RE2 *pattern,
   vector<optstring> output(input.size());
   auto inputv = as_vec_opt_string(input);
 
-  UnValue pobj(inputv, output, *pattern, anchor_type);
+  NotAllValue pobj(inputv, output, *pattern, anchor_type);
   parallelFor(0, input.size(), pobj, grain_size);
   Shield<SEXP> res(toprotect_vec_optstring_to_charmat(output, cap_nums));
 
@@ -540,41 +299,50 @@ SEXP cpp_match_not_all_parallel(CharacterVector &input, RE2 *pattern,
   Shield<SEXP> new_dimnames((Rf_allocVector(VECSXP, Rf_length(dims))));
   SET_VECTOR_ELT(new_dimnames, 1,
                  Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
-  set_colnames(res, new_dimnames);
+  Rf_setAttrib(res, R_DimNamesSymbol, new_dimnames);
   return res;
 }
 
-#define INIT_LISTI_CHECKED                                                     \
-  optstring optinner;                                                          \
-  auto rstr = STRING_ELT(inputx, it);                                          \
-  if (rstr == NA_STRING) {                                                     \
-    bump_listi(0, listi, optinner, groups_name.size(), new_dimnames);          \
-    continue;                                                                  \
-  }                                                                            \
-  auto r_char = R_CHAR(rstr);                                                  \
-  StringPiece todo_str(r_char);                                                \
-  StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());     \
-  for (int pn = 0; pn != cap_nums; pn++)                                       \
-    piece_ptr[pn].clear();                                                     \
-  size_t cnt = 0;
+void fill_match_all(int cap_nums, StringPiece *piece, optstring &res,
+                   size_t cnt) {
+    auto all_na = true;
 
-#define CHECK_RESULT                                                           \
-  for (int pn = 0; pn != cap_nums; pn++)                                       \
-    piece_ptr[pn].clear();                                                     \
-  if (todo_str.length() == 0)                                                  \
-    break;                                                                     \
-                                                                               \
-  if ((todo_str.data() == tmp_piece.data()) &&                                 \
-      (todo_str.length() == tmp_piece.length()) && (todo_str.length() != 0)) { \
-    todo_str.remove_prefix(1);                                                 \
-  }                                                                            \
-                                                                               \
-  tmp_piece = StringPiece(todo_str.data(), todo_str.length());
+    // don't get all na
+    if (cnt > 1) {
+        for (auto it = 0; it != cap_nums; ++it) {
+            if ((piece[it]).data() != NULL) {
+                all_na = false;
+                break;
+            }
+        }
+        if (all_na)
+            return;
+    }
+
+    for (auto it = 0; it != cap_nums; ++it) {
+        if ((piece[it]).data() != NULL) {
+            res.push_back(tr2::make_optional(piece[it].as_string()));
+        } else {
+            res.push_back(tr2::nullopt);
+        }
+    }
+}
+
+inline void bump_listi(size_t cnt, List::iterator &listi, const optstring &optinner,
+                size_t cols, SEXP groups_name) {
+    if (cnt == 0) { // no one match, all NA return
+        *listi = R_NilValue;
+    } else { // generate CharacterMatrix
+
+        *listi = Shield<SEXP>(
+            toprotect_optstring_to_list_charmat(optinner, cols, groups_name));
+    }
+    listi += 1; // bump times_n !n
+}
 
 SEXP cpp_match_all(CharacterVector &input, RE2 *pattern,
                    RE2::Anchor anchor_type, StringPiece *piece_ptr,
-                   RE2::Arg **args_ptr, vector<string> &groups_name,
-                   int cap_nums) {
+                   vector<string> &groups_name, int cap_nums) {
   List listres(input.size());
   SEXP inputx = input;
   auto listi = listres.begin();
@@ -583,52 +351,45 @@ SEXP cpp_match_all(CharacterVector &input, RE2 *pattern,
   SET_VECTOR_ELT(new_dimnames, 1,
                  Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
 
-  if (anchor_type == RE2::UNANCHORED) {
-    for (auto it = 0; it != input.size(); it++) {
+  for (auto it = 0; it != input.size(); it++) {
 
-      INIT_LISTI_CHECKED
-      while (RE2::FindAndConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-        cnt += 1;
-        fill_list_res(cap_nums, piece_ptr, optinner, cnt);
-
-        // Note that if the
-        // regular expression matches an empty string, input will advance
-        // by 0 bytes.  If the regular expression being used might match
-        // an empty string, the loop body must check for this case and either
-        // advance the string or break out of the loop.
-        //
-        CHECK_RESULT
-
-        // try next place
-      } // while
-      bump_listi(cnt, listi, optinner, groups_name.size(), new_dimnames);
+    optstring optinner;
+    auto rstr = STRING_ELT(inputx, it);
+    if (rstr == NA_STRING) {
+      bump_listi(0, listi, optinner, groups_name.size(), new_dimnames);
+      continue;
     }
-  } else {
-    for (auto it = 0; it != input.size(); it++) {
+    auto r_char = R_CHAR(rstr);
+    StringPiece todo_str(r_char);
+    for (int pn = 0; pn != cap_nums; pn++)
+      piece_ptr[pn].clear();
+    size_t cnt = 0;
+    size_t lastIndex = 0;
+    auto str_size = strlen(r_char);
 
-      INIT_LISTI_CHECKED
+    while (pattern->Match(todo_str, lastIndex, str_size, anchor_type, piece_ptr,
+                          cap_nums)) {
+      cnt += 1;
+      if (!piece_ptr[0].size()) {
+        size_t sym_size = getUtf8CharSize(todo_str.data()[lastIndex]);
+        lastIndex += sym_size;
+        continue;
+      }
 
-      while (RE2::ConsumeN(&todo_str, *pattern, args_ptr, cap_nums)) {
-        cnt += 1;
-        fill_list_res(cap_nums, piece_ptr, optinner, cnt);
+      fill_match_all(cap_nums, piece_ptr, optinner, cnt);
 
-        CHECK_RESULT
+      auto piece_ptr_data = piece_ptr[0];
+      lastIndex =
+          piece_ptr_data.data() - todo_str.data() + piece_ptr_data.size();
+      for (int pn = 0; pn != cap_nums; pn++)
+        piece_ptr[pn].clear();
 
-        // advanced try next place
-      } // else while
-      bump_listi(cnt, listi, optinner, groups_name.size(), new_dimnames);
-    }
-  } // end else generate CharacterMatrix
+      // try next place
+    } // while
+    bump_listi(cnt, listi, optinner, groups_name.size(), new_dimnames);
+  }
   return listres;
 }
-
-#define INIT_LISTI                                                             \
-  StringPiece todo_str(ind.value());                                           \
-  StringPiece tmp_piece = StringPiece(todo_str.data(), todo_str.length());     \
-  for (int pn = 0; pn != cap_nums; pn++)                                       \
-    piece_ptr[pn].clear();                                                     \
-  size_t cnt = 0;                                                              \
-  optstring optinner;
 
 struct MatValue : public Worker {
   vector<tr2::optional<string>> &input;
@@ -642,53 +403,50 @@ struct MatValue : public Worker {
       : input(input_), output(output_), tt(tt_), anchor_type(anchor_type_) {}
 
   void operator()(std::size_t begin, std::size_t end) {
-    INIT_ARGS_PTR
-    if (anchor_type != RE2::UNANCHORED) {
-      std::transform(
-          input.begin() + begin, input.begin() + end, output.begin() + begin,
-          [this, cap_nums, piece_ptr,
-           args_ptr](tr2::optional<string> &ind) -> tr2::optional<optstring> {
-            if (!bool(ind)) {
-              return tr2::nullopt;
-            }
-            INIT_LISTI
+    auto cap_nums = tt.NumberOfCapturingGroups() + 1;
+    auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
+    auto piece_ptr = piece.get();
+    auto resi = output.begin() + begin;
 
-            while (RE2::ConsumeN(&todo_str, tt, args_ptr, cap_nums)) {
-              cnt += 1;
-              fill_list_res(cap_nums, piece_ptr, optinner, cnt);
+    for (auto ind = input.begin() + begin; ind != input.begin() + end;
+         ind++, resi++) {
+      if (!bool(*ind)) {
+        *resi = tr2::nullopt;
+        continue;
+      }
+      StringPiece todo_str(ind->value());
+      for (int pn = 0; pn != cap_nums; pn++)
+        piece_ptr[pn].clear();
+      size_t cnt = 0;
+      optstring optinner;
+      size_t lastIndex = 0;
+      auto str_size = todo_str.size();
 
-              CHECK_RESULT
-              // advanced try next place
-            } // else while
-            if (cnt == 0) {
-              return tr2::nullopt;
-            } else {
-              return tr2::make_optional(optinner);
-            }
-          });
-    } else {
-      std::transform(
-          input.begin() + begin, input.begin() + end, output.begin() + begin,
-          [this, cap_nums, piece_ptr,
-           args_ptr](tr2::optional<string> &ind) -> tr2::optional<optstring> {
-            if (!bool(ind)) {
-              return tr2::nullopt;
-            }
-            INIT_LISTI
+      while (tt.Match(todo_str, lastIndex, str_size, anchor_type, piece_ptr,
+                      cap_nums)) {
+        cnt += 1;
+        if (!piece_ptr[0].size()) {
+          size_t sym_size = getUtf8CharSize(todo_str.data()[lastIndex]);
+          lastIndex += sym_size;
+          continue;
+        }
 
-            while (RE2::FindAndConsumeN(&todo_str, tt, args_ptr, cap_nums)) {
-              cnt += 1;
-              fill_list_res(cap_nums, piece_ptr, optinner, cnt);
+        fill_match_all(cap_nums, piece_ptr, optinner, cnt);
 
-              CHECK_RESULT
-              // advanced try next place
-            } // else while
-            if (cnt == 0) {
-              return tr2::nullopt;
-            } else {
-              return tr2::make_optional(optinner);
-            }
-          });
+        auto piece_ptr_data = piece_ptr[0];
+        lastIndex =
+            piece_ptr_data.data() - todo_str.data() + piece_ptr_data.size();
+        for (int pn = 0; pn != cap_nums; pn++)
+          piece_ptr[pn].clear();
+
+        // advanced try next place
+      } // else while
+
+      if (cnt == 0) {
+        *resi = tr2::nullopt;
+      } else {
+        *resi = tr2::make_optional(move(optinner));
+      }
     }
   }
 };
@@ -712,14 +470,13 @@ SEXP cpp_match_all_parallel(CharacterVector &input, RE2 *pattern,
 
   // fill in result
   auto resi = res.begin();
-  for (auto it = listres.begin(); it != listres.end(); it++) {
+  for (auto it = listres.begin(); it != listres.end(); it++, resi++) {
     if (!bool(*resi)) { // no one match, NULL
       *it = R_NilValue;
     } else {
       *it = Shield<SEXP>(toprotect_optstring_to_list_charmat(
           resi->value(), groups_name.size(), new_dimnames));
     }
-    resi += 1;
   }
   return listres;
 }
@@ -743,62 +500,47 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
     }
 
   } else {
-      OptRE2 * optpattern;
+    OptRE2 *optpattern;
     if (TYPEOF(regexp) == EXTPTRSXP) {
-        auto ptr = R_ExternalPtrAddr(regexp);
-        if (ptr == nullptr)
-            stop(INVALID_ERROR_STRING);
-        optpattern = (OptRE2 *)ptr;
+      auto ptr = R_ExternalPtrAddr(regexp);
+      if (ptr == nullptr)
+        stop(INVALID_ERROR_STRING);
+      optpattern = (OptRE2 *)ptr;
     } else {
-        if (TYPEOF(regexp) == VECSXP && Rf_xlength(regexp) > 0) {
-            if (Rf_xlength(regexp) != 1) {
-                warning("only the first pattern is used in re2_match() re2_match_all()");
-            }
-            auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, 0));
-            if (ptr == nullptr)
-                stop(INVALID_ERROR_STRING);
-            optpattern = (OptRE2 *)ptr;
-        } else {
-            stop("expecting a pre-compiled RE2 object.");
+      if (TYPEOF(regexp) == VECSXP && Rf_xlength(regexp) > 0) {
+        if (Rf_xlength(regexp) != 1) {
+          warning(
+              "only the first pattern is used in re2_match() re2_match_all()");
         }
-    }
-
-    if (!bool(*optpattern)) {
-        if(all){
-            return(List::create(R_NilValue));
-        }else{
-            CharacterMatrix res(input.size(),1);
-            colnames(res) = CharacterVector::create(".match");
-            std::fill(res.begin(), res.end(), NA_STRING);
-            return(res);
-        }
-    }
-    RE2* pattern = optpattern->value().get();
-    auto cap_nums = pattern->NumberOfCapturingGroups();
-
-    if (cap_nums == 0) {
-      if (!parallel || input.size() < grain_size) {
-        return cpp_match_nocapture(input, pattern, anchor_type);
-        // no capture group return
+        auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, 0));
+        if (ptr == nullptr)
+          stop(INVALID_ERROR_STRING);
+        optpattern = (OptRE2 *)ptr;
       } else {
-        return cpp_match_nocapture_parallel(input, pattern, anchor_type,
-                                            grain_size);
+        stop("expecting a pre-compiled RE2 object.");
       }
     }
 
+    if (!bool(*optpattern)) {
+      if (all) {
+        return (List::create(R_NilValue));
+      } else {
+        CharacterMatrix res(input.size(), 1);
+        colnames(res) = CharacterVector::create(".match");
+        std::fill(res.begin(), res.end(), NA_STRING);
+        return (res);
+      }
+    }
+    RE2 *pattern = optpattern->value().get();
+    auto cap_nums = pattern->NumberOfCapturingGroups();
+
+    cap_nums += 1;
+
     // at least one capture group, return a matrix
     // set up the args and stringpiece
-    vector<string> g_numbers_names = get_groups_name(pattern, cap_nums);
-    vector<string> groups_name;
+    vector<string> groups_name = get_groups_name(pattern, cap_nums);
 
-    // each string get at least one group of result
-    groups_name.reserve(g_numbers_names.size());
-
-    for (auto it = g_numbers_names.begin(); it != g_numbers_names.end(); it++) {
-      groups_name.push_back(*it);
-    }
-
-    if (parallel && input.size() > grain_size) {
+    if (parallel && input.size() >= grain_size) {
       if (all) {
         return cpp_match_all_parallel(input, pattern, anchor_type, groups_name,
                                       cap_nums, grain_size);
@@ -810,53 +552,30 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
     } else {
       // not parallel, value, all
       // static when the number of capture group is smaller than 10
-      RE2::Arg *args_static[RE2R_STATIC_SIZE];
-      RE2::Arg argv_static[RE2R_STATIC_SIZE];
-      StringPiece piece_static[RE2R_STATIC_SIZE];
-
+      StringPiece match_static[RE2R_STATIC_SIZE];
+      StringPiece *match;
       // dynamic when the number of capture group is bigger than 10
       // We use exception, it will be better to use unique_ptr instead of raw
       // ptr.
-      unique_ptr<RE2::Arg[]> argv;
-      unique_ptr<RE2::Arg *[]> args;
-      unique_ptr<StringPiece[]> piece;
-      // pointer to used
-      RE2::Arg **args_ptr;
-      StringPiece *piece_ptr;
-      RE2::Arg *argv_ptr;
+      unique_ptr<StringPiece[]> matchp;
 
       // when we have a small number of capture groups,
       // we do not need to used heap
       if (cap_nums <= RE2R_STATIC_SIZE) { // RE2R_STATIC_SIZE = 10
-        args_ptr = args_static;
-        argv_ptr = argv_static;
-        piece_ptr = piece_static;
+        match = match_static;
       } else {
-        argv = unique_ptr<RE2::Arg[]>(new RE2::Arg[cap_nums]);
-        args = unique_ptr<RE2::Arg *[]>(new RE2::Arg *[cap_nums]);
-        piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
-        piece_ptr = piece.get();
-        args_ptr = args.get();
-        argv_ptr = argv.get();
+        matchp = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
+        match = matchp.get();
       };
-
-      // It we do not manually delete this, it will be safe:
-      // args_ptr， argv_ptr, piece_ptr
-      // below we can only use these three ptr
-      //
-      for (int nn = 0; nn != cap_nums; nn++) {
-        args_ptr[nn] = &argv_ptr[nn];
-        argv_ptr[nn] = &piece_ptr[nn];
-      }
 
       // do the work
 
       if (all == false) {
-        return cpp_match_not_all(input, pattern, anchor_type, piece_ptr,
-                                 args_ptr, groups_name, cap_nums);
+        return cpp_match_not_all(input, pattern, anchor_type, match,
+                                 groups_name, cap_nums);
       } else { // all == true
-        return cpp_match_all(input, pattern, anchor_type, piece_ptr, args_ptr,
-                             groups_name, cap_nums);
+        return cpp_match_all(input, pattern, anchor_type, match, groups_name,
+                             cap_nums);
       } // all == true
     }
     // unique_ptr go out of scrope

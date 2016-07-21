@@ -52,6 +52,83 @@ SEXP toprotect_optstring_sexp(const optstring &input) {
   return x;
 }
 
+SEXP toprotect_vec_optstring_to_charmat(const vector<optstring> &res,
+                                        int cap_nums) {
+    auto rows = res.size();
+    Shield<SEXP> resv(Rf_allocMatrix(STRSXP, rows, cap_nums));
+    SEXP x = resv;
+
+    auto rowi = 0;
+    auto coli = 0;
+    for (const optstring &ind : res) {
+        for (const tr2::optional<string> &dd : ind) {
+            if (bool(dd)) {
+                SET_STRING_ELT(x, rowi + coli * rows,
+                               Rf_mkCharLenCE(dd.value().c_str(),
+                                              strlen(dd.value().c_str()), CE_UTF8));
+            } else {
+                SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
+            }
+            coli += 1;
+        }
+        rowi += 1;
+        coli = 0;
+    }
+    return resv;
+}
+
+
+
+SEXP toprotect_optstring_to_charmat(const optstring &res) {
+
+    Shield<SEXP> resv(Rf_allocMatrix(STRSXP, res.size(), 1));
+    SEXP dims = Rf_getAttrib(resv, R_DimSymbol);
+    SEXP new_dimnames = Shield<SEXP>((Rf_allocVector(VECSXP, Rf_length(dims))));
+    SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create(".match"));
+    Rf_setAttrib(resv, R_DimNamesSymbol, new_dimnames);
+
+    SEXP x = resv;
+
+    R_xlen_t index = 0;
+
+    for (auto dd : res) {
+        if (bool(dd)) {
+            SET_STRING_ELT(x, index,
+                           Rf_mkCharLenCE(dd.value().c_str(),
+                                          strlen(dd.value().c_str()), CE_UTF8));
+        } else {
+            SET_STRING_ELT(x, index, NA_STRING);
+        }
+        index++;
+    }
+
+    return resv;
+}
+
+SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
+                                         SEXP groups_name) {
+
+    auto rows = optinner.size() / cols;
+    Shield<SEXP> res(Rf_allocMatrix(STRSXP, rows, cols));
+    SEXP x = res;
+
+    size_t rowi = 0;
+    size_t coli = 0;
+    for (auto dd : optinner) {
+        if (bool(dd)) {
+            SET_STRING_ELT(x, rowi + coli * rows,
+                           Rf_mkCharLenCE(dd.value().c_str(),
+                                          strlen(dd.value().c_str()), CE_UTF8));
+        } else {
+            SET_STRING_ELT(x, rowi + coli * rows, NA_STRING);
+        }
+        bump_count(coli, rowi, cols);
+    }
+
+    Rf_setAttrib(res, R_DimNamesSymbol, groups_name);
+
+    return res;
+}
 
 void build_regex_vector(SEXP regexp, vector<OptRE2 *> &ptrv) {
   if (TYPEOF(regexp) == EXTPTRSXP) {

@@ -103,7 +103,7 @@ int get_number_of_groups(SEXP regexp) {
 SEXP cpp_get_named_groups(SEXP regexp) {
   INIT_ptr if (bool(*ptr)) {
     return wrap(get_groups_name(ptr->value().get(),
-                                ptr->value()->NumberOfCapturingGroups()));
+                                ptr->value()->NumberOfCapturingGroups()+1));
   }
   else {
     return CharacterVector(NA_STRING);
@@ -182,7 +182,7 @@ SEXP get_options(SEXP regexp) {
         "utf_8", "case_sensitive", "posix_syntax", "dot_nl", "literal",
         "longest_match", "never_nl", "never_capture", "one_line",
         "perl_classes", "word_boundary", "log_error", "max_mem");
-    auto options = ptr->value()->options();
+    const RE2::Options& options = ptr->value()->options();
     res[0] = options.utf8();
     res[1] = options.case_sensitive();
     res[2] = options.posix_syntax();
