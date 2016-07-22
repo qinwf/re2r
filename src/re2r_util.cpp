@@ -105,11 +105,27 @@ SEXP toprotect_optstring_to_charmat(const optstring &res) {
     return resv;
 }
 
+SEXP toprotect_na_charmat(SEXP groups_name, size_t cols) {
+    Shield<SEXP> res(Rf_allocMatrix(STRSXP, 1, cols));
+    SEXP resx = res;
+    for(auto i=0; i!=cols; i++){
+        SET_STRING_ELT(resx, i, NA_STRING);
+    }
+    Rf_setAttrib(resx, R_DimNamesSymbol, groups_name);
+    return resx;
+}
+
 SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
                                          SEXP groups_name) {
 
     auto rows = optinner.size() / cols;
     Shield<SEXP> res(Rf_allocMatrix(STRSXP, rows, cols));
+
+    if(optinner.size() == 0){
+        Rf_setAttrib(res, R_DimNamesSymbol, groups_name);
+        return res;
+    }
+
     SEXP x = res;
 
     size_t rowi = 0;

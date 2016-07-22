@@ -135,21 +135,20 @@ struct BoolP : public Worker {
 
   void operator()(std::size_t begin, std::size_t end) {
     size_t index = begin;
-    std::for_each(
-        output.begin() + begin, output.begin() + end, [this, &index](int &x) {
-          auto inputi = input[index % input.size()];
-          auto optptr = tt[index % tt.size()];
-          index++;
+    for (auto x = output.begin() + begin; x != output.begin() + end; x++) {
+      auto inputi = input[index % input.size()];
+      auto optptr = tt[index % tt.size()];
+      index++;
 
-          if (!bool(inputi) || !bool(*optptr)) {
-            x = NA_LOGICAL;
-            return;
-          }
-          auto ptr = optptr->value().get();
-          x = ptr->Match(inputi.value(), 0, (int)inputi.value().length(),
-                         anchor_type, nullptr, 0);
-          return;
-        });
+      if (!bool(inputi) || !bool(*optptr)) {
+        *x = NA_LOGICAL;
+        return;
+      }
+      auto ptr = optptr->value().get();
+      *x = ptr->Match(inputi.value(), 0, (int)inputi.value().length(),
+                      anchor_type, nullptr, 0);
+      return;
+    }
   }
 };
 
@@ -206,7 +205,8 @@ SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
   for (auto it = 0; it != input.size(); it++) {
     auto rstr = STRING_ELT(inputx, it);
     if (rstr == NA_STRING) {
-      SET_STRING_ELT(res, it, NA_STRING);
+      fill_match_not_all(cap_nums, piece_ptr, res, rowi, coli, rows, cols,
+                           false);
       continue;
     }
     auto r_char = R_CHAR(rstr);
@@ -231,24 +231,25 @@ SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
   return res;
 }
 
-optstring fill_not_all_parallel(int cap_nums, StringPiece *piece, bool matched) {
-    optstring res(cap_nums);
-    if (matched) {
-        auto it = res.begin();
-        for (auto i = 0; i != cap_nums; ++i) {
-            if ((piece[i]).data() != NULL) {
-                *it = tr2::make_optional(piece[i].as_string());
-            } else {
-                *it = tr2::nullopt;
-            }
-            it++;
-        }
-    } else {
-        for (auto it = res.begin(); it != res.end(); ++it) {
-            *it = tr2::nullopt;
-        }
+optstring fill_not_all_parallel(int cap_nums, StringPiece *piece,
+                                bool matched) {
+  optstring res(cap_nums);
+  if (matched) {
+    auto it = res.begin();
+    for (auto i = 0; i != cap_nums; ++i) {
+      if ((piece[i]).data() != NULL) {
+        *it = tr2::make_optional(piece[i].as_string());
+      } else {
+        *it = tr2::nullopt;
+      }
+      it++;
     }
-    return res;
+  } else {
+    for (auto it = res.begin(); it != res.end(); ++it) {
+      *it = tr2::nullopt;
+    }
+  }
+  return res;
 }
 
 struct NotAllValue : public Worker {
@@ -265,19 +266,20 @@ struct NotAllValue : public Worker {
     auto cap_nums = tt.NumberOfCapturingGroups() + 1;
     auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
     auto piece_ptr = piece.get();
-    std::transform(
-        input.begin() + begin, input.begin() + end, output.begin() + begin,
-        [this, cap_nums, piece_ptr](tr2::optional<string> &x) -> optstring {
-          if (!bool(x)) {
-            return fill_not_all_parallel(cap_nums, piece_ptr, false);
-          }
-          for (int pn = 0; pn != cap_nums; pn++)
-            piece_ptr[pn].clear();
-          string &r_char = x.value();
-          return fill_not_all_parallel(cap_nums, piece_ptr,
-                              tt.Match(r_char, 0, r_char.size(), anchor_type,
-                                       piece_ptr, cap_nums));
-        });
+    auto y = output.begin() + begin;
+    for (auto x = input.begin() + begin; x != input.begin() + end; x++, y++) {
+      if (!bool(*x)) {
+        *y = fill_not_all_parallel(cap_nums, piece_ptr, false);
+          continue;
+      }
+
+      for (int pn = 0; pn != cap_nums; pn++)
+        piece_ptr[pn].clear();
+      string &r_char = x->value();
+      *y = fill_not_all_parallel(
+          cap_nums, piece_ptr,
+          tt.Match(r_char, 0, r_char.size(), anchor_type, piece_ptr, cap_nums));
+    }
   }
 }
 
@@ -303,41 +305,42 @@ SEXP cpp_match_not_all_parallel(CharacterVector &input, RE2 *pattern,
   return res;
 }
 
-void fill_match_all(int cap_nums, StringPiece *piece, optstring &res,
-                   size_t cnt) {
-    auto all_na = true;
+void fill_match_all(int cap_nums, StringPiece *piece, optstring &res//,
+//                    size_t cnt
+){
+  // auto all_na = true;
 
-    // don't get all na
-    if (cnt > 1) {
-        for (auto it = 0; it != cap_nums; ++it) {
-            if ((piece[it]).data() != NULL) {
-                all_na = false;
-                break;
-            }
-        }
-        if (all_na)
-            return;
-    }
+  // // don't get all na
+  // if (cnt > 1) {
+  //   for (auto it = 0; it != cap_nums; ++it) {
+  //     if ((piece[it]).data() != NULL) {
+  //       all_na = false;
+  //       break;
+  //     }
+  //   }
+  //   if (all_na)
+  //     return;
+  // }
 
-    for (auto it = 0; it != cap_nums; ++it) {
-        if ((piece[it]).data() != NULL) {
-            res.push_back(tr2::make_optional(piece[it].as_string()));
-        } else {
-            res.push_back(tr2::nullopt);
-        }
+  for (auto it = 0; it != cap_nums; ++it) {
+    if ((piece[it]).data() != NULL) {
+      res.push_back(tr2::make_optional(piece[it].as_string()));
+    } else {
+      res.push_back(tr2::nullopt);
     }
+  }
 }
 
-inline void bump_listi(size_t cnt, List::iterator &listi, const optstring &optinner,
-                size_t cols, SEXP groups_name) {
-    if (cnt == 0) { // no one match, all NA return
-        *listi = R_NilValue;
-    } else { // generate CharacterMatrix
-
-        *listi = Shield<SEXP>(
-            toprotect_optstring_to_list_charmat(optinner, cols, groups_name));
-    }
-    listi += 1; // bump times_n !n
+inline void bump_listi(List::iterator &listi,
+                       const optstring &optinner, size_t cols,
+                       SEXP groups_name, bool is_na) {
+  if (is_na) { // no one match, all NA return
+    *listi = Shield<SEXP>(toprotect_na_charmat(groups_name, cols));
+  }else { // generate CharacterMatrix
+    *listi = Shield<SEXP>(
+        toprotect_optstring_to_list_charmat(optinner, cols, groups_name));
+  }
+  listi += 1; // bump times_n !n
 }
 
 SEXP cpp_match_all(CharacterVector &input, RE2 *pattern,
@@ -356,27 +359,25 @@ SEXP cpp_match_all(CharacterVector &input, RE2 *pattern,
     optstring optinner;
     auto rstr = STRING_ELT(inputx, it);
     if (rstr == NA_STRING) {
-      bump_listi(0, listi, optinner, groups_name.size(), new_dimnames);
+      bump_listi(listi, optinner, groups_name.size(), new_dimnames, true);
       continue;
     }
     auto r_char = R_CHAR(rstr);
     StringPiece todo_str(r_char);
     for (int pn = 0; pn != cap_nums; pn++)
       piece_ptr[pn].clear();
-    size_t cnt = 0;
     size_t lastIndex = 0;
     auto str_size = strlen(r_char);
 
     while (pattern->Match(todo_str, lastIndex, str_size, anchor_type, piece_ptr,
                           cap_nums)) {
-      cnt += 1;
       if (!piece_ptr[0].size()) {
         size_t sym_size = getUtf8CharSize(todo_str.data()[lastIndex]);
         lastIndex += sym_size;
         continue;
       }
 
-      fill_match_all(cap_nums, piece_ptr, optinner, cnt);
+      fill_match_all(cap_nums, piece_ptr, optinner);
 
       auto piece_ptr_data = piece_ptr[0];
       lastIndex =
@@ -386,7 +387,7 @@ SEXP cpp_match_all(CharacterVector &input, RE2 *pattern,
 
       // try next place
     } // while
-    bump_listi(cnt, listi, optinner, groups_name.size(), new_dimnames);
+    bump_listi(listi, optinner, groups_name.size(), new_dimnames, false);
   }
   return listres;
 }
@@ -407,13 +408,14 @@ struct MatValue : public Worker {
     auto piece = unique_ptr<StringPiece[]>(new StringPiece[cap_nums]);
     auto piece_ptr = piece.get();
     auto resi = output.begin() + begin;
-
     for (auto ind = input.begin() + begin; ind != input.begin() + end;
          ind++, resi++) {
+
       if (!bool(*ind)) {
-        *resi = tr2::nullopt;
+        *resi = tr2::nullopt; // NA return
         continue;
       }
+
       StringPiece todo_str(ind->value());
       for (int pn = 0; pn != cap_nums; pn++)
         piece_ptr[pn].clear();
@@ -424,14 +426,13 @@ struct MatValue : public Worker {
 
       while (tt.Match(todo_str, lastIndex, str_size, anchor_type, piece_ptr,
                       cap_nums)) {
-        cnt += 1;
         if (!piece_ptr[0].size()) {
           size_t sym_size = getUtf8CharSize(todo_str.data()[lastIndex]);
           lastIndex += sym_size;
           continue;
         }
 
-        fill_match_all(cap_nums, piece_ptr, optinner, cnt);
+        fill_match_all(cap_nums, piece_ptr, optinner);
 
         auto piece_ptr_data = piece_ptr[0];
         lastIndex =
@@ -442,11 +443,8 @@ struct MatValue : public Worker {
         // advanced try next place
       } // else while
 
-      if (cnt == 0) {
-        *resi = tr2::nullopt;
-      } else {
         *resi = tr2::make_optional(move(optinner));
-      }
+
     }
   }
 };
@@ -471,8 +469,8 @@ SEXP cpp_match_all_parallel(CharacterVector &input, RE2 *pattern,
   // fill in result
   auto resi = res.begin();
   for (auto it = listres.begin(); it != listres.end(); it++, resi++) {
-    if (!bool(*resi)) { // no one match, NULL
-      *it = R_NilValue;
+    if (!bool(*resi)) { // NA string
+      *it = Shield<SEXP>(toprotect_na_charmat(new_dimnames, groups_name.size()));
     } else {
       *it = Shield<SEXP>(toprotect_optstring_to_list_charmat(
           resi->value(), groups_name.size(), new_dimnames));
@@ -540,7 +538,7 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
     // set up the args and stringpiece
     vector<string> groups_name = get_groups_name(pattern, cap_nums);
 
-    if (parallel && input.size() >= grain_size) {
+    if (parallel && input.size() > grain_size) {
       if (all) {
         return cpp_match_all_parallel(input, pattern, anchor_type, groups_name,
                                       cap_nums, grain_size);
