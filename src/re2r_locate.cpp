@@ -129,82 +129,6 @@ struct LocateP : public Worker {
   }
 };
 
-struct LocateAllP : public Worker {
-  optstring &input;
-  vector<vector<tuple<size_t, size_t>>> &output;
-  vector<OptRE2 *> &tt;
-
-  LocateAllP(optstring &input_, vector<vector<tuple<size_t, size_t>>> &output_,
-             vector<OptRE2 *> &tt_)
-      : input(input_), output(output_), tt(tt_) {}
-
-  void operator()(std::size_t begin, std::size_t end) {
-    size_t index = begin;
-    std::for_each(
-        output.begin() + begin, output.begin() + end,
-        [this, &index](vector<tuple<size_t, size_t>> &x) {
-          auto inputi = input[index % input.size()];
-          auto optptr = tt[index % tt.size()];
-          index++;
-
-          vector<tuple<size_t, size_t>> res;
-          if (!bool(inputi) || !bool(optptr)) {
-            res.push_back(make_tuple(NA_INTEGER, NA_INTEGER));
-            x = res;
-            return;
-          }
-          auto ptr = optptr->value().get();
-          StringPiece match;
-
-          StringPiece str(inputi.value());
-          size_t lastIndex = 0;
-          size_t headn = 0;
-          auto str_size = inputi.value().length();
-
-          while (lastIndex < str_size &&
-                 ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match,
-                            1)) {
-            if (match.size()) {
-              string mstring = match.as_string();
-              size_t len_mstring = utf8_length(mstring.c_str());
-
-              string headz = StringPiece(str.data() + lastIndex,
-                                         match.data() - str.data() - lastIndex)
-                                 .as_string();
-
-              size_t len_head = utf8_length(headz.c_str());
-              headn += len_head;
-
-              auto head_s = headn + 1;
-              headn += len_mstring;
-
-              auto tail_s = headn;
-
-              res.push_back(make_tuple(head_s, tail_s));
-
-              lastIndex = match.data() - str.data() + match.size();
-            } else {
-
-              string headz = StringPiece(str.data() + lastIndex,
-                                         match.data() - str.data() - lastIndex)
-                                 .as_string();
-              size_t len_head = utf8_length(headz.c_str());
-              headn += len_head;
-              res.push_back(make_tuple(headn, headn - 1));
-
-              lastIndex = match.data() - str.data() + match.size();
-              size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-              headn += 1;
-              lastIndex += sym_size;
-            }
-          }
-
-          x = res;
-          return;
-        });
-  }
-};
-
 SEXP cpp_locate_not_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
                         SEXP colsname, size_t nrecycle) {
   SEXP inputx = input;
@@ -272,6 +196,87 @@ SEXP cpp_locate_not_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
   return x;
 }
 
+inline void check_loc(RE2 *ptr, size_t &lastIndex, StringPiece &str,
+                      size_t &str_size, size_t &headn, StringPiece &match,
+                      vector<tuple<size_t, size_t>> &res) {
+  while (lastIndex < str_size &&
+         ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
+
+    if (match.size()) {
+      string mstring = match.as_string();
+      size_t len_mstring = utf8_length(mstring.c_str());
+
+      string headz = StringPiece(str.data() + lastIndex,
+                                 match.data() - str.data() - lastIndex)
+                         .as_string();
+
+      size_t len_head = utf8_length(headz.c_str());
+      headn += len_head;
+
+      size_t head_s = (size_t)headn + 1;
+      headn += len_mstring;
+
+      size_t tail_s = (size_t)headn;
+
+      res.push_back(make_tuple(head_s, tail_s));
+
+      lastIndex = match.data() - str.data() + match.size();
+    } else {
+
+      string headz = StringPiece(str.data() + lastIndex,
+                                 match.data() - str.data() - lastIndex)
+                         .as_string();
+      size_t len_head = utf8_length(headz.c_str());
+      headn += len_head;
+      res.push_back(make_tuple(headn+1, headn));
+
+      lastIndex = match.data() - str.data() + match.size();
+      size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+      headn += 1;
+      lastIndex += sym_size;
+    }
+  }
+}
+
+struct LocateAllP : public Worker {
+  optstring &input;
+  vector<vector<tuple<size_t, size_t>>> &output;
+  vector<OptRE2 *> &tt;
+
+  LocateAllP(optstring &input_, vector<vector<tuple<size_t, size_t>>> &output_,
+             vector<OptRE2 *> &tt_)
+      : input(input_), output(output_), tt(tt_) {}
+
+  void operator()(std::size_t begin, std::size_t end) {
+    size_t index = begin;
+    std::for_each(output.begin() + begin, output.begin() + end,
+                  [this, &index](vector<tuple<size_t, size_t>> &x) {
+                    auto inputi = input[index % input.size()];
+                    auto optptr = tt[index % tt.size()];
+                    index++;
+
+                    vector<tuple<size_t, size_t>> res;
+                    if (!bool(inputi) || !bool(optptr)) {
+                      res.push_back(make_tuple(NA_INTEGER, NA_INTEGER));
+                      x = res;
+                      return;
+                    }
+                    auto ptr = optptr->value().get();
+                    StringPiece match;
+
+                    StringPiece str(inputi.value());
+                    size_t lastIndex = 0;
+                    size_t headn = 0;
+                    auto str_size = inputi.value().length();
+
+                    check_loc(ptr, lastIndex, str, str_size, headn, match, res);
+
+                    x = res;
+                    return;
+                  });
+  }
+};
+
 SEXP cpp_locate_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
                     SEXP colsname, size_t nrecycle) {
   SEXP inputx = input;
@@ -291,7 +296,7 @@ SEXP cpp_locate_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
     auto rstr = STRING_ELT(inputx, it % input.size());
     auto optptr = ptrv[it % ptrv.size()];
 
-    if (rstr == NA_STRING || bool(*optptr)) {
+    if (rstr == NA_STRING || !bool(*optptr)) {
       SET_VECTOR_ELT(x, it, na_matrix);
       continue;
     }
@@ -305,43 +310,8 @@ SEXP cpp_locate_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
 
     vector<tuple<size_t, size_t>> res;
 
-    while (lastIndex < str_size &&
-           ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
+    check_loc(ptr, lastIndex, str, str_size, headn, match, res);
 
-      if (match.size()) {
-        string mstring = match.as_string();
-        size_t len_mstring = utf8_length(mstring.c_str());
-
-        string headz = StringPiece(str.data() + lastIndex,
-                                   match.data() - str.data() - lastIndex)
-                           .as_string();
-
-        size_t len_head = utf8_length(headz.c_str());
-        headn += len_head;
-
-        size_t head_s = (size_t)headn + 1;
-        headn += len_mstring;
-
-        size_t tail_s = (size_t)headn;
-
-        res.push_back(make_tuple(head_s, tail_s));
-
-        lastIndex = match.data() - str.data() + match.size();
-      } else {
-
-        string headz = StringPiece(str.data() + lastIndex,
-                                   match.data() - str.data() - lastIndex)
-                           .as_string();
-        size_t len_head = utf8_length(headz.c_str());
-        headn += len_head;
-        res.push_back(make_tuple(headn, headn - 1));
-
-        lastIndex = match.data() - str.data() + match.size();
-        size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-        headn += 1;
-        lastIndex += sym_size;
-      }
-    }
     Shield<SEXP> tempres(toprotect_loc_matrix(res));
     set_colnames(tempres, colsname);
     SET_VECTOR_ELT(x, it, tempres);
