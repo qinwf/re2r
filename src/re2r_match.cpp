@@ -89,16 +89,6 @@ vector<string> get_groups_name(RE2 *pattern, int cap_nums) {
   return res;
 }
 
-RE2::Anchor get_anchor_type(size_t anchor) {
-  if (anchor == 0) {
-    return RE2::UNANCHORED;
-  } else if (anchor == 1) {
-    return RE2::ANCHOR_START;
-  } else {
-    return RE2::ANCHOR_BOTH;
-  }
-}
-
 // begin real work
 
 SEXP cpp_detect(CharacterVector &input, vector<OptRE2 *> &ptrv,
@@ -142,12 +132,11 @@ struct BoolP : public Worker {
 
       if (!bool(inputi) || !bool(*optptr)) {
         *x = NA_LOGICAL;
-        return;
+        continue;
       }
       auto ptr = optptr->value().get();
       *x = ptr->Match(inputi.value(), 0, (int)inputi.value().length(),
                       anchor_type, nullptr, 0);
-      return;
     }
   }
 };
@@ -510,10 +499,17 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
           warning(
               "only the first pattern is used in re2_match() re2_match_all()");
         }
-        auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, 0));
-        if (ptr == nullptr)
-          stop(INVALID_ERROR_STRING);
-        optpattern = (OptRE2 *)ptr;
+
+        if (TYPEOF(VECTOR_ELT(regexp, 0)) == EXTPTRSXP){
+            auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, 0));
+            if (ptr == nullptr)
+                stop(INVALID_ERROR_STRING);
+            optpattern = (OptRE2 *)ptr;
+        }
+        else {
+            stop("expecting a pre-compiled RE2 object for the first pattern.");
+        }
+
       } else {
         stop("expecting a pre-compiled RE2 object.");
       }

@@ -52,6 +52,18 @@ SEXP toprotect_optstring_sexp(const optstring &input) {
   return x;
 }
 
+void clone_vec_regex(const vector<OptRE2 *>& input, vector<unique_ptr<OptRE2>>& res ){
+    res.reserve(input.size());
+    for(vector<OptRE2 *>::const_iterator x = input.begin(); x != input.end(); x++){
+        if(!bool(**x)){
+            res.emplace_back(unique_ptr<OptRE2>(new OptRE2(tr2::nullopt)));
+        }else{
+            auto ptr = (**x).value().get();
+            res.emplace_back(unique_ptr<OptRE2>(new OptRE2(tr2::in_place, new RE2(ptr->pattern(), ptr->options()))));
+        }
+    }
+}
+
 SEXP toprotect_vec_optstring_to_charmat(const vector<optstring> &res,
                                         int cap_nums) {
     auto rows = res.size();
@@ -157,12 +169,17 @@ void build_regex_vector(SEXP regexp, vector<OptRE2 *> &ptrv) {
     auto len = Rf_xlength(regexp);
     ptrv.reserve(len);
     for (auto it = 0; it != len; it++) {
-      auto ptr = R_ExternalPtrAddr(VECTOR_ELT(regexp, it));
-      if (ptr == nullptr)
-        stop(INVALID_ERROR_STRING);
-      ptrv.push_back((OptRE2 *)ptr);
+        Shield<SEXP> ptri(VECTOR_ELT(regexp, it));
+        if (TYPEOF(ptri) == EXTPTRSXP){
+            auto ptr = R_ExternalPtrAddr(ptri);
+            if (ptr == nullptr)
+                stop(INVALID_ERROR_STRING);
+            ptrv.push_back((OptRE2 *)ptr);
+        }
+        else {
+            stop("expecting a pre-compiled RE2 object for pattern %d.", it+1);
+        }
     }
-
   } else {
     stop("expecting a pre-compiled RE2 object.");
   }

@@ -137,6 +137,14 @@ XPtr<RE2> cpp_re2_compile(const char* pattern,
 
 SEXP toprotect_optstring_sexp(const optstring& input);
 SEXP toprotect_vec_string_sexp(const vector<string>& input);
+
+SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
+                                         SEXP groups_name);
+
+SEXP toprotect_vec_optstring_to_charmat(const vector<optstring> &res,
+                                        int cap_nums);
+SEXP toprotect_na_charmat(SEXP groups_name, size_t cols);
+
 vector<tr2::optional<string>> as_vec_opt_string(CharacterVector& input);
 vector<string> get_groups_name(RE2* pattern, int cap_nums);
 
@@ -149,9 +157,34 @@ typedef tr2::optional<RE2p> OptRE2;
 
 void build_regex_vector(SEXP regexp, vector<RE2*>& ptrv);
 void build_regex_vector(SEXP regexp, vector<OptRE2*> &ptrv);
+void clone_vec_regex(const vector<OptRE2 *>& input, vector<unique_ptr<OptRE2>>& res );
+
+SEXP cpp_detect(CharacterVector &input, vector<OptRE2 *> &ptrv,
+                RE2::Anchor anchor_type, size_t nrecycle);
+SEXP cpp_detect_parallel(CharacterVector &input, vector<OptRE2 *> &pattern,
+                         RE2::Anchor anchor_type, size_t grain_size,
+                         size_t nrecycle);
 
 inline size_t getUtf8CharSize(char ch) {
     return ((0xE5000000 >> ((ch >> 3) & 0x1E)) & 3) + 1;
+}
+
+inline void bump_count(size_t &coli, size_t &rowi, size_t cols) {
+    coli++;
+    if (coli == cols) {
+        coli = 0;
+        rowi++;
+    }
+}
+
+inline RE2::Anchor get_anchor_type(size_t anchor) {
+    if (anchor == 0) {
+        return RE2::UNANCHORED;
+    } else if (anchor == 1) {
+        return RE2::ANCHOR_START;
+    } else {
+        return RE2::ANCHOR_BOTH;
+    }
 }
 
 #endif
