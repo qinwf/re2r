@@ -41,25 +41,25 @@ struct ExtractP : public Worker {
   void operator()(std::size_t begin, std::size_t end) {
     size_t index = begin;
 
-    std::for_each(output.begin() + begin, output.begin() + end,
-                  [this, &index](tr2::optional<string> &x) {
-                    auto inputi = input[index % input.size()];
-                    auto optptr = tt[index % tt.size()];
-                    index++;
+    for (auto x = output.begin() + begin; x != output.begin() + end; x++) {
+      auto inputi = input[index % input.size()];
+      auto optptr = tt[index % tt.size()];
+      index++;
 
-                    if (!bool(inputi) || !bool(*optptr)) {
-                      x = tr2::nullopt;
-                      return;
-                    }
-                    auto ptr = optptr->value().get();
-                    StringPiece match;
-                    if (!ptr->Match(inputi.value(), 0, inputi.value().length(),
-                                    RE2::UNANCHORED, &match, 1)) {
-                      x = tr2::nullopt;
-                    } else {
-                      x = tr2::make_optional(match.as_string());
-                    }
-                  });
+      if (!bool(inputi) || !bool(*optptr)) {
+        *x = tr2::nullopt;
+        return;
+      }
+      auto ptr = optptr->value().get();
+      StringPiece match;
+      StringPiece inputs(inputi.value());
+      if (!ptr->Match(inputs, 0, inputs.size(),
+                      RE2::UNANCHORED, &match, 1)) {
+        *x = tr2::nullopt;
+      } else {
+        *x = tr2::make_optional(match.as_string());
+      }
+    }
     return;
   }
 };
@@ -76,38 +76,37 @@ struct ExtractAllP : public Worker {
   void operator()(std::size_t begin, std::size_t end) {
     size_t index = begin;
 
-    std::for_each(output.begin() + begin, output.begin() + end,
-                  [this, &index](tr2::optional<vector<string>> &x) {
-                    auto inputi = input[index % input.size()];
-                    auto optptr = tt[index % tt.size()];
-                    index++;
+    for (auto x = output.begin() + begin; x != output.begin() + end; x++) {
+      auto inputi = input[index % input.size()];
+      auto optptr = tt[index % tt.size()];
+      index++;
 
-                    if (!bool(inputi) || !bool(*optptr)) {
-                      x = tr2::nullopt;
-                      return;
-                    }
-                    RE2 *ptr = optptr->value().get();
-                    StringPiece match;
-                    vector<string> res;
+      if (!bool(inputi) || !bool(*optptr)) {
+        *x = tr2::nullopt;
+        return;
+      }
+      RE2 *ptr = optptr->value().get();
+      StringPiece match;
+      vector<string> res;
 
-                    StringPiece str(inputi.value());
-                    size_t lastIndex = 0;
+      StringPiece str(inputi.value());
+      size_t lastIndex = 0;
 
-                    while (ptr->Match(str, lastIndex, inputi.value().length(),
-                                      RE2::UNANCHORED, &match, 1)) {
-                        if(!match.size()){
-                            size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-                            lastIndex += sym_size;
-                            continue;
-                        }
-                      lastIndex = match.data() - str.data() + match.size();
-                      res.push_back(match.as_string());
-                    }
+      while (ptr->Match(str, lastIndex, str.size(),
+                        RE2::UNANCHORED, &match, 1)) {
+        if (!match.size()) {
+          size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+          lastIndex += sym_size;
+          continue;
+        }
+        lastIndex = match.data() - str.data() + match.size();
+        res.push_back(match.as_string());
+      }
 
-                    x = tr2::make_optional(res);
+      *x = tr2::make_optional(res);
 
-                    return;
-                  });
+      return;
+    }
   }
 };
 
@@ -121,8 +120,6 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
   SEXP inputx = input;
 
   if (!parallel || input.size() < grain_size) {
-
-
 
     if (!all) {
 
@@ -141,7 +138,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
         auto ptr = optptr->value().get();
         auto r_char = R_CHAR(rstr);
         StringPiece str(r_char);
-        auto str_size = strlen(r_char);
+        auto str_size = str.size();
         size_t lastIndex = 0;
         if (!ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
           SET_STRING_ELT(x, it, NA_STRING);
@@ -149,7 +146,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
           string mstring = match.as_string();
           SET_STRING_ELT(x, it,
                          Rf_mkCharLenCE(mstring.c_str(),
-                                        strlen(mstring.c_str()), CE_UTF8));
+                                       match.size(), CE_UTF8));
         }
       }
       return x;
@@ -169,16 +166,16 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all, bool parallel,
         auto ptr = optptr->value().get();
         StringPiece match;
         StringPiece str(R_CHAR(rstr));
-        auto str_size = strlen(R_CHAR(rstr));
+        auto str_size = str.size();
         size_t lastIndex = 0;
         vector<string> res;
 
         while (
             ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
-          if(!match.size()){
-              size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-              lastIndex += sym_size;
-              continue;
+          if (!match.size()) {
+            size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+            lastIndex += sym_size;
+            continue;
           }
           lastIndex = match.data() - str.data() + match.size();
           res.push_back(match.as_string());
