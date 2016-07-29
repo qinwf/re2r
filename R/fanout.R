@@ -46,6 +46,7 @@
 #' @export
 get_program_fanout = function(regexp) {
     res = cpp_get_program_fanout(regexp)
+    if (is.null(res)) return (data.frame(index = NA, value= NA))
     return(data.frame(index = as.numeric(names(res)),
                       value = as.numeric(res)))
 }
