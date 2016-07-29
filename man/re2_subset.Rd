@@ -2,15 +2,14 @@
 % Please edit documentation in R/subset.R
 \name{re2_subset}
 \alias{re2_subset}
-\alias{re2_subset<-}
 \title{Keep strings matching a pattern.}
 \usage{
-re2_subset(input, pattern, anchor = 0, parallel = FALSE,
+re2_subset(string, pattern, anchor = 0, omit_na = TRUE, parallel = FALSE,
   grain_size = 1e+05, ...)
-
-re2_subset(input, pattern, anchor = 0, parallel, grain_size, ...) <- value
 }
 \arguments{
+\item{string}{a character vector}
+
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
@@ -20,8 +19,6 @@ re2_subset(input, pattern, anchor = 0, parallel, grain_size, ...) <- value
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
 \item{...}{further arguments passed to or from other methods.}
-
-\item{value}{character vector to be substituted with; replacement function only}
 }
 \value{
 A character vector.

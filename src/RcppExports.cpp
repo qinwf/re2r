@@ -233,3 +233,19 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// cpp_subset
+SEXP cpp_subset(CharacterVector input, SEXP regexp, size_t anchor, bool parallel, size_t grain_size, bool omit_na);
+RcppExport SEXP re2r_cpp_subset(SEXP inputSEXP, SEXP regexpSEXP, SEXP anchorSEXP, SEXP parallelSEXP, SEXP grain_sizeSEXP, SEXP omit_naSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< CharacterVector >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
+    Rcpp::traits::input_parameter< size_t >::type anchor(anchorSEXP);
+    Rcpp::traits::input_parameter< bool >::type parallel(parallelSEXP);
+    Rcpp::traits::input_parameter< size_t >::type grain_size(grain_sizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type omit_na(omit_naSEXP);
+    __result = Rcpp::wrap(cpp_subset(input, regexp, anchor, parallel, grain_size, omit_na));
+    return __result;
+END_RCPP
+}

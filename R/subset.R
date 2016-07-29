@@ -33,7 +33,6 @@
 #' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
 #'
 #' @inheritParams re2_detect
-#' @param value character vector to be substituted with; replacement function only
 #' @return A character vector.
 #' @export
 #' @examples
@@ -46,32 +45,15 @@
 #'
 #' re2_subset(c("a", NA, "b"), ".")
 re2_subset <-
-    function(input,
+    function(string,
              pattern,
              anchor = 0,
+             omit_na = TRUE,
              parallel = FALSE,
              grain_size = 100000,
              ...) {
-        input[re2_detect(input, pattern , anchor, parallel, grain_size, ...)]
-    }
-
-#' @rdname re2_subset
-#' @export
-`re2_subset<-` <-
-    function(input,
-             pattern,
-             anchor = 0,
-             parallel,
-             grain_size,
-             ...,
-             value) {
-        res_bool = re2_detect(input, pattern , anchor, parallel, grain_size, ...)
-        res_bool[is.na(res_bool)] = FALSE
-
-        if (all(!res_bool)) {
-            return(input)
+        if (is.character(pattern) || mode(pattern) == "logical") {
+            pattern = re2(pattern, ...)
         }
-
-        input[res_bool] <- value
-        input
+        cpp_subset(stri_enc_toutf8(string), pattern , anchor, parallel, grain_size, omit_na)
     }

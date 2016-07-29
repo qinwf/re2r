@@ -116,3 +116,7 @@ cpp_split <- function(input, regexp, part, fixed, parallel, grain_size) {
     .Call('re2r_cpp_split', PACKAGE = 're2r', input, regexp, part, fixed, parallel, grain_size)
 }
 
+cpp_subset <- function(input, regexp, anchor, parallel, grain_size, omit_na) {
+    .Call('re2r_cpp_subset', PACKAGE = 're2r', input, regexp, anchor, parallel, grain_size, omit_na)
+}
+
