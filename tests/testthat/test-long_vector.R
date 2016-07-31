@@ -17,12 +17,12 @@ test_that("long vector", {
         #for ( x in 1:100) { print(x);dd <<-re2_pdetect(r300, "x"); if(!all(dd)){break;} }
         r300 = replicate(2 ^ 21, "x")
         expect_true(all(re2_detect(r300, "x")))
-        expect_true(all(re2_pdetect(r300, "x")))
+        expect_true(all(re2_detect(r300, "x", grain_size = 1,parallel = T)))
         rm(r300)
 
         r4500 = c(replicate(2 ^ 31 - 2, "x"),replicate(2 ^ 4, "x"))
         expect_true(all(re2_detect(r4500, "x")))
-        expect_true(all(re2_pdetect(r4500, "x")))
+        expect_true(all(re2_detect(r4500, "x", grain_size = 1,parallel = T)))
         rm(r4500)
     }
 })

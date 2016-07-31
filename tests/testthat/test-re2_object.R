@@ -2,16 +2,16 @@ context("RE2 Object Properties")
 
 test_that("get_named_groups",{
     # no named group
-    expect_identical(get_named_groups(re2("get_named_groups")), character(0))
+    expect_identical(get_named_groups(re2("get_named_groups")), ".match")
 
     # one named group
-    expect_identical(get_named_groups(re2("(?P<sd>sd)(abc)")), c("sd", ".2"))
+    expect_identical(get_named_groups(re2("(?P<sd>sd)(abc)")), c(".match","sd", ".2"))
 
     # two named group with the same name
-    expect_identical(get_named_groups(re2("(?P<sd>sd)(?P<sd>abcd)(abc)")), c("sd", "sd", ".3"))
+    expect_identical(get_named_groups(re2("(?P<sd>sd)(?P<sd>abcd)(abc)")), c(".match","sd", "sd", ".3"))
 
     # two named group with the same name matched result
-    expect_identical(re2_match("sdabcdabc",re2("(?P<sd>sd)(?P<sd>abcd)(abc)")),structure(c("sd", "abcd", "abc"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c("sd", "sd", ".3"))))
+    expect_identical(re2_match("sdabcdabc",re2("(?P<sd>sd)(?P<sd>abcd)(abc)")),structure(c("sdabcdabc","sd", "abcd", "abc"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match","sd", "sd", ".3"))))
 
 }
 )
@@ -46,9 +46,9 @@ test_that("posix syntax",{
 
 test_that("compile special cases",{
     expect_null(re2(NULL))
-    expect_null(re2(NA))
+    expect_true(is_re2c_na(re2(NA)))
     expect_true(is.list(re2(c("as","ab","cs"))))
-    expect_true(is.null(re2(c("as","ab",NA))[[3]]))
+    expect_true(is_re2c_na(re2(c("as","ab",NA))[[3]]))
 })
 
 test_that("mimics PCRE",{

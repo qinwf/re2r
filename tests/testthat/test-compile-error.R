@@ -12,7 +12,10 @@ test_that("compile NA",{
     expect_na(get_expression_size(na_string))
     # NA string pattern return a 0 lenght list
     expect_equal(length(get_options(na_string)),0)
-    expect_null(get_program_fanout(na_string))
+    expect_equal(structure(list(index = NA, value = NA),
+                           .Names = c("index", "value"),
+                           row.names = c(NA, -1L), class = "data.frame"),
+                get_program_fanout(na_string))
 })
 
 test_that("compile errors", {
