@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#ifndef RE2_PROG_H_
+#define RE2_PROG_H_
+
 // Compiled representation of regular expressions.
 // See regexp.h for the Regexp class, which represents a regular
 // expression symbolically.
-
-#ifndef RE2_PROG_H__
-#define RE2_PROG_H__
 
 #include "util/util.h"
 #include "util/sparse_array.h"
@@ -15,38 +15,6 @@
 #include "re2/re2.h"
 
 namespace re2 {
-
-// Simple fixed-size bitmap.
-template<int Bits>
-class Bitmap {
- public:
-  Bitmap() { Reset(); }
-  int Size() { return Bits; }
-
-  void Reset() {
-    for (int i = 0; i < Words; i++)
-      w_[i] = 0;
-  }
-  bool Get(int k) const {
-    return w_[k >> WordLog] & (1<<(k & 31));
-  }
-  void Set(int k) {
-    w_[k >> WordLog] |= 1<<(k & 31);
-  }
-  void Clear(int k) {
-    w_[k >> WordLog] &= ~(1<<(k & 31));
-  }
-  uint32 Word(int i) const {
-    return w_[i];
-  }
-
- private:
-  static const int WordLog = 5;
-  static const int Words = (Bits+31)/32;
-  uint32 w_[Words];
-  DISALLOW_COPY_AND_ASSIGN(Bitmap);
-};
-
 
 // Opcodes for Inst
 enum InstOp {
@@ -291,7 +259,7 @@ class Prog {
   // for testing purposes.  Returns number of states.
   int BuildEntireDFA(MatchKind kind);
 
-  // Compute byte map.
+  // Compute bytemap.
   void ComputeByteMap();
 
   // Computes whether all matches must begin with the same first
@@ -385,22 +353,19 @@ class Prog {
   int bytemap_range_;       // bytemap_[x] < bytemap_range_
   int first_byte_;          // required first byte for match, or -1 if none
   int flags_;               // regexp parse flags
-  int onepass_statesize_;   // byte size of each OneState* node
 
   int list_count_;            // count of lists (see above)
   int inst_count_[kNumInst];  // count of instructions by opcode
 
   Inst* inst_;              // pointer to instruction array
+  uint8* onepass_nodes_;    // data for OnePass nodes
 
   Mutex dfa_mutex_;    // Protects dfa_first_, dfa_longest_
   std::atomic<DFA*> dfa_first_;     // DFA cached for kFirstMatch
   std::atomic<DFA*> dfa_longest_;   // DFA cached for kLongestMatch and kFullMatch
   int64 dfa_mem_;      // Maximum memory for DFAs.
 
-  uint8 bytemap_[256];       // map from input bytes to byte classes
-
-  uint8* onepass_nodes_;     // data for OnePass nodes
-  OneState* onepass_start_;  // start node for OnePass program
+  uint8 bytemap_[256];      // map from input bytes to byte classes
 
   std::once_flag first_byte_once_;
 
@@ -409,4 +374,4 @@ class Prog {
 
 }  // namespace re2
 
-#endif  // RE2_PROG_H__
+#endif  // RE2_PROG_H_

@@ -171,11 +171,11 @@ void Regexp::AddRuneToString(Rune r) {
   runes_[nrunes_++] = r;
 }
 
-// Regexp* Regexp::HaveMatch(int match_id, ParseFlags flags) {
-//   Regexp* re = new Regexp(kRegexpHaveMatch, flags);
-//   re->match_id_ = match_id;
-//   return re;
-// }
+Regexp* Regexp::HaveMatch(int match_id, ParseFlags flags) {
+  Regexp* re = new Regexp(kRegexpHaveMatch, flags);
+  re->match_id_ = match_id;
+  return re;
+}
 
 Regexp* Regexp::Plus(Regexp* sub, ParseFlags flags) {
   if (sub->op() == kRegexpPlus && sub->parse_flags() == flags)
@@ -497,10 +497,10 @@ string RegexpStatus::Text() const {
   return s;
 }
 
-// void RegexpStatus::Copy(const RegexpStatus& status) {
-//   code_ = status.code_;
-//   error_arg_ = status.error_arg_;
-// }
+void RegexpStatus::Copy(const RegexpStatus& status) {
+  code_ = status.code_;
+  error_arg_ = status.error_arg_;
+}
 
 typedef int Ignored;  // Walker<void> doesn't exist
 
@@ -783,15 +783,15 @@ bool CharClassBuilder::FoldsASCII() {
   return ((upper_ ^ lower_) & AlphaMask) == 0;
 }
 
-// CharClassBuilder* CharClassBuilder::Copy() {
-//   CharClassBuilder* cc = new CharClassBuilder;
-//   for (iterator it = begin(); it != end(); ++it)
-//     cc->ranges_.insert(RuneRange(it->lo, it->hi));
-//   cc->upper_ = upper_;
-//   cc->lower_ = lower_;
-//   cc->nrunes_ = nrunes_;
-//   return cc;
-// }
+CharClassBuilder* CharClassBuilder::Copy() {
+  CharClassBuilder* cc = new CharClassBuilder;
+  for (iterator it = begin(); it != end(); ++it)
+    cc->ranges_.insert(RuneRange(it->lo, it->hi));
+  cc->upper_ = upper_;
+  cc->lower_ = lower_;
+  cc->nrunes_ = nrunes_;
+  return cc;
+}
 
 
 

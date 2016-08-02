@@ -114,8 +114,19 @@ class DFA {
     kFlagNeedShift = 16,        // needed kEmpty bits are or'ed in shifted left
   };
 
-#ifndef STL_MSVC
-  // STL function structures for use with unordered_set.
+  struct StateHash {
+    size_t operator()(const State* a) const {
+      if (a == NULL)
+        return 0;
+      const char* s = reinterpret_cast<const char*>(a->inst_);
+      int len = a->ninst_ * sizeof a->inst_[0];
+      if (sizeof(size_t) == sizeof(uint32))
+        return static_cast<size_t>(Hash32StringWithSeed(s, len, a->flag_));
+      else
+        return static_cast<size_t>(Hash64StringWithSeed(s, len, a->flag_));
+    }
+  };
+
   struct StateEqual {
     bool operator()(const State* a, const State* b) const {
       if (a == b)
@@ -132,47 +143,8 @@ class DFA {
       return true;  // they're equal
     }
   };
-#endif  // STL_MSVC
-  struct StateHash {
-    size_t operator()(const State* a) const {
-      if (a == NULL)
-        return 0;
-      const char* s = reinterpret_cast<const char*>(a->inst_);
-      int len = a->ninst_ * sizeof a->inst_[0];
-      if (sizeof(size_t) == sizeof(uint32))
-        return Hash32StringWithSeed(s, len, a->flag_);
-      else
-        return static_cast<size_t>(Hash64StringWithSeed(s, len, a->flag_));
-    }
-#ifdef STL_MSVC
-    // Less than operator.
-    bool operator()(const State* a, const State* b) const {
-      if (a == b)
-        return false;
-      if (a == NULL || b == NULL)
-        return a == NULL;
-      if (a->ninst_ != b->ninst_)
-        return a->ninst_ < b->ninst_;
-      if (a->flag_ != b->flag_)
-        return a->flag_ < b->flag_;
-      for (int i = 0; i < a->ninst_; ++i)
-        if (a->inst_[i] != b->inst_[i])
-          return a->inst_[i] < b->inst_[i];
-      return false;  // they're equal
-    }
-    // The two public members are required by msvc. 4 and 8 are default values.
-    // Reference: http://msdn.microsoft.com/en-us/library/1s1byw77.aspx
-    static const size_t bucket_size = 4;
-    static const size_t min_buckets = 8;
-#endif  // STL_MSVC
-  };
 
-#ifdef STL_MSVC
-  typedef unordered_set<State*, StateHash> StateSet;
-#else  // !STL_MSVC
   typedef unordered_set<State*, StateHash, StateEqual> StateSet;
-#endif  // STL_MSVC
-
 
  private:
   // Special "firstbyte" values for a state.  (Values >= 0 denote actual bytes.)
@@ -645,7 +617,7 @@ DFA::State* DFA::WorkqToCachedState(Workq* q, uint flag) {
             fprintf(stderr, " -> FullMatchState\n");
           return FullMatchState;
         }
-        // Fall through.
+        FALLTHROUGH_INTENDED;
       default:
         // Record iff id is the head of its list, which must
         // be the case if id-1 is the last of *its* list. :)
@@ -726,7 +698,12 @@ DFA::State* DFA::CachedState(int* inst, int ninst, uint flag) {
     mutex_.AssertHeld();
 
   // Look in the cache for a pre-existing state.
-  State state = {inst, ninst, flag};
+  // We have to initialise the struct like this because otherwise
+  // MSVC will complain about the flexible array member. :(
+  State state;
+  state.inst_ = inst;
+  state.ninst_ = ninst;
+  state.flag_ = flag;
   StateSet::iterator it = state_cache_.find(&state);
   if (it != state_cache_.end()) {
     if (DebugDFA)
@@ -770,16 +747,15 @@ DFA::State* DFA::CachedState(int* inst, int ninst, uint flag) {
 
 // Clear the cache.  Must hold cache_mutex_.w or be in destructor.
 void DFA::ClearCache() {
-  // In case state_cache_ doesn't support deleting entries
-  // during iteration, copy into a vector and then delete.
-  vector<State*> v;
-  v.reserve(state_cache_.size());
-  for (StateSet::iterator it = state_cache_.begin();
-       it != state_cache_.end(); ++it)
-    v.push_back(*it);
+  StateSet::iterator begin = state_cache_.begin();
+  StateSet::iterator end = state_cache_.end();
+  while (begin != end) {
+    StateSet::iterator tmp = begin;
+    ++begin;
+    // Deallocate the blob of memory that we allocated in DFA::CachedState().
+    delete[] reinterpret_cast<const char*>(*tmp);
+  }
   state_cache_.clear();
-  for (size_t i = 0; i < v.size(); i++)
-    delete[] reinterpret_cast<const char*>(v[i]);
 }
 
 // Copies insts in state s to the work queue q.
@@ -1716,7 +1692,7 @@ bool DFA::AnalyzeSearchHelper(SearchParams* params, StartInfo* info,
     State* s = RunStateOnByte(info->start, i);
     if (s == NULL) {
       // Synchronize with "quick check" above.
-      info->firstbyte.store(firstbyte, std::memory_order_release);
+      info->firstbyte.store(kFbUnknown, std::memory_order_release);
       return false;
     }
     if (s == info->start)
@@ -1809,15 +1785,19 @@ DFA* Prog::GetDFA(MatchKind kind) {
     return dfa;
 
   // For a forward DFA, half the memory goes to each DFA.
+  // However, if it is a "many match" DFA, then there is
+  // no counterpart with which the memory must be shared.
+  //
   // For a reverse DFA, all the memory goes to the
   // "longest match" DFA, because RE2 never does reverse
   // "first match" searches.
-  int64 m = dfa_mem_/2;
+  int64 m = dfa_mem_;
   if (reversed_) {
-    if (kind == kLongestMatch || kind == kManyMatch)
-      m = dfa_mem_;
-    else
-      m = 0;
+    DCHECK_EQ(kind, kLongestMatch);
+  } else if (kind == kFirstMatch || kind == kLongestMatch) {
+    m /= 2;
+  } else {
+    DCHECK_EQ(kind, kManyMatch);
   }
   dfa = new DFA(this, kind, m);
 
@@ -1907,194 +1887,194 @@ bool Prog::SearchDFA(const StringPiece& text, const StringPiece& const_context,
 }
 
 // Build out all states in DFA.  Returns number of states.
-// int DFA::BuildAllStates() {
-//   if (!ok())
-//     return 0;
+int DFA::BuildAllStates() {
+  if (!ok())
+    return 0;
 
-//   // Pick out start state for unanchored search
-//   // at beginning of text.
-//   RWLocker l(&cache_mutex_);
-//   SearchParams params(NULL, NULL, &l);
-//   params.anchored = false;
-//   if (!AnalyzeSearch(&params) || params.start <= SpecialStateMax)
-//     return 0;
+  // Pick out start state for unanchored search
+  // at beginning of text.
+  RWLocker l(&cache_mutex_);
+  SearchParams params(NULL, NULL, &l);
+  params.anchored = false;
+  if (!AnalyzeSearch(&params) || params.start <= SpecialStateMax)
+    return 0;
 
-//   // Add start state to work queue.
-//   StateSet queued;
-//   vector<State*> q;
-//   queued.insert(params.start);
-//   q.push_back(params.start);
+  // Add start state to work queue.
+  StateSet queued;
+  vector<State*> q;
+  queued.insert(params.start);
+  q.push_back(params.start);
 
-//   // Flood to expand every state.
-//   for (size_t i = 0; i < q.size(); i++) {
-//     State* s = q[i];
-//     for (int c = 0; c < 257; c++) {
-//       State* ns = RunStateOnByteUnlocked(s, c);
-//       if (ns > SpecialStateMax && queued.find(ns) == queued.end()) {
-//         queued.insert(ns);
-//         q.push_back(ns);
-//       }
-//     }
-//   }
+  // Flood to expand every state.
+  for (size_t i = 0; i < q.size(); i++) {
+    State* s = q[i];
+    for (int c = 0; c < 257; c++) {
+      State* ns = RunStateOnByteUnlocked(s, c);
+      if (ns > SpecialStateMax && queued.find(ns) == queued.end()) {
+        queued.insert(ns);
+        q.push_back(ns);
+      }
+    }
+  }
 
-//   return static_cast<int>(q.size());
-// }
+  return static_cast<int>(q.size());
+}
 
 // Build out all states in DFA for kind.  Returns number of states.
-// int Prog::BuildEntireDFA(MatchKind kind) {
-//   //LOG(ERROR) << "BuildEntireDFA is only for testing.";
-//   return GetDFA(kind)->BuildAllStates();
-// }
+int Prog::BuildEntireDFA(MatchKind kind) {
+  //LOG(ERROR) << "BuildEntireDFA is only for testing.";
+  return GetDFA(kind)->BuildAllStates();
+}
 
 // Computes min and max for matching string.
 // Won't return strings bigger than maxlen.
-// bool DFA::PossibleMatchRange(string* min, string* max, int maxlen) {
-//   if (!ok())
-//     return false;
+bool DFA::PossibleMatchRange(string* min, string* max, int maxlen) {
+  if (!ok())
+    return false;
 
-//   // NOTE: if future users of PossibleMatchRange want more precision when
-//   // presented with infinitely repeated elements, consider making this a
-//   // parameter to PossibleMatchRange.
-//   static int kMaxEltRepetitions = 0;
+  // NOTE: if future users of PossibleMatchRange want more precision when
+  // presented with infinitely repeated elements, consider making this a
+  // parameter to PossibleMatchRange.
+  static int kMaxEltRepetitions = 0;
 
-//   // Keep track of the number of times we've visited states previously. We only
-//   // revisit a given state if it's part of a repeated group, so if the value
-//   // portion of the map tuple exceeds kMaxEltRepetitions we bail out and set
-//   // |*max| to |PrefixSuccessor(*max)|.
-//   //
-//   // Also note that previously_visited_states[UnseenStatePtr] will, in the STL
-//   // tradition, implicitly insert a '0' value at first use. We take advantage
-//   // of that property below.
-//   map<State*, int> previously_visited_states;
+  // Keep track of the number of times we've visited states previously. We only
+  // revisit a given state if it's part of a repeated group, so if the value
+  // portion of the map tuple exceeds kMaxEltRepetitions we bail out and set
+  // |*max| to |PrefixSuccessor(*max)|.
+  //
+  // Also note that previously_visited_states[UnseenStatePtr] will, in the STL
+  // tradition, implicitly insert a '0' value at first use. We take advantage
+  // of that property below.
+  map<State*, int> previously_visited_states;
 
-//   // Pick out start state for anchored search at beginning of text.
-//   RWLocker l(&cache_mutex_);
-//   SearchParams params(NULL, NULL, &l);
-//   params.anchored = true;
-//   if (!AnalyzeSearch(&params))
-//     return false;
-//   if (params.start == DeadState) {  // No matching strings
-//     *min = "";
-//     *max = "";
-//     return true;
-//   }
-//   if (params.start == FullMatchState)  // Every string matches: no max
-//     return false;
+  // Pick out start state for anchored search at beginning of text.
+  RWLocker l(&cache_mutex_);
+  SearchParams params(NULL, NULL, &l);
+  params.anchored = true;
+  if (!AnalyzeSearch(&params))
+    return false;
+  if (params.start == DeadState) {  // No matching strings
+    *min = "";
+    *max = "";
+    return true;
+  }
+  if (params.start == FullMatchState)  // Every string matches: no max
+    return false;
 
-//   // The DFA is essentially a big graph rooted at params.start,
-//   // and paths in the graph correspond to accepted strings.
-//   // Each node in the graph has potentially 256+1 arrows
-//   // coming out, one for each byte plus the magic end of
-//   // text character kByteEndText.
+  // The DFA is essentially a big graph rooted at params.start,
+  // and paths in the graph correspond to accepted strings.
+  // Each node in the graph has potentially 256+1 arrows
+  // coming out, one for each byte plus the magic end of
+  // text character kByteEndText.
 
-//   // To find the smallest possible prefix of an accepted
-//   // string, we just walk the graph preferring to follow
-//   // arrows with the lowest bytes possible.  To find the
-//   // largest possible prefix, we follow the largest bytes
-//   // possible.
+  // To find the smallest possible prefix of an accepted
+  // string, we just walk the graph preferring to follow
+  // arrows with the lowest bytes possible.  To find the
+  // largest possible prefix, we follow the largest bytes
+  // possible.
 
-//   // The test for whether there is an arrow from s on byte j is
-//   //    ns = RunStateOnByteUnlocked(s, j);
-//   //    if (ns == NULL)
-//   //      return false;
-//   //    if (ns != DeadState && ns->ninst > 0)
-//   // The RunStateOnByteUnlocked call asks the DFA to build out the graph.
-//   // It returns NULL only if the DFA has run out of memory,
-//   // in which case we can't be sure of anything.
-//   // The second check sees whether there was graph built
-//   // and whether it is interesting graph.  Nodes might have
-//   // ns->ninst == 0 if they exist only to represent the fact
-//   // that a match was found on the previous byte.
+  // The test for whether there is an arrow from s on byte j is
+  //    ns = RunStateOnByteUnlocked(s, j);
+  //    if (ns == NULL)
+  //      return false;
+  //    if (ns != DeadState && ns->ninst > 0)
+  // The RunStateOnByteUnlocked call asks the DFA to build out the graph.
+  // It returns NULL only if the DFA has run out of memory,
+  // in which case we can't be sure of anything.
+  // The second check sees whether there was graph built
+  // and whether it is interesting graph.  Nodes might have
+  // ns->ninst == 0 if they exist only to represent the fact
+  // that a match was found on the previous byte.
 
-//   // Build minimum prefix.
-//   State* s = params.start;
-//   min->clear();
-//   MutexLock lock(&mutex_);
-//   for (int i = 0; i < maxlen; i++) {
-//     if (previously_visited_states[s] > kMaxEltRepetitions) {
-//       VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
-//         << " for state s=" << s << " and min=" << CEscape(*min);
-//       break;
-//     }
-//     previously_visited_states[s]++;
+  // Build minimum prefix.
+  State* s = params.start;
+  min->clear();
+  MutexLock lock(&mutex_);
+  for (int i = 0; i < maxlen; i++) {
+    if (previously_visited_states[s] > kMaxEltRepetitions) {
+      VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
+        << " for state s=" << s << " and min=" << CEscape(*min);
+      break;
+    }
+    previously_visited_states[s]++;
 
-//     // Stop if min is a match.
-//     State* ns = RunStateOnByte(s, kByteEndText);
-//     if (ns == NULL)  // DFA out of memory
-//       return false;
-//     if (ns != DeadState && (ns == FullMatchState || ns->IsMatch()))
-//       break;
+    // Stop if min is a match.
+    State* ns = RunStateOnByte(s, kByteEndText);
+    if (ns == NULL)  // DFA out of memory
+      return false;
+    if (ns != DeadState && (ns == FullMatchState || ns->IsMatch()))
+      break;
 
-//     // Try to extend the string with low bytes.
-//     bool extended = false;
-//     for (int j = 0; j < 256; j++) {
-//       ns = RunStateOnByte(s, j);
-//       if (ns == NULL)  // DFA out of memory
-//         return false;
-//       if (ns == FullMatchState ||
-//           (ns > SpecialStateMax && ns->ninst_ > 0)) {
-//         extended = true;
-//         min->append(1, static_cast<char>(j));
-//         s = ns;
-//         break;
-//       }
-//     }
-//     if (!extended)
-//       break;
-//   }
+    // Try to extend the string with low bytes.
+    bool extended = false;
+    for (int j = 0; j < 256; j++) {
+      ns = RunStateOnByte(s, j);
+      if (ns == NULL)  // DFA out of memory
+        return false;
+      if (ns == FullMatchState ||
+          (ns > SpecialStateMax && ns->ninst_ > 0)) {
+        extended = true;
+        min->append(1, static_cast<char>(j));
+        s = ns;
+        break;
+      }
+    }
+    if (!extended)
+      break;
+  }
 
-//   // Build maximum prefix.
-//   previously_visited_states.clear();
-//   s = params.start;
-//   max->clear();
-//   for (int i = 0; i < maxlen; i++) {
-//     if (previously_visited_states[s] > kMaxEltRepetitions) {
-//       VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
-//         << " for state s=" << s << " and max=" << CEscape(*max);
-//       break;
-//     }
-//     previously_visited_states[s] += 1;
+  // Build maximum prefix.
+  previously_visited_states.clear();
+  s = params.start;
+  max->clear();
+  for (int i = 0; i < maxlen; i++) {
+    if (previously_visited_states[s] > kMaxEltRepetitions) {
+      VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
+        << " for state s=" << s << " and max=" << CEscape(*max);
+      break;
+    }
+    previously_visited_states[s] += 1;
 
-//     // Try to extend the string with high bytes.
-//     bool extended = false;
-//     for (int j = 255; j >= 0; j--) {
-//       State* ns = RunStateOnByte(s, j);
-//       if (ns == NULL)
-//         return false;
-//       if (ns == FullMatchState ||
-//           (ns > SpecialStateMax && ns->ninst_ > 0)) {
-//         extended = true;
-//         max->append(1, static_cast<char>(j));
-//         s = ns;
-//         break;
-//       }
-//     }
-//     if (!extended) {
-//       // Done, no need for PrefixSuccessor.
-//       return true;
-//     }
-//   }
+    // Try to extend the string with high bytes.
+    bool extended = false;
+    for (int j = 255; j >= 0; j--) {
+      State* ns = RunStateOnByte(s, j);
+      if (ns == NULL)
+        return false;
+      if (ns == FullMatchState ||
+          (ns > SpecialStateMax && ns->ninst_ > 0)) {
+        extended = true;
+        max->append(1, static_cast<char>(j));
+        s = ns;
+        break;
+      }
+    }
+    if (!extended) {
+      // Done, no need for PrefixSuccessor.
+      return true;
+    }
+  }
 
-//   // Stopped while still adding to *max - round aaaaaaaaaa... to aaaa...b
-//   *max = PrefixSuccessor(*max);
+  // Stopped while still adding to *max - round aaaaaaaaaa... to aaaa...b
+  *max = PrefixSuccessor(*max);
 
-//   // If there are no bytes left, we have no way to say "there is no maximum
-//   // string".  We could make the interface more complicated and be able to
-//   // return "there is no maximum but here is a minimum", but that seems like
-//   // overkill -- the most common no-max case is all possible strings, so not
-//   // telling the caller that the empty string is the minimum match isn't a
-//   // great loss.
-//   if (max->empty())
-//     return false;
+  // If there are no bytes left, we have no way to say "there is no maximum
+  // string".  We could make the interface more complicated and be able to
+  // return "there is no maximum but here is a minimum", but that seems like
+  // overkill -- the most common no-max case is all possible strings, so not
+  // telling the caller that the empty string is the minimum match isn't a
+  // great loss.
+  if (max->empty())
+    return false;
 
-//   return true;
-// }
+  return true;
+}
 
 // PossibleMatchRange for a Prog.
-// bool Prog::PossibleMatchRange(string* min, string* max, int maxlen) {
-//   // Have to use dfa_longest_ to get all strings for full matches.
-//   // For example, (a|aa) never matches aa in first-match mode.
-//   return GetDFA(kLongestMatch)->PossibleMatchRange(min, max, maxlen);
-// }
+bool Prog::PossibleMatchRange(string* min, string* max, int maxlen) {
+  // Have to use dfa_longest_ to get all strings for full matches.
+  // For example, (a|aa) never matches aa in first-match mode.
+  return GetDFA(kLongestMatch)->PossibleMatchRange(min, max, maxlen);
+}
 
 }  // namespace re2

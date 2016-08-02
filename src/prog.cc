@@ -6,6 +6,7 @@
 // Tested by compile_test.cc
 
 #include "util/util.h"
+#include "util/bitmap.h"
 #include "re2/prog.h"
 #include "re2/stringpiece.h"
 
@@ -55,39 +56,39 @@ void Prog::Inst::InitFail() {
   set_opcode(kInstFail);
 }
 
-// string Prog::Inst::Dump() {
-//   switch (opcode()) {
-//     default:
-//       return StringPrintf("opcode %d", static_cast<int>(opcode()));
+string Prog::Inst::Dump() {
+  switch (opcode()) {
+    default:
+      return StringPrintf("opcode %d", static_cast<int>(opcode()));
 
-//     case kInstAlt:
-//       return StringPrintf("alt -> %d | %d", out(), out1_);
+    case kInstAlt:
+      return StringPrintf("alt -> %d | %d", out(), out1_);
 
-//     case kInstAltMatch:
-//       return StringPrintf("altmatch -> %d | %d", out(), out1_);
+    case kInstAltMatch:
+      return StringPrintf("altmatch -> %d | %d", out(), out1_);
 
-//     case kInstByteRange:
-//       return StringPrintf("byte%s [%02x-%02x] -> %d",
-//                           foldcase_ ? "/i" : "",
-//                           lo_, hi_, out());
+    case kInstByteRange:
+      return StringPrintf("byte%s [%02x-%02x] -> %d",
+                          foldcase_ ? "/i" : "",
+                          lo_, hi_, out());
 
-//     case kInstCapture:
-//       return StringPrintf("capture %d -> %d", cap_, out());
+    case kInstCapture:
+      return StringPrintf("capture %d -> %d", cap_, out());
 
-//     case kInstEmptyWidth:
-//       return StringPrintf("emptywidth %#x -> %d",
-//                           static_cast<int>(empty_), out());
+    case kInstEmptyWidth:
+      return StringPrintf("emptywidth %#x -> %d",
+                          static_cast<int>(empty_), out());
 
-//     case kInstMatch:
-//       return StringPrintf("match! %d", match_id());
+    case kInstMatch:
+      return StringPrintf("match! %d", match_id());
 
-//     case kInstNop:
-//       return StringPrintf("nop -> %d", out());
+    case kInstNop:
+      return StringPrintf("nop -> %d", out());
 
-//     case kInstFail:
-//       return StringPrintf("fail");
-//   }
-// }
+    case kInstFail:
+      return StringPrintf("fail");
+  }
+}
 
 Prog::Prog()
   : anchor_start_(false),
@@ -101,13 +102,12 @@ Prog::Prog()
     bytemap_range_(0),
     first_byte_(-1),
     flags_(0),
-    onepass_statesize_(0),
+    list_count_(0),
     inst_(NULL),
+    onepass_nodes_(NULL),
     dfa_first_(NULL),
     dfa_longest_(NULL),
-    dfa_mem_(0),
-    onepass_nodes_(NULL),
-    onepass_start_(NULL) {
+    dfa_mem_(0) {
 }
 
 Prog::~Prog() {
@@ -124,61 +124,61 @@ static inline void AddToQueue(Workq* q, int id) {
     q->insert(id);
 }
 
-// static string ProgToString(Prog* prog, Workq* q) {
-//   string s;
-//   for (Workq::iterator i = q->begin(); i != q->end(); ++i) {
-//     int id = *i;
-//     Prog::Inst* ip = prog->inst(id);
-//     StringAppendF(&s, "%d. %s\n", id, ip->Dump().c_str());
-//     AddToQueue(q, ip->out());
-//     if (ip->opcode() == kInstAlt || ip->opcode() == kInstAltMatch)
-//       AddToQueue(q, ip->out1());
-//   }
-//   return s;
-// }
+static string ProgToString(Prog* prog, Workq* q) {
+  string s;
+  for (Workq::iterator i = q->begin(); i != q->end(); ++i) {
+    int id = *i;
+    Prog::Inst* ip = prog->inst(id);
+    StringAppendF(&s, "%d. %s\n", id, ip->Dump().c_str());
+    AddToQueue(q, ip->out());
+    if (ip->opcode() == kInstAlt || ip->opcode() == kInstAltMatch)
+      AddToQueue(q, ip->out1());
+  }
+  return s;
+}
 
-// static string FlattenedProgToString(Prog* prog, int start) {
-//   string s;
-//   for (int id = start; id < prog->size(); id++) {
-//     Prog::Inst* ip = prog->inst(id);
-//     if (ip->last())
-//       StringAppendF(&s, "%d. %s\n", id, ip->Dump().c_str());
-//     else
-//       StringAppendF(&s, "%d+ %s\n", id, ip->Dump().c_str());
-//   }
-//   return s;
-// }
+static string FlattenedProgToString(Prog* prog, int start) {
+  string s;
+  for (int id = start; id < prog->size(); id++) {
+    Prog::Inst* ip = prog->inst(id);
+    if (ip->last())
+      StringAppendF(&s, "%d. %s\n", id, ip->Dump().c_str());
+    else
+      StringAppendF(&s, "%d+ %s\n", id, ip->Dump().c_str());
+  }
+  return s;
+}
 
-// string Prog::Dump() {
-//   if (did_flatten_)
-//     return FlattenedProgToString(this, start_);
+string Prog::Dump() {
+  if (did_flatten_)
+    return FlattenedProgToString(this, start_);
 
-//   Workq q(size_);
-//   AddToQueue(&q, start_);
-//   return ProgToString(this, &q);
-// }
+  Workq q(size_);
+  AddToQueue(&q, start_);
+  return ProgToString(this, &q);
+}
 
-// string Prog::DumpUnanchored() {
-//   if (did_flatten_)
-//     return FlattenedProgToString(this, start_unanchored_);
+string Prog::DumpUnanchored() {
+  if (did_flatten_)
+    return FlattenedProgToString(this, start_unanchored_);
 
-//   Workq q(size_);
-//   AddToQueue(&q, start_unanchored_);
-//   return ProgToString(this, &q);
-// }
+  Workq q(size_);
+  AddToQueue(&q, start_unanchored_);
+  return ProgToString(this, &q);
+}
 
-// string Prog::DumpByteMap() {
-//   string map;
-//   for (int c = 0; c < 256; c++) {
-//     int b = bytemap_[c];
-//     int lo = c;
-//     while (c < 256-1 && bytemap_[c+1] == b)
-//       c++;
-//     int hi = c;
-//     StringAppendF(&map, "[%02x-%02x] -> %d\n", lo, hi, b);
-//   }
-//   return map;
-// }
+string Prog::DumpByteMap() {
+  string map;
+  for (int c = 0; c < 256; c++) {
+    int b = bytemap_[c];
+    int lo = c;
+    while (c < 256-1 && bytemap_[c+1] == b)
+      c++;
+    int hi = c;
+    StringAppendF(&map, "[%02x-%02x] -> %d\n", lo, hi, b);
+  }
+  return map;
+}
 
 int Prog::first_byte() {
   std::call_once(first_byte_once_, [this]() {
@@ -313,70 +313,197 @@ uint32 Prog::EmptyFlags(const StringPiece& text, const char* p) {
   return flags;
 }
 
-void Prog::ComputeByteMap() {
-  // Fill in byte map with byte classes for the program.
-  // Ranges of bytes that are treated indistinguishably
-  // are mapped to a single byte class.
-  Bitmap<256> v;
+// ByteMapBuilder implements a coloring algorithm.
+//
+// The first phase is a series of "mark and merge" batches: we mark one or more
+// [lo-hi] ranges, then merge them into our internal state. Batching is not for
+// performance; rather, it means that the ranges are treated indistinguishably.
+//
+// Internally, the ranges are represented using a bitmap that stores the splits
+// and a vector that stores the colors; both of them are indexed by the ranges'
+// last bytes. Thus, in order to merge a [lo-hi] range, we split at lo-1 and at
+// hi (if not already split), then recolor each range in between. The color map
+// (i.e. from the old color to the new color) is maintained for the lifetime of
+// the batch and so underpins this somewhat obscure approach to set operations.
+//
+// The second phase builds the bytemap from our internal state: we recolor each
+// range, then store the new color (which is now the byte class) in each of the
+// corresponding array elements. Finally, we output the number of byte classes.
+class ByteMapBuilder {
+ public:
+  ByteMapBuilder() {
+    // Initial state: the [0-255] range has color 256.
+    // This will avoid problems during the second phase,
+    // in which we assign byte classes numbered from 0.
+    splits_.Set(255);
+    colors_.resize(256);
+    colors_[255] = 256;
+    nextcolor_ = 257;
+  }
 
+  void Mark(int lo, int hi);
+  void Merge();
+  void Build(uint8* bytemap, int* bytemap_range);
+
+ private:
+  int Recolor(int oldcolor);
+
+  Bitmap256 splits_;
+  vector<int> colors_;
+  int nextcolor_;
+  vector<pair<int, int>> colormap_;
+  vector<pair<int, int>> ranges_;
+
+  DISALLOW_COPY_AND_ASSIGN(ByteMapBuilder);
+};
+
+void ByteMapBuilder::Mark(int lo, int hi) {
+  DCHECK_GE(lo, 0);
+  DCHECK_GE(hi, 0);
+  DCHECK_LE(lo, 255);
+  DCHECK_LE(hi, 255);
+  DCHECK_LE(lo, hi);
+
+  // Ignore any [0-255] ranges. They cause us to recolor every range, which
+  // has no effect on the eventual result and is therefore a waste of time.
+  if (lo == 0 && hi == 255)
+    return;
+
+  ranges_.emplace_back(lo, hi);
+}
+
+void ByteMapBuilder::Merge() {
+  for (vector<pair<int, int>>::const_iterator it = ranges_.begin();
+       it != ranges_.end();
+       ++it) {
+    int lo = it->first-1;
+    int hi = it->second;
+
+    if (0 <= lo && !splits_.Test(lo)) {
+      splits_.Set(lo);
+      int next = splits_.FindNextSetBit(lo+1);
+      colors_[lo] = colors_[next];
+    }
+    if (!splits_.Test(hi)) {
+      splits_.Set(hi);
+      int next = splits_.FindNextSetBit(hi+1);
+      colors_[hi] = colors_[next];
+    }
+
+    int c = lo+1;
+    while (c < 256) {
+      int next = splits_.FindNextSetBit(c);
+      colors_[next] = Recolor(colors_[next]);
+      if (next == hi)
+        break;
+      c = next+1;
+    }
+  }
+  colormap_.clear();
+  ranges_.clear();
+}
+
+void ByteMapBuilder::Build(uint8* bytemap, int* bytemap_range) {
+  // Assign byte classes numbered from 0.
+  nextcolor_ = 0;
+
+  int c = 0;
+  while (c < 256) {
+    int next = splits_.FindNextSetBit(c);
+    uint8 b = static_cast<uint8>(Recolor(colors_[next]));
+    while (c <= next) {
+      bytemap[c] = b;
+      c++;
+    }
+  }
+
+  *bytemap_range = nextcolor_;
+}
+
+int ByteMapBuilder::Recolor(int oldcolor) {
+  // Yes, this is a linear search. There can be at most 256
+  // colors and there will typically be far fewer than that.
+  // Also, we need to consider keys *and* values in order to
+  // avoid recoloring a given range more than once per batch.
+  vector<pair<int, int>>::const_iterator it =
+      std::find_if(colormap_.begin(), colormap_.end(),
+                   [&](const pair<int, int>& kv) -> bool {
+                     return kv.first == oldcolor || kv.second == oldcolor;
+                   });
+  if (it != colormap_.end())
+    return it->second;
+  int newcolor = nextcolor_;
+  nextcolor_++;
+  colormap_.emplace_back(oldcolor, newcolor);
+  return newcolor;
+}
+
+void Prog::ComputeByteMap() {
+  // Fill in bytemap with byte classes for the program.
+  // Ranges of bytes that are treated indistinguishably
+  // will be mapped to a single byte class.
+  ByteMapBuilder builder;
+
+  // Don't repeat the work for ^ and $.
+  bool marked_line_boundaries = false;
   // Don't repeat the work for \b and \B.
-  bool done_word_boundaries = false;
+  bool marked_word_boundaries = false;
 
   for (int id = 0; id < static_cast<int>(size()); id++) {
     Inst* ip = inst(id);
     if (ip->opcode() == kInstByteRange) {
       int lo = ip->lo();
       int hi = ip->hi();
-      if (0 < lo)
-        v.Set(lo - 1);
-      v.Set(hi);
+      builder.Mark(lo, hi);
       if (ip->foldcase() && lo <= 'z' && hi >= 'a') {
-        if (lo < 'a')
-          lo = 'a';
-        if (hi > 'z')
-          hi = 'z';
-        if (lo <= hi) {
-          v.Set(lo + 'A' - 'a' - 1);
-          v.Set(hi + 'A' - 'a');
-        }
+        int foldlo = lo;
+        int foldhi = hi;
+        if (foldlo < 'a')
+          foldlo = 'a';
+        if (foldhi > 'z')
+          foldhi = 'z';
+        if (foldlo <= foldhi)
+          builder.Mark(foldlo + 'A' - 'a', foldhi + 'A' - 'a');
       }
+      // If this Inst is not the last Inst in its list AND the next Inst is
+      // also a ByteRange AND the Insts have the same out, defer the merge.
+      if (!ip->last() &&
+          inst(id+1)->opcode() == kInstByteRange &&
+          ip->out() == inst(id+1)->out())
+        continue;
+      builder.Merge();
     } else if (ip->opcode() == kInstEmptyWidth) {
-      if (ip->empty() & (kEmptyBeginLine|kEmptyEndLine)) {
-        v.Set('\n' - 1);
-        v.Set('\n');
+      if (ip->empty() & (kEmptyBeginLine|kEmptyEndLine) &&
+          !marked_line_boundaries) {
+        builder.Mark('\n', '\n');
+        builder.Merge();
+        marked_line_boundaries = true;
       }
-      if (ip->empty() & (kEmptyWordBoundary|kEmptyNonWordBoundary)) {
-        if (done_word_boundaries)
-          continue;
-        int j;
-        for (int i = 0; i < 256; i = j) {
-          for (j = i + 1; j < 256 &&
-                          Prog::IsWordChar(static_cast<uint8>(i)) ==
-                              Prog::IsWordChar(static_cast<uint8>(j));
-               j++)
-            ;
-          if (0 < i)
-            v.Set(i - 1);
-          v.Set(j - 1);
+      if (ip->empty() & (kEmptyWordBoundary|kEmptyNonWordBoundary) &&
+          !marked_word_boundaries) {
+        // We require two batches here: the first for ranges that are word
+        // characters, the second for ranges that are not word characters.
+        for (bool isword : {true, false}) {
+          int j;
+          for (int i = 0; i < 256; i = j) {
+            for (j = i + 1; j < 256 &&
+                            Prog::IsWordChar(static_cast<uint8>(i)) ==
+                                Prog::IsWordChar(static_cast<uint8>(j));
+                 j++)
+              ;
+            if (Prog::IsWordChar(static_cast<uint8>(i)) == isword)
+              builder.Mark(i, j - 1);
+          }
+          builder.Merge();
         }
-        done_word_boundaries = true;
+        marked_word_boundaries = true;
       }
     }
   }
 
-  COMPILE_ASSERT(8*sizeof(v.Word(0)) == 32, wordsize);
-  uint8 n = 0;
-  uint32 bits = 0;
-  for (int i = 0; i < 256; i++) {
-    if ((i & 31) == 0)
-      bits = v.Word(i >> 5);
-    bytemap_[i] = n;
-    n += bits & 1;
-    bits >>= 1;
-  }
-  bytemap_range_ = bytemap_[255] + 1;
+  builder.Build(bytemap_, &bytemap_range_);
 
-  if (0) {  // For debugging: use trivial byte map.
+  if (0) {  // For debugging: use trivial bytemap.
     for (int i = 0; i < 256; i++)
       bytemap_[i] = static_cast<uint8>(i);
     bytemap_range_ = 256;
@@ -536,7 +663,7 @@ void Prog::EmitList(int root, SparseArray<int>* rootmap, vector<Inst>* flat,
         flat->back().set_opcode(kInstAltMatch);
         flat->back().set_out(static_cast<int>(flat->size()));
         flat->back().out1_ = static_cast<uint32>(flat->size())+1;
-        // Fall through.
+        FALLTHROUGH_INTENDED;
 
       case kInstAlt:
         stk->push_back(ip->out1());
