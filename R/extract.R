@@ -37,6 +37,7 @@
 #' @param pattern a pre-compiled regular expression or a string
 #' @param input a character vector
 #' @param parallel use multithread
+#' @param anchor UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.
 #' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
 #' @param ... further arguments passed to or from other methods.
 #' @examples
@@ -44,24 +45,26 @@
 #' @export
 re2_extract = function(input,
                        pattern,
+                       anchor = UNANCHORED,
                        parallel = FALSE,
                        grain_size = 100000,
                        ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, FALSE, FALSE, 1)
+    cpp_extract(stri_enc_toutf8(input), pattern, all = FALSE, anchor = anchor,  FALSE, 1)
 }
 
 #' @rdname re2_extract
 #' @export
 re2_extract_all = function(input,
                            pattern,
+                           anchor = UNANCHORED,
                            parallel = FALSE,
                            grain_size = 100000,
                            ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
-    cpp_extract(stri_enc_toutf8(input), pattern, TRUE, FALSE, 1)
+    cpp_extract(stri_enc_toutf8(input), pattern, all= TRUE, anchor = anchor, FALSE, 1)
 }

@@ -47,8 +47,58 @@ test_that("extract all",{
         }
     }
 
-    tt(c("baz", "barxbar_sbar bar",NA),c("bar"), list(character(), c("bar", "bar", "bar", "bar"), character()))
+    tt(c("baz", "barxbar_sbar bar",NA),c("bar"), list(character(), c("bar", "bar", "bar", "bar"), NA_character_))
 
-    expect_warning(tt(c("baz", "barxbar_sbar bar",NA),c("bar","ba"), list(character(), c("ba", "ba", "ba", "ba"), character()), parallel_rep = FALSE))
+    expect_warning(tt(c("baz", "barxbar_sbar bar",NA),c("bar","ba"), list(character(), c("ba", "ba", "ba", "ba"), NA_character_), parallel_rep = FALSE))
 
+})
+
+test_that("stringi tests",{
+    expect_identical(re2_extract_all(character(0), "test"), list())
+    # not working
+    # expect_identical(re2_extract_all("test", character(0)), list())
+    # expect_identical(re2_extract_all(character(0), character(0)), list())
+    expect_identical(re2_extract_all(NA, "test"), list(NA_character_))
+    expect_identical(re2_extract_all("test", NA), list(NA_character_))
+
+    # differences
+    suppressWarnings(expect_identical(re2_extract_all("test", ""), list(c("", "", "", "", ""))))
+    expect_identical(re2_extract_all(c("bacab", "bacaba\u0105a", "aa"), "a.a"),
+                     list("aca", c("aca", "a\u0105a"), character(0)))
+    expect_identical(re2_extract_all("", " "), list(character(0)))
+
+    expect_identical(re2_extract_all(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+                     list(c("", "\u0106", "", ""), c("", "", ""))) # match of zero length
+
+    expect_identical(re2_extract_all("", "^.*$"), list(""))
+
+    expect_identical(re2_extract_all("test", " "), list(character(0)))
+
+    expect_identical(re2_extract_all(c("ab_c", "d_ef_g", "h", ""), "\\p{L}+"),
+                     list(c("ab", "c"), c("d", "ef", "g"), "h", character(0)))
+
+
+    ## extract
+    expect_identical(re2_extract(character(0), "test"), character(0))
+
+    # not working
+    # expect_identical(re2_extract("test", character(0)), character(0))
+    # expect_identical(re2_extract(character(0), character(0)), character(0))
+
+    expect_identical(re2_extract(NA, "test"), NA_character_)
+    expect_identical(re2_extract("test", NA), NA_character_)
+
+    # diferences
+    # suppressWarnings(expect_identical(re2_extract("test", ""), NA_character_))
+    expect_identical(re2_extract("\U00f0ffffb\u0105deb!d", "b.d"), "b\u0105d")
+
+    expect_identical(re2_extract("\U00f0ffffb\u0105deb!d", re2("B.D",case_sensitive = F)), "b\u0105d")
+
+    expect_identical(re2_extract(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+                     c("", "")) # match of zero length
+
+    expect_identical(re2_extract(c("ababab", NA, "ab", "ba"), "ab"),
+                     c("ab", NA, "ab", NA))
+
+    expect_identical(re2_extract(c("", " "), "^.*$"), c("", " "))
 })

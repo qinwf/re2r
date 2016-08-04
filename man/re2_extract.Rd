@@ -5,14 +5,18 @@
 \alias{re2_extract_all}
 \title{Extract a pattern in strings.}
 \usage{
-re2_extract(input, pattern, parallel = FALSE, grain_size = 1e+05, ...)
+re2_extract(input, pattern, anchor = UNANCHORED, parallel = FALSE,
+  grain_size = 1e+05, ...)
 
-re2_extract_all(input, pattern, parallel = FALSE, grain_size = 1e+05, ...)
+re2_extract_all(input, pattern, anchor = UNANCHORED, parallel = FALSE,
+  grain_size = 1e+05, ...)
 }
 \arguments{
 \item{input}{a character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
+
+\item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
 
 \item{parallel}{use multithread}
 
