@@ -203,9 +203,6 @@ SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
     for (int pn = 0; pn != cap_nums; pn++)
       piece_ptr[pn].clear();
 
-    for (int pn = 0; pn != cap_nums; pn++)
-      piece_ptr[pn].clear();
-
     fill_match_not_all(cap_nums, piece_ptr, res, rowi, coli, rows, cols,
                        pattern->Match(r_char, 0, strlen(r_char), anchor_type,
                                       piece_ptr, cap_nums));
@@ -360,17 +357,17 @@ SEXP cpp_match_all(CharacterVector &input, RE2 *pattern,
 
     while (pattern->Match(todo_str, lastIndex, str_size, anchor_type, piece_ptr,
                           cap_nums)) {
+      fill_match_all(cap_nums, piece_ptr, optinner);
+
       if (!piece_ptr[0].size()) {
         size_t sym_size = getUtf8CharSize(todo_str.data()[lastIndex]);
         lastIndex += sym_size;
-        continue;
+      }else{
+          auto piece_ptr_data = piece_ptr[0];
+          lastIndex =
+              piece_ptr_data.data() - todo_str.data() + piece_ptr_data.size();
       }
 
-      fill_match_all(cap_nums, piece_ptr, optinner);
-
-      auto piece_ptr_data = piece_ptr[0];
-      lastIndex =
-          piece_ptr_data.data() - todo_str.data() + piece_ptr_data.size();
       for (int pn = 0; pn != cap_nums; pn++)
         piece_ptr[pn].clear();
 
@@ -415,17 +412,16 @@ struct MatValue : public Worker {
 
       while (tt.Match(todo_str, lastIndex, str_size, anchor_type, piece_ptr,
                       cap_nums)) {
+        fill_match_all(cap_nums, piece_ptr, optinner);
+
         if (!piece_ptr[0].size()) {
           size_t sym_size = getUtf8CharSize(todo_str.data()[lastIndex]);
           lastIndex += sym_size;
-          continue;
+        }else{
+          auto piece_ptr_data = piece_ptr[0];
+          lastIndex = piece_ptr_data.data() - todo_str.data() + piece_ptr_data.size();
         }
 
-        fill_match_all(cap_nums, piece_ptr, optinner);
-
-        auto piece_ptr_data = piece_ptr[0];
-        lastIndex =
-            piece_ptr_data.data() - todo_str.data() + piece_ptr_data.size();
         for (int pn = 0; pn != cap_nums; pn++)
           piece_ptr[pn].clear();
 
@@ -516,8 +512,13 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
     }
 
     if (!bool(*optpattern)) {
+
       if (all) {
-        return (List::create(R_NilValue));
+          List res(input.size());
+          CharacterMatrix resi(1,1);
+          resi(0,0) = NA_STRING;
+          std::fill(res.begin(), res.end(), resi);
+        return res;
       } else {
         CharacterMatrix res(input.size(), 1);
         colnames(res) = CharacterVector::create(".match");

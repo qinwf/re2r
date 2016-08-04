@@ -114,8 +114,12 @@ test_that("check match group 1", {
             .Dimnames = list(NULL, c(".match", "testname", ".2"))
         )
     )
-
     tt(str, "(?P<testname>this)( is)", res)
+
+    res = list(structure(c("", "\u0106", "", ""), .Dim = c(4L, 1L), .Dimnames = list(
+        NULL, ".match")), structure(c("", "", ""), .Dim = c(3L, 1L
+        ), .Dimnames = list(NULL, ".match")))
+    tt(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*", res)
 
     res = list(
         structure(
@@ -384,7 +388,7 @@ test_that("big group", {
     bigregex = re2(big)
     expect_true(re2_detect(bigchar, bigregex))
     bigres = re2_match(bigchar, bigregex)
-    expect_true(unique(re2_match(bigchar, bigregex)[1,2:1000]) == "a")
+    expect_warning(expect_true(unique(re2_match(bigchar, bigregex)[1,2:1000]) == "a"))
 })
 
 library(stringi)
@@ -429,5 +433,67 @@ test_that("match NA", {
                          parallel = T,
                          grain_size = 1
                      ))
+
+})
+
+test_that("Stringi test",{
+    expect_equivalent(re2_match_all(NA, "test"), list(matrix(NA_character_,1,1)))
+    expect_equivalent(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
+
+    expect_equivalent(re2_match_all("abcd", "^(:)?([^:]*)(:)?$")[[1]],
+                     matrix(c("abcd", NA, "abcd", NA) ,1,4))
+
+    expect_equivalent(re2_match_all("abcd", "^(:)?([^:]*)(:)?$")[[1]],
+                     matrix(c("abcd", NA, "abcd", NA) ,1,4))
+
+    expect_equivalent(re2_match_all(":abcd", "^(:)?([^:]*)(:)?$")[[1]],
+                     matrix(c(":abcd", ":", "abcd", NA) ,1,4))
+
+    expect_equivalent(re2_match_all(c("", " "), "^.*$"), list(matrix(c("")), matrix(c(" "))))
+    expect_equivalent(re2_match_all(c("", " "), "^(.*)$"), list(matrix(c("",""),ncol=2), matrix(c(" ", " "),ncol=2)))
+
+    expect_equivalent(re2_match_all(NA, "(test)(rest)"), list(matrix(NA_character_,1,3)))
+    expect_equivalent(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
+    expect_equivalent(re2_match_all("test", NA), list(matrix(NA_character_,1,1)))
+    # suppressWarnings(expect_identical(re2_match_all("test", ""), list(matrix(NA_character_,1,1))))
+
+    expect_equivalent(re2_match_all(c("bacab", "bacaba\u0105a", "aa"), "a.a"),
+                      list(structure("aca", .Dim = c(1L, 1L), .Dimnames = list(NULL, ".match")),
+                           structure(c("aca", "aąa"), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".match")),
+                           structure(character(0), .Dim = 0:1, .Dimnames = list(NULL, ".match"))))
+    res = list(
+        structure(c("a=b", "c=d", "a", "c", "b", "d"), .Dim = 2:3, .Dimnames = list(NULL, c(".match", ".1", ".2"))),
+        structure(character(0), .Dim = c(0L,3L), .Dimnames = list(NULL, c(".match", ".1", ".2"))),
+        structure(c("e=f", "e", "f"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c(".match", ".1", ".2"))))
+    expect_equivalent(re2_match_all(c("a=b;c=d", "", "e=f"), "([a-z])=([a-z])"), res)
+
+    expect_equivalent(re2_match_all(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+                      list(matrix(ncol=1, c("", "\u0106", "", "")), matrix(ncol=1, c("", "", "")))) # match of zero length
+
+
+    # re2_match
+
+    expect_equivalent(re2_match(NA, "test"), matrix(NA_character_,1,1))
+    expect_equivalent(re2_match("", "(test)(rest)"), matrix(NA_character_,1,3))
+
+    expect_equivalent(re2_match("abcd", "^(:)?([^:]*)(:)?$"),
+                     matrix(c("abcd", NA, "abcd", NA) ,1,4))
+
+    expect_equivalent(re2_match(c("", " "), "^.*$"), matrix(c("", " "),nrow=2))
+    expect_equivalent(re2_match(c("", " "), "^(.*)$"), matrix(c("", " "),nrow=2,ncol=2))
+
+    expect_equivalent(re2_match(":abcd", "^(:)?([^:]*)(:)?$"),
+                     matrix(c(":abcd", ":", "abcd", NA) ,1,4))
+
+    expect_equivalent(re2_match("test", NA), matrix(NA_character_,1,1))
+    # suppressWarnings(expect_equivalent(re2_match("test", ""), matrix(NA_character_,1,1)))
+    expect_equivalent(re2_match(c("bacab", "ba\u0105aacaba\u0105a", "aa"), "a.a"),
+                      matrix(c("aca", "a\u0105a", NA_character_), 3, 1))
+    expect_equivalent(re2_match(c("a=b;c=d", "", "e=f"), "([a-z])=([a-z])"),
+                      matrix(c("a=b", NA, "e=f", "a", NA, "e", "b", NA, "f"), 3, 3))
+
+
+    expect_equivalent(re2_match(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+                     matrix(ncol=1, c("", ""))) # match of zero length
 
 })
