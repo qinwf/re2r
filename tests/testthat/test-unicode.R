@@ -7,13 +7,13 @@ test_that("unicode match with native string",{
     letters <- stri_c(stri_enc_fromutf32(list(174L,	173L,182L,190L)), collapse = "")
     x <- stri_encode(letters,"UTF-8","")
     expect_true(re2_detect(x,letters))
-    expect_true(re2_pdetect(x,letters))
+    expect_true(re2_detect(x,letters, parallel = T, grain_size = 1))
 })
 
 test_that("unicode match",{
 
     expect_identical(re2_detect(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"), c(TRUE,TRUE))
-    expect_identical(re2_pdetect(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"), c(TRUE,TRUE))
+    expect_identical(re2_detect(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*", parallel = T, grain_size = 1), c(TRUE,TRUE))
 })
 
 library(stringi)
@@ -52,7 +52,7 @@ test_that("Chinese",{
 
     tan = stri_enc_fromutf32(c(65L, 66L, 67L, 68L, 69L, 70L, 71L, 72L, 73L, 35674L, 27704L, 37586L))
 
-    expect_identical(structure(c("A", "B", "C"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c(".1", ".2", ".3"))),re2_match(tan,"(.).*?(.).*?(.)"))
-    expect_identical(structure(c("A", "B", "C"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c(".1", ".2", ".3"))),re2_match(tan,"(.).*?([\\p{L}]).*?(.)"))
-    expect_identical(structure(stri_enc_fromutf32(list(35674L, 27704L, 37586L)), .Dim = c(1L, 3L), .Dimnames = list( NULL, c(".1", ".2", ".3"))),re2_match(tan,".*(.).*?([\\p{Lu}\\p{Lo}]).*?(.)"))
+    expect_identical(structure(c("ABC","A", "B", "C"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match",".1", ".2", ".3"))),re2_match(tan,"(.).*?(.).*?(.)"))
+    expect_identical(structure(c("ABC","A", "B", "C"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match",".1", ".2", ".3"))),re2_match(tan,"(.).*?([\\p{L}]).*?(.)"))
+    expect_identical(structure(c(tan,stri_enc_fromutf32(list( 35674L, 27704L, 37586L))), .Dim = c(1L, 4L), .Dimnames = list( NULL, c(".match",".1", ".2", ".3"))),re2_match(tan,".*(.).*?([\\p{Lu}\\p{Lo}]).*?(.)"))
 })
