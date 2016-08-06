@@ -20,7 +20,7 @@ test_that("compile NA",{
 
 test_that("compile errors", {
     tt = function(pattern, output_string) {
-        expect_output(expect_error(re2(pattern, log_error = T), output_string))
+        expect_warning(expect_error(re2(pattern, log_error = T), output_string))
     }
     tt("\\" , "trailing \\\\ at end of regexp: ")
     tt("\\2", "bad escape sequence: ")

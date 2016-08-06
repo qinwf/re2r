@@ -120,7 +120,7 @@ public:
     void Flush() {
         stream() << "\n";
         if (severity_ >= re2::FLAGS_minloglevel) {
-            Rcpp::Rcout << str_.str();
+            Rcpp::warning(str_.str());
         }
         flushed_ = true;
     }
@@ -145,7 +145,7 @@ public:
         : LogMessage(file, line, 3) {}
     ~LogMessageFatal() {
         Flush();
-        Rcpp::Rcout << "RE2: A unknown fatal error.\n";
+        Rcpp::stop("RE2: A unknown fatal error.\n");
     }
 private:
     DISALLOW_COPY_AND_ASSIGN(LogMessageFatal);

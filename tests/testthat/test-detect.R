@@ -221,6 +221,57 @@ test_that("detect pattern",{
     # Former bugs.
     tt( "a\\C*|ba\\C", "baba" )
 
+    # stringi
+    expect_identical(re2_detect(NA, NA), NA)
+
+    # not working
+    #expect_identical(re2_detect(character(0), character(0)), logical(0))
+    #suppressWarnings(expect_identical(re2_detect("",""), NA))
+    #suppressWarnings(expect_identical(re2_detect"a",""), NA))
+
+    suppressWarnings(expect_identical(re2_detect("","a"), FALSE))
+
+    expect_identical(re2_detect(c("","ala", "ola"),"ala"), c(FALSE, TRUE, FALSE))
+
+    expect_identical(re2_detect(c("","ala", "ala", "bbb"),c("ala", "bbb")), c(FALSE, FALSE, TRUE, TRUE))
+    expect_identical(re2_detect(c("ala","", "", "bbb"),c("ala", "bbb")), c(TRUE, FALSE, FALSE, TRUE))
+
+    expect_identical(re2_detect('', c('.*', '.+', '^.*$')), c(TRUE,FALSE,TRUE))
+
+    expect_identical(re2_detect('a', c('a', 'b', 'c')), c(T,F,F))
+    expect_identical(re2_detect(c('a', 'b', 'c'), 'a'), c(T,F,F))
+    suppressWarnings(expect_identical(re2_detect(LETTERS[1:2], LETTERS[1:3]), c(T,T,F)))
+    suppressWarnings(expect_identical(re2_detect(LETTERS[1:3], LETTERS[1:5]), c(T,T,T,F,F)))
+    suppressWarnings(expect_identical(re2_detect(LETTERS[1:2], LETTERS[1:5]), c(T,T,F,F,F)))
+    suppressWarnings(expect_identical(re2_detect(LETTERS[1:4], LETTERS[1:5]), c(T,T,T,T,F)))
+
+    expect_identical(re2_detect(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"), c(TRUE, TRUE)) # match of zero length
+    # expect_identical(re2_detect(c("\u0105\u0106\u0107", "\u0105\u0107"), "(?<=\u0106)"), c(TRUE, FALSE)) # match of zero length:
+
+
+    s <- c("Lorem", "123", " ", " ", "kota", "4\t\u0105")
+    p <- c("[[:alpha:]]+", "[[:blank:]]+")
+    expect_identical(re2_detect(s, p), c(T, F, F, T, T, T))
+    expect_identical(re2_detect("Lo123\trem", c("[[:alpha:]]", "[4-9]+")), c(T, F))
+
+    expect_warning(re2_detect(rep("asd", 5), rep("[A-z]", 2)))
+    expect_false(re2_detect("Ala", "{}"))
+
+    expect_identical(re2_detect("aaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaa"), TRUE)
+    expect_identical(re2_detect("aaaaaaaaaaaaaaa",  "aaaaaaaaaaaaaaa"), TRUE)
+    expect_identical(re2_detect("aaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaa"), TRUE)
+
+    expect_equivalent(re2_detect("\u0105\u0105\u0105\u0105\u0105\u0105\u0105b","\u0105+b$"),TRUE)
+
+    expect_equivalent(re2_detect("aaaab", "ab"), TRUE)
+    expect_equivalent(re2_detect("bababababaab", "aab"), TRUE)
+
+    expect_equivalent(re2_detect("caabaab", "(a+b)+"), TRUE)
+    expect_equivalent(re2_detect("caacbaab", "(a+b)+"), TRUE)
+    expect_equivalent(re2_detect("caacbacab", "(a+b)+"), TRUE)
+    expect_equivalent(re2_detect("caacbacacb", "(a+b)+"), FALSE)
+
+
 
 
     case_list = list(
