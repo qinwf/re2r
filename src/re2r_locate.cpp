@@ -179,7 +179,6 @@ SEXP cpp_locate_not_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
         INTEGER(x)[it + nrecycle * 1] = headn;
         continue;
       } else {
-
         string headz = StringPiece(str.data() + lastIndex,
                                    match.data() - str.data() - lastIndex)
                            .as_string();
@@ -199,43 +198,43 @@ SEXP cpp_locate_not_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
 inline void check_loc(RE2 *ptr, size_t &lastIndex, StringPiece &str,
                       size_t &str_size, size_t &headn, StringPiece &match,
                       vector<tuple<size_t, size_t>> &res) {
-  while (lastIndex < str_size &&
-         ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)) {
+    while (ptr->Match(str, lastIndex, str_size, RE2::UNANCHORED, &match, 1)){
 
-    if (match.size()) {
-      string mstring = match.as_string();
-      size_t len_mstring = utf8_length(mstring.c_str());
+          if (match.size()) {
+              string mstring = match.as_string();
+              size_t len_mstring = utf8_length(mstring.c_str());
 
-      string headz = StringPiece(str.data() + lastIndex,
-                                 match.data() - str.data() - lastIndex)
-                         .as_string();
+              string headz = StringPiece(str.data() + lastIndex,
+                                         match.data() - str.data() - lastIndex)
+                                              .as_string();
 
-      size_t len_head = utf8_length(headz.c_str());
-      headn += len_head;
+                                         size_t len_head = utf8_length(headz.c_str());
+                                         headn += len_head;
 
-      size_t head_s = (size_t)headn + 1;
-      headn += len_mstring;
+                                         size_t head_s = (size_t)headn + 1;
+                                         headn += len_mstring;
 
-      size_t tail_s = (size_t)headn;
+                                         size_t tail_s = (size_t)headn;
 
-      res.push_back(make_tuple(head_s, tail_s));
+                                         res.push_back(make_tuple(head_s, tail_s));
 
-      lastIndex = match.data() - str.data() + match.size();
-    } else {
+                                         lastIndex = match.data() - str.data() + match.size();
+          } else {
 
-      string headz = StringPiece(str.data() + lastIndex,
-                                 match.data() - str.data() - lastIndex)
-                         .as_string();
-      size_t len_head = utf8_length(headz.c_str());
-      headn += len_head;
-      res.push_back(make_tuple(headn+1, headn));
+              string headz = StringPiece(str.data() + lastIndex,
+                                         match.data() - str.data() - lastIndex)
+                                              .as_string();
+                                         size_t len_head = utf8_length(headz.c_str());
+                                         headn += len_head;
+                                         res.push_back(make_tuple(headn+1, headn));
 
-      lastIndex = match.data() - str.data() + match.size();
-      size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
-      headn += 1;
-      lastIndex += sym_size;
-    }
-  }
+                                         lastIndex = match.data() - str.data() + match.size();
+                                         size_t sym_size = getUtf8CharSize(str.data()[lastIndex]);
+                                         headn += 1;
+                                         lastIndex += sym_size;
+          }
+      };
+
 }
 
 struct LocateAllP : public Worker {
@@ -297,6 +296,7 @@ SEXP cpp_locate_all(CharacterVector &input, vector<OptRE2 *> &ptrv,
     auto optptr = ptrv[it % ptrv.size()];
 
     if (rstr == NA_STRING || !bool(*optptr)) {
+
       SET_VECTOR_ELT(x, it, na_matrix);
       continue;
     }
