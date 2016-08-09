@@ -34,25 +34,25 @@
 #'
 #' @param pattern a pre-compiled regular expression or a string
 #' @param string a character vector
-#' @param part number of pieces to return. Default (Inf) uses all possible split positions.
+#' @param n number of pieces to return. Default (Inf) uses all possible split positions.
 #' @param parallel use multithread
 #' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
 #' @param ... further arguments passed to or from other methods.
 #' @examples
 #' re2_split("yabba dabba doo", " ")
 #' @export
-re2_split = function(string, pattern, part = Inf, parallel = FALSE, grain_size = 100000, ...) {
+re2_split = function(string, pattern, n = Inf, parallel = FALSE, grain_size = 100000, ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
-    cpp_split(stri_enc_toutf8(string), pattern, part, FALSE,parallel,grain_size)
+    cpp_split(stri_enc_toutf8(string), pattern, n, FALSE,parallel,grain_size)
 }
 
 #' @rdname re2_split
 #' @export
-re2_split_fixed = function(string, pattern, part, parallel = FALSE, grain_size = 100000,  ...) {
+re2_split_fixed = function(string, pattern, n, parallel = FALSE, grain_size = 100000,  ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
-    cpp_split(stri_enc_toutf8(string), pattern, part, TRUE, parallel,grain_size)
+    cpp_split(stri_enc_toutf8(string), pattern, n, TRUE, parallel,grain_size)
 }

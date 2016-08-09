@@ -29,7 +29,7 @@ test_that("split test",{
     tta(c("sdsdsds",NA),"s",10,res)
 
     # error
-    expect_error(re2_split("sd",pattern = "s", part = numeric()),"need the number of pieces.")
+    expect_error(re2_split("sd",pattern = "s", n = numeric()),"need the number of pieces.")
 
     library(stringi)
     # stringi tests
@@ -85,13 +85,69 @@ test_that("split test",{
 
 test_that("vectorize split",{
     split_test = list(
-        list("a_b_c_d", c("","_"),list(c("a", "_", "b", "_", "c", "_", "d"), c("a", "b", "c", "d")))
+        list("a_b_c_d", c("","_"),
+             list(c("a", "_", "b", "_", "c", "_", "d"),
+                  c("a", "b", "c", "d"))
+            )
     )
     for (ind in split_test) {
         expect_identical(re2_split(ind[[1]],ind[[2]]), ind[[3]])
-        expect_identical(re2_split(ind[[1]],ind[[2]]), ind[[3]])
-        expect_identical(re2_split(ind[[1]],ind[[2]],grain_size = 1), ind[[3]])
-
+        expect_identical(re2_split(ind[[1]],ind[[2]], parallel = T), ind[[3]])
+        expect_identical(re2_split(ind[[1]],ind[[2]], parallel = T, grain_size =1), ind[[3]])
     }
+})
+
+test_that("stringi split tests",{
+    expect_identical(re2_split(character(0)," "),list())
+    expect_identical(re2_split(NA,NA),list(NA_character_))
+    expect_identical(re2_split(NA,"a"),list(NA_character_))
+    expect_identical(re2_split("NA",NA),list(NA_character_))
+    expect_identical(re2_split("NA","a",NA),list(NA_character_))
+    expect_identical(re2_split(" "," "),list(rep("",2)))
+
+    # differences
+    # expect_identical(re2_split("","Z"),list(""))
+    # expect_identical(re2_split("",".*"),list(""))
+    # expect_identical(re2_split("","Z", omit_empty=TRUE),list(character(0)))
+
+    expect_identical(re2_split("gas","Z", n=0),list(character(0)))
+    expect_identical(re2_split("aa","a"),list(rep("",3)))
+    expect_identical(re2_split("aa","a",-1L),list(rep("",3)))
+    expect_identical(re2_split("ala ma kota 1 a","[a-z] [a-z]"),list(c("al","","ota 1 a")))
+    expect_identical(re2_split("ala ma kota 1 a","[a-z] [a-z]*"),list(c("al"," kot","1 a")))
+    expect_identical(re2_split("ala ma kota 1 a","[a-z] [a-z]+"),list(c("al"," kota 1 a")))
+    expect_identical(re2_split("ala ma kota 1 a","[a-z] [1-9]"),list(c("ala ma kot"," a")))
+    expect_identical(re2_split("ala ma kota 1 a","[a-z] [1-9]+"),list(c("ala ma kot"," a")))
+
+    # todo?
+    # expect_identical(re2_split(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+    #                list(c("", "\u0105", "", "\u0107", ""), c("", "\u0105", "\u0107", ""))) # match of zero length
+    # expect_identical(re2_split(c("\u0105\u0106\u0107", "\u0105\u0107"), "(?<=\u0106)"),
+    #                 list(c("\u0105\u0106", "\u0107"), "\u0105\u0107")) # match of zero length:
+
+    # n
+    expect_identical(re2_split(";123", ";", n=2), list(c("", "123")))
+    expect_identical(re2_split("123;456", ";", n=2), list(c("123", "456")))
+    expect_identical(re2_split("123;456;789", ";", n=2), list(c("123", "456;789")))
+
+    # todo not vectorize for n
+    # expect_identical(re2_split("123-456-789", "-", n=1:3),
+    #                 list(c("123-456-789"),c("123","456-789"),c("123","456","789")))
+
+    expect_identical(re2_split("123-456-789", "[1-8]-.", n=5), list(c("12","5","89")))
+
+    # tokens_only
+    expect_identical(re2_split("a_b_c_d", "_"), list(c("a", "b", "c", "d")))
+    expect_identical(re2_split("a_b_c__d", "_"), list(c("a", "b", "c", "", "d")))
+    expect_identical(re2_split("a_b_c__d", "_", n=2), list(c("a", "b_c__d")))
+
+    # todo bug
+    # expect_identical(re2_split(c("ab_c", "d_ef_g", "h", ""), "_", n=1), list("ab", "d", "h", character(0)))
+    # expect_identical(re2_split(c("ab_c", "d_ef_g", "h", ""), "_", n=2), list(c("ab", "c"), c("d", "ef"), "h", character(0)))
+
+    expect_identical(re2_split(c("ab_c", "d_ef_g", "h", ""), "_", n=3), list(c("ab", "c"), c("d", "ef", "g"), "h", character(0)))
+
+    # expect_identical(re2_split_fixed(c("ab,c", "d,ef,g", ",h", ""), ",", -1),
+    #                 matrix(c("ab", "d", "h", NA, "c", "ef", NA, NA, NA, "g", NA, NA), nrow=4))
 
 })

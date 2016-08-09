@@ -158,6 +158,71 @@ SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
     return res;
 }
 
+SEXP gen_fixed_matrix(SEXP list){
+    auto list_len = Rf_xlength(list);
+    auto max = 0;
+    for(auto i = 0 ; i != list_len; i++){
+        auto x = Rf_xlength(VECTOR_ELT(list, i));
+        if (max < x){
+            max = x;
+        }
+    }
+    Shield<SEXP> res(Rf_allocMatrix(STRSXP,list_len, max));
+    Shield<SEXP> emptystring(Rf_mkChar(""));
+    for(auto i = 0 ; i != list_len; i++){
+        auto elt = VECTOR_ELT(list, i);
+        auto elt_len = Rf_xlength(elt);
+        auto j = 0;
+        for(; j != elt_len; j++){
+            if(STRING_ELT(elt, j)== NA_STRING){
+                SET_STRING_ELT(res,i + i * j, emptystring);
+            }else{
+                SET_STRING_ELT(res,i + i * j, STRING_ELT(elt, j));
+            }
+        }
+        while(j != max){
+            SET_STRING_ELT(res,i + i * j, emptystring);
+            j++;
+        }
+    }
+    return res;
+}
+
+SEXP gen_opt_fixed_matrix(vector<tr2::optional<vector<string>>>& list){
+    auto list_len = list.size();
+    auto max = 0;
+    for(auto i = list.begin() ; i != list.end(); i++){
+        size_t x;
+        if(!bool(*i)){
+            x = 1;
+        }else{
+            x = i->value().size();
+        };
+        if (max < x){
+            max = x;
+        }
+    }
+    Shield<SEXP> res(Rf_allocMatrix(STRSXP,list_len, max));
+    Shield<SEXP> emptystring(Rf_mkChar(""));
+    auto it = list.begin();
+    for(auto i = 0 ; i != list_len; i++, it++){
+        auto j = 0;
+        if(bool(*it)){
+            auto elt_len = it->value().size();
+            auto elt_i = it->value().begin();
+            for(; j != elt_len; j++, elt_i++){
+                SET_STRING_ELT(res,i + i * j, Rf_mkCharLenCE(elt_i->c_str(),
+                                                             elt_i->size(), CE_UTF8));
+            }
+        }
+        while(j != max){
+            SET_STRING_ELT(res,i + i * j, emptystring);
+            j++;
+        }
+    }
+    return res;
+}
+
 void build_regex_vector(SEXP regexp, vector<OptRE2 *> &ptrv) {
   if (TYPEOF(regexp) == EXTPTRSXP) {
     auto ptr = R_ExternalPtrAddr(regexp);

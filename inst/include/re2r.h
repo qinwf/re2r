@@ -32,6 +32,8 @@
 #ifndef RE2R_RE2R_H
 #define RE2R_RE2R_H
 
+#define RCPP_USING_UTF8_ERROR_STRING
+
 #include <Rcpp.h>
 using namespace Rcpp;
 using namespace std;
@@ -144,6 +146,9 @@ SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
 SEXP toprotect_vec_optstring_to_charmat(const vector<optstring> &res,
                                         int cap_nums);
 SEXP toprotect_na_charmat(SEXP groups_name, size_t cols);
+
+SEXP gen_fixed_matrix(SEXP);
+SEXP gen_opt_fixed_matrix(vector<tr2::optional<vector<string>>>& list);
 
 vector<tr2::optional<string>> as_vec_opt_string(CharacterVector& input);
 vector<string> get_groups_name(RE2* pattern, int cap_nums);

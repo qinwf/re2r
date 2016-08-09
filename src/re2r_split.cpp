@@ -300,47 +300,89 @@ SEXP cpp_split(CharacterVector input, SEXP regexp, NumericVector part,
   if (part.size() == 0) {
     stop("need the number of pieces.");
   }
+
   size_t limit = numeric_limits<R_xlen_t>::max();
 
-  if (R_finite(part[0])) {
+  if(Rcpp::traits::is_na<REALSXP>(REAL(part)[0])){
+      if(fixed){
+          CharacterMatrix res(nrecycle, 1);
+          std::fill(res.begin(), res.end(), "");
+          return res;
+      }else{
+          CharacterVector resi(1);
+          resi[0] = NA_STRING;
+          List res(nrecycle);
+          std::fill(res.begin(), res.end(), resi);
+          return res;
+      }
+  }
+
+  bool neg_fixed = false;
+
+  if( part[0] == 0.0){
+      // limit = 0;
+      if(fixed){
+          CharacterMatrix res(nrecycle, 0);
+          return res;
+      }else{
+          List res(nrecycle);
+          CharacterVector resi(0);
+          std::fill(res.begin(), res.end(), resi);
+          return res;
+      }
+
+  }else if (signbit(part[0])){
+      neg_fixed = true;
+  } else if (R_finite(part[0])){
     limit = as<size_t>(part);
   }
+
   if (!parallel || input.size() < grain_size) {
     if (!fixed) {
       return cpp_split_not_fixed(input, ptrv, limit, nrecycle);
     } else {
-      return cpp_split_fixed(input, ptrv, limit, nrecycle);
+        if(neg_fixed){
+           Shield<SEXP> temp(cpp_split_not_fixed(input, ptrv, limit, nrecycle));
+           return gen_fixed_matrix(temp);
+        } else{
+            return cpp_split_fixed(input, ptrv, limit, nrecycle);
+        }
     }
 
   } else {
     auto inputv = as_vec_opt_string(input);
     vector<tr2::optional<vector<string>>> res(nrecycle);
 
-    if (!fixed) {
+    if (!fixed || neg_fixed) {
       SplitP pobj(inputv, res, ptrv, limit);
       parallelFor(0, nrecycle, pobj, grain_size);
 
-      Shield<SEXP> xs(Rf_allocVector(VECSXP, nrecycle));
-      SEXP x = xs;
 
-      R_xlen_t index = 0;
+      if(!neg_fixed){
+          Shield<SEXP> xs(Rf_allocVector(VECSXP, nrecycle));
+          SEXP x = xs;
 
-      for (tr2::optional<vector<string>> &resi : res) {
-        if (!bool(resi)) {
-          Shield<SEXP> na_string(Rf_allocVector(STRSXP, 1));
-          SET_STRING_ELT(na_string, 0, NA_STRING);
-          SET_VECTOR_ELT(x, index, na_string);
-        }
-        // else if(resi.value().empty()){
-        //     SET_VECTOR_ELT(x, index, Shield<SEXP>(Rf_allocVector(STRSXP,0)));
-        // }
-        else {
-          SET_VECTOR_ELT(x, index,
-                         Shield<SEXP>(toprotect_vec_string_sexp(resi.value())));
-        }
-        index++;
+          R_xlen_t index = 0;
+          for (tr2::optional<vector<string>> &resi : res) {
+              if (!bool(resi)) {
+                  Shield<SEXP> na_string(Rf_allocVector(STRSXP, 1));
+                  SET_STRING_ELT(na_string, 0, NA_STRING);
+                  SET_VECTOR_ELT(x, index, na_string);
+              }
+              // else if(resi.value().empty()){
+              //     SET_VECTOR_ELT(x, index, Shield<SEXP>(Rf_allocVector(STRSXP,0)));
+              // }
+              else {
+                  SET_VECTOR_ELT(x, index,
+                                 Shield<SEXP>(toprotect_vec_string_sexp(resi.value())));
+              }
+              index++;
+          }
+          return x;
+      } else{
+        return gen_opt_fixed_matrix(res);
       }
-      return x;
+
     } else {
 
       SplitFixP pobj(inputv, res, ptrv, limit);
