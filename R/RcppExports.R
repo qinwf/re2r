@@ -92,8 +92,12 @@ cpp_re2_compile <- function(input, log_errors_value, utf_8_value, posix_syntax_v
     .Call('re2r_cpp_re2_compile', PACKAGE = 're2r', input, log_errors_value, utf_8_value, posix_syntax_value, case_sensitive_value, dot_nl_value, literal_value, longest_match_value, never_nl_value, never_capture_value, one_line_value, perl_classes_value, word_boundary_value, max_mem_value, simplify_value)
 }
 
-cpp_extract <- function(input, regexp, all, parallel, grain_size) {
-    .Call('re2r_cpp_extract', PACKAGE = 're2r', input, regexp, all, parallel, grain_size)
+cpp_count <- function(input, regexp, anchor, parallel, grain_size) {
+    .Call('re2r_cpp_count', PACKAGE = 're2r', input, regexp, anchor, parallel, grain_size)
+}
+
+cpp_extract <- function(input, regexp, all, anchor, parallel, grain_size) {
+    .Call('re2r_cpp_extract', PACKAGE = 're2r', input, regexp, all, anchor, parallel, grain_size)
 }
 
 cpp_locate <- function(input, regexp, all, parallel, grain_size) {
