@@ -146,3 +146,67 @@ test_that("replce vectorize",{
               FALSE)
     )
 })
+
+test_that("stringi replace tests",{
+    expect_equivalent(re2_replace_all(character(0),"1","2"),character(0))
+    #expect_equivalent(re2_replace_all(1,character(0),2),character(0))
+    expect_equivalent(re2_replace_all(1,"2",character(0)),character(0))
+    expect_equivalent(re2_replace_all("abab123 a","a",1),"1b1b123 1")
+    expect_equivalent(re2_replace_all(NA,"A",1),NA_character_)
+    expect_equivalent(re2_replace_all("ALA",NA,"1"),NA_character_)
+    expect_equivalent(re2_replace_all("ALA","A",NA),NA_character_)
+    expect_equivalent(re2_replace_all(NA,NA,"A"),NA_character_)
+    expect_equivalent(re2_replace_all(NA,"A",NA),NA_character_)
+    expect_equivalent(re2_replace_all("A",NA,NA),NA_character_)
+    expect_equivalent(re2_replace_all(NA,NA,NA),NA_character_)
+    expect_warning(re2_replace_all('fasgasgas',c(" ","o"),1:3))
+
+    expect_equivalent(re2_replace_all(c("1", "NULL", "3"), "NULL", NA), c("1", NA, "3"))
+
+    expect_equivalent(re2_replace_all("","^.*$","hey!"),"hey!")
+    expect_equivalent(re2_replace_all("  ","^.*$","hey!"),"hey!")
+
+    # difference "$1"
+    expect_equivalent(re2_replace_all("abc!def!ghi","(\\p{L})\\p{L}{2}","\\1"),"a!d!g")
+    expect_equivalent(re2_replace_all("abc!def!ghi","(\\p{L}{3})","@\\1@"),"@abc@!@def@!@ghi@")
+
+    expect_equivalent(re2_replace_all(c('a', 'b', 'c', 'd'),
+                                            c('[ac]', '[bd]'), '!'),
+                     rep('!', 4))
+
+    x1 <- rawToChar(as.raw(198))
+    x2 <- rawToChar(as.raw(230))
+    Encoding(x1) <- 'latin1'
+    Encoding(x2) <- 'latin1'
+    expect_equivalent(re2_replace_all(x1, x1, x2), '\u00e6')
+
+    expect_equivalent(re2_replace_all("X\U00024B62X",
+                                            c("\U00024B62", "\U00024B63", "X"), ""),
+                     c("XX", "X\U00024B62X", "\U00024B62"))
+
+    # re2_replace
+    expect_identical(re2_replace("abc!def!ghi","(\\p{L})\\p{L}{2}","\\1"),"a!def!ghi")
+    expect_identical(re2_replace("abc!def!ghi","(\\p{L}{3})","@\\1@"),"@abc@!def!ghi")
+    expect_identical(re2_replace("123!345!456","(\\p{L}{3})","@\\1@"),"123!345!456")
+    expect_identical(re2_replace("abc","a","2"),"2bc")
+    expect_identical(re2_replace("abc","d","2"),"abc")
+
+    expect_identical(re2_replace(NA,"A",1),NA_character_)
+    expect_identical(re2_replace("ALA",NA,"1"),NA_character_)
+    expect_identical(re2_replace("ALA","A",NA),NA_character_)
+    expect_identical(re2_replace(NA,NA,"A"),NA_character_)
+    expect_identical(re2_replace(NA,"A",NA),NA_character_)
+    expect_identical(re2_replace("A",NA,NA),NA_character_)
+    expect_identical(re2_replace(NA,NA,NA),NA_character_)
+
+
+
+    expect_identical(re2_replace(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*", "\u0108"),
+                     c("\u0108\u0105\u0106\u0107", "\u0108\u0105\u0107")) # match of zero length
+    # expect_identical(re2_replace(c("\u0105\u0106\u0107", "\u0105\u0107"), "(?<=\u0106)", "\u0108"),
+    #                 c("\u0105\u0106\u0108\u0107", "\u0105\u0107")) # match of zero length:
+    expect_identical(re2_replace("","^.*$","hey!"),"hey!")
+    expect_identical(re2_replace("  ","^.*$","hey!"),"hey!")
+
+    expect_identical(re2_replace(c("1", "NULL", "3"), "NULL", NA), c("1", NA, "3"))
+})

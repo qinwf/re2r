@@ -44,14 +44,18 @@ struct ReplaceP : public Worker {
     size_t index = begin;
     std::for_each(res_replace.begin() + begin, res_replace.begin() + end,
                   [this, &index](tr2::optional<string> &x) {
-                    x = input[index % input.size()];
+                    tr2::optional<string>& strix = input[index % input.size()];
                     OptRE2 *optpattern = tt[index % tt.size()];
-                    if (!bool(x) || !bool(*optpattern)) {
+                    if (!bool(strix) || !bool(*optpattern)) {
+                      x = tr2::nullopt;
                       index++;
                       return;
                     }
+
+                    x = strix;
                     auto pattern = optpattern->value().get();
                     auto rewritei = rewrite[index % rewrite.size()];
+
                     if (!bool(rewritei)) {
                       if (pattern->Match(x.value(), 0,
                                          strlen(x.value().c_str()),
@@ -89,21 +93,26 @@ struct ReplaceGlobalP : public Worker {
         count.begin() + begin, [this, &index](tr2::optional<string> &x) {
           auto optptr = tt[index % tt.size()];
           auto rewritei = rewrite[index % rewrite.size()];
-          x = input[index % input.size()];
-          if (!bool(x) || !bool(*optptr)) {
+          tr2::optional<string>& strix = input[index % input.size()];
+          if (!bool(strix) || !bool(*optptr)) {
+            x = tr2::nullopt;
             index++;
             return 0;
           }
+          x = strix;
           auto ptr = optptr->value().get();
 
           if (!bool(rewritei)) {
-
+              index++;
             if (ptr->Match(x.value(), 0, strlen(x.value().c_str()),
                            RE2::UNANCHORED, nullptr, 0)) {
               x = tr2::nullopt;
+              return 1;
+            } else{
+              return 0;
             }
-            index++;
-            return 0;
+
+
           }
           index++;
           return ptr->GlobalReplace(&x.value(), *ptr, rewritei.value());
@@ -141,12 +150,14 @@ SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_,
       for (auto i = 0; i != nrecycle; i++) {
         auto optptr = ptrv[i % ptrv.size()];
         auto rewritei = rewrite[i % rewrite.size()];
-        replace_res.push_back(inputv[i % input.size()]);
-        tr2::optional<string> &stri = replace_res.back();
+        tr2::optional<string> & strix = inputv[i % input.size()];
 
-        if (!bool(stri) || !bool(*optptr)) {
+        if (!bool(strix) || !bool(*optptr)) {
+          replace_res.push_back(tr2::nullopt);
           continue;
         }
+        replace_res.push_back(strix.value());
+        tr2::optional<string> &stri = replace_res.back();
         auto ptr = optptr->value().get();
 
         if (!bool(rewritei)) {
@@ -179,20 +190,26 @@ SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_,
       for (auto i = 0; i != nrecycle; i++) {
         auto optptr = ptrv[i % ptrv.size()];
         auto rewritei = rewrite[i % rewrite.size()];
-        replace_res.push_back(inputv[i % input.size()]);
-        tr2::optional<string> &stri = replace_res.back();
 
-        if (!bool(stri) || !bool(optptr)) {
+        tr2::optional<string> &strix = inputv[i % input.size()];
+
+        if (!bool(strix) || !bool(*optptr)) {
+          replace_res.push_back(tr2::nullopt);
           count.push_back(0);
           continue;
         }
+        replace_res.push_back(strix);
+        tr2::optional<string> & stri = replace_res.back();
         auto ptr = optptr->value().get();
 
         if (!bool(rewritei)) {
-          count.push_back(0);
+
           if (ptr->Match(stri.value(), 0, strlen(stri.value().c_str()),
                          RE2::UNANCHORED, nullptr, 0)) {
             stri = tr2::nullopt;
+            count.push_back(1);
+          }else{
+            count.push_back(0);
           }
           continue;
         }
