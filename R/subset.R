@@ -33,6 +33,7 @@
 #' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
 #'
 #' @inheritParams re2_detect
+#' @param omit_na omit na result
 #' @return A character vector.
 #' @export
 #' @examples

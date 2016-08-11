@@ -10,8 +10,6 @@ get_simplify(pattern, ...)
 \item{pattern}{a pre-compiled regular expression or a string}
 
 \item{...}{further arguments to compile input character.}
-
-\item{input}{a character vector}
 }
 \description{
 Simplify pattern strings.

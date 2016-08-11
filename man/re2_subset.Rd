@@ -14,6 +14,8 @@ re2_subset(string, pattern, anchor = 0, omit_na = TRUE, parallel = FALSE,
 
 \item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
 
+\item{omit_na}{omit na result}
+
 \item{parallel}{use multithread}
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}

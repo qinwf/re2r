@@ -34,7 +34,6 @@
 #' Simplify pattern strings.
 #'
 #' @param pattern a pre-compiled regular expression or a string
-#' @param input a character vector
 #' @param ... further arguments to compile input character.
 #' @examples
 #' get_simplify("a{1}")

@@ -114,7 +114,7 @@ str(res)
 
 ```{r}
 re2_match_all(
-            input = c("this is test", 
+            string = c("this is test", 
                       "this is test, and this is not test", 
                       "they are tests"), 
             pattern = "(?P<testname>this)( is)")

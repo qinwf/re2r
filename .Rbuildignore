@@ -16,3 +16,4 @@ GTAGS
 .Rprofile
 ^TODO\.md$
 ^times\.RData$
+^email\.png$
