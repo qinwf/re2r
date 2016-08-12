@@ -456,10 +456,10 @@ test_that("Stringi test",{
     expect_equivalent(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
     expect_equivalent(re2_match_all("test", NA), list(matrix(NA_character_,1,1)))
     # suppressWarnings(expect_identical(re2_match_all("test", ""), list(matrix(NA_character_,1,1))))
-
+    #
     expect_equivalent(re2_match_all(c("bacab", "bacaba\u0105a", "aa"), "a.a"),
                       list(structure("aca", .Dim = c(1L, 1L), .Dimnames = list(NULL, ".match")),
-                           structure(c("aca", "aąa"), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".match")),
+                           structure(enc2utf8(c("aca", "a\u0105a")), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".match")),
                            structure(character(0), .Dim = 0:1, .Dimnames = list(NULL, ".match"))))
     res = list(
         structure(c("a=b", "c=d", "a", "c", "b", "d"), .Dim = 2:3, .Dimnames = list(NULL, c(".match", ".1", ".2"))),

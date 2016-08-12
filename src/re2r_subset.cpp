@@ -28,10 +28,6 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// [[Rcpp::depends(RcppParallel)]]
-#include <RcppParallel.h>
-using namespace RcppParallel;
-
 #include "../inst/include/re2r.h"
 
 // [[Rcpp::export]]

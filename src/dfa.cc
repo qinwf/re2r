@@ -1992,8 +1992,8 @@ bool DFA::PossibleMatchRange(string* min, string* max, int maxlen) {
   MutexLock lock(&mutex_);
   for (int i = 0; i < maxlen; i++) {
     if (previously_visited_states[s] > kMaxEltRepetitions) {
-      VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
-        << " for state s=" << s << " and min=" << CEscape(*min);
+      // VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
+      //   << " for state s=" << s << " and min=" << CEscape(*min);
       break;
     }
     previously_visited_states[s]++;
@@ -2029,8 +2029,8 @@ bool DFA::PossibleMatchRange(string* min, string* max, int maxlen) {
   max->clear();
   for (int i = 0; i < maxlen; i++) {
     if (previously_visited_states[s] > kMaxEltRepetitions) {
-      VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
-        << " for state s=" << s << " and max=" << CEscape(*max);
+      // VLOG(2) << "Hit kMaxEltRepetitions=" << kMaxEltRepetitions
+      //   << " for state s=" << s << " and max=" << CEscape(*max);
       break;
     }
     previously_visited_states[s] += 1;

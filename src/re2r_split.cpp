@@ -30,9 +30,6 @@
 
 #include "../inst/include/re2r.h"
 
-// [[Rcpp::depends(RcppParallel)]]
-#include <RcppParallel.h>
-using namespace RcppParallel;
 
 SEXP cpp_split_fixed(CharacterVector input, vector<OptRE2 *> &ptrv,
                      size_t limit, size_t nrecycle) {

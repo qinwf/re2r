@@ -31,10 +31,6 @@
 #include "../inst/include/re2r.h"
 #include <tuple>
 
-// [[Rcpp::depends(RcppParallel)]]
-#include <RcppParallel.h>
-using namespace RcppParallel;
-
 inline size_t utf8_length(const char *s) {
   size_t len = 0;
   while (*s)

@@ -28,7 +28,6 @@
 // OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "../inst/include/re2/regexp.h"
 #include "../inst/include/re2r.h"
 
 // [[Rcpp::export]]

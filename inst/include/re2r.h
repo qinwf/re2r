@@ -34,20 +34,23 @@
 
 #define RCPP_USING_UTF8_ERROR_STRING
 
-#include <Rcpp.h>
-using namespace Rcpp;
-using namespace std;
 
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 using namespace RcppParallel;
 
+#include <re2/regexp.h>
+#include <re2/re2.h>
+
+#include <Rcpp.h>
+using namespace Rcpp;
+using namespace std;
+
+
 
 #include <memory>
 #include <tuple>
 
-#include <re2/regexp.h>
-#include <re2/re2.h>
 
 using re2::RE2;
 using re2::StringPiece;

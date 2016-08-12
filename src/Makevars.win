@@ -1,6 +1,6 @@
 ## We want C++11 as it gets us 'long long' as well
 CXX_STD = CXX11
-PKG_CPPFLAGS = -I../inst/include -DNDEBUG -DNOMINMAX -DSTRICT -DUNICODE -D_UNICODE
+PKG_CPPFLAGS = -pthread -I../inst/include -DNDEBUG -DNOMINMAX -DSTRICT -DUNICODE -D_UNICODE
 
 PKG_CXXFLAGS += -DRCPP_PARALLEL_USE_TBB=1
 

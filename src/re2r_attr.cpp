@@ -143,10 +143,10 @@ int get_expression_size(SEXP regexp) {
 LogicalVector is_re2c_na(SEXP regexp) {
   INIT_ptr LogicalVector res(1);
   if (bool(*ptr)) {
-    res[0] = Rboolean::FALSE;
+    res[0] = false;
     return res;
   } else {
-    res[0] = Rboolean::TRUE;
+    res[0] = true;
     return res;
   }
 }
