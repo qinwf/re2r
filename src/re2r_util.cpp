@@ -205,13 +205,13 @@ SEXP gen_fixed_matrix(SEXP list){
         auto j = 0;
         for(; j != elt_len; j++){
             if(STRING_ELT(elt, j)== NA_STRING){
-                SET_STRING_ELT(res,i + i * j, emptystring);
+                SET_STRING_ELT(res,i + j * list_len, emptystring);
             }else{
-                SET_STRING_ELT(res,i + i * j, STRING_ELT(elt, j));
+                SET_STRING_ELT(res,i + j * list_len, STRING_ELT(elt, j));
             }
         }
         while(j != max){
-            SET_STRING_ELT(res,i + i * j, emptystring);
+            SET_STRING_ELT(res,i + j * list_len, emptystring);
             j++;
         }
     }
@@ -241,12 +241,14 @@ SEXP gen_opt_fixed_matrix(vector<tr2::optional<vector<string>>>& list){
             auto elt_len = it->value().size();
             auto elt_i = it->value().begin();
             for(; j != elt_len; j++, elt_i++){
-                SET_STRING_ELT(res,i + i * j, Rf_mkCharLenCE(elt_i->c_str(),
+                SET_STRING_ELT(res,i + j * list_len, Rf_mkCharLenCE(elt_i->c_str(),
                                                              elt_i->size(), CE_UTF8));
             }
+        }else{
+                SET_STRING_ELT(res,i + j * list_len, emptystring);
         }
         while(j != max){
-            SET_STRING_ELT(res,i + i * j, emptystring);
+            SET_STRING_ELT(res,i + j * list_len, emptystring);
             j++;
         }
     }

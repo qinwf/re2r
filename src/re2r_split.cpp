@@ -89,7 +89,7 @@ SEXP cpp_split_fixed(CharacterVector input, vector<OptRE2 *> &ptrv,
       }
     }
     if (split_n < limit &&
-        (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
+        (lastIndex < str_size || (lastIndex == str_size))) {
       string tmpstring =
           StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string();
       SET_STRING_ELT(res, it + split_n * nrecycle,
@@ -166,7 +166,7 @@ struct SplitFixP : public Worker {
             }
           }
           if (split_n < limit && (lastIndex < str_size ||
-                                  (lastIndex == str_size && match.size()))) {
+                                  (lastIndex == str_size))) {
             pieces.emplace_back(
                 StringPiece(str.data() + lastIndex, str_size - lastIndex)
                     .as_string());
@@ -209,9 +209,14 @@ inline void check_split(size_t &lastIndex, RE2 *pattern, StringPiece &str,
     }
   }
   if (pieces.size() < limit &&
-      (lastIndex < str_size || (lastIndex == str_size && match.size()))) {
+      (lastIndex < str_size || (lastIndex == str_size))) {
     pieces.push_back(
         StringPiece(str.data() + lastIndex, str_size - lastIndex).as_string());
+
+    // for empty pattern
+    if(match.size() == 0 && pieces.back().empty() && pieces.size() > 1){
+      pieces.pop_back();
+    }
   }
 }
 
