@@ -1,0 +1,48 @@
+
+## Parallel
+
+On Travis-CI with 2 cores CPU.
+
+### Quote
+
+```{r}
+dd =stri_rand_strings(100000,10, pattern = "[a-zA-Z0-9\"\']")
+head(dd)
+
+microbenchmark(sequential =  quote_meta(dd), parallel =  quote_meta(dd, parallel = T,grain_size = 10000), times = 1)
+```
+
+### Replcae
+
+```{r}
+dd =stri_rand_strings(100000, 10, pattern = "[a-zA-Z0-9\"\']")
+head(dd)
+regexp = re2("sd2er3")
+
+microbenchmark(sequential = re2_replace(dd, regexp, ""), parallel = re2_replace(dd, regexp, "", parallel = T, grain_size = 1000) , times = 5)
+
+microbenchmark(sequential = re2_replace_all(dd, regexp, ""), parallel = re2_replace_all(dd, regexp, "", parallel = T, grain_size = 1000) , times = 5)
+```
+
+### Extract
+
+```{r}
+dd =stri_rand_strings(100000, 10, pattern = "[a-zA-Z0-9\"\']")
+head(dd)
+regexp = re2("(sd)")
+
+invisible(gc())
+microbenchmark(sequential =  re2_extract(dd, regexp), parallel = re2_extract(dd, regexp, parallel= T ,grain_size = 1000) ,times = 5)
+
+microbenchmark(sequential =  re2_extract_all(dd, regexp), parallel = re2_extract_all(dd, regexp, parallel= T ,grain_size = 1000) ,times = 5)
+```
+
+### Match
+
+```{r}
+dd =stri_rand_strings(100000,10, pattern = "[a-zA-Z0-9\"\']")
+head(dd)
+regexp = re2("sd")
+
+microbenchmark(sequential =  re2_match(dd, regexp), parallel = re2_match(dd, regexp, parallel= T , grain_size = 1000) ,times = 5)
+```

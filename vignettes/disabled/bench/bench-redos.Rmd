@@ -1,0 +1,131 @@
+
+## ReDos
+
+The regular expression denial of service ([ReDoS](https://en.wikipedia.org/wiki/ReDoS)) is an algorithmic complexity attack that produces a denial-of-service by providing a regular expression that takes a very long time to evaluate.
+
+### StackOverflow.com Outage - July 20, 2016
+
+The [blog post](http://stackstatus.net/post/147710624694/outage-postmortem-july-20-2016) explained the direct cause of the outage. An regular expressions, which is used to trim unicode space from start and end of a line, consume high CPU on the web servers.
+
+```{r}
+
+pattern = enc2utf8("^[\\s\u200c]+|[\\s\u200c]+$")
+
+times.list <- list()
+index = 1
+seq_ = seq(1000,9000,by = 1000)
+for(N in seq_){
+    # string and pattern
+    string = paste0("-- play happy sound for player to enjoy. ", paste0(rep(" ",N), collapse = ""),"boom!")
+    
+    # pre-compiled RE2
+    regexp = re2(pattern)
+    
+    # run gc
+    invisible(gc())
+    
+    # benchmark
+    N.times <- microbenchmark(
+        ICU = stri_detect_regex(string, pattern = pattern),
+        PCRE = grepl(pattern, string, perl = TRUE),
+        TRE = grepl(pattern, string, perl = FALSE),
+        RE2n = re2_detect(string, pattern),
+        RE2c = re2_detect(string, regexp),
+        times = 4)
+    
+    times.list[[index]] <- data.frame(N, N.times)
+    index= index+1
+}
+
+times <- do.call(rbind, times.list)
+
+direct.label(linear.legend(times, limit=c(0,9000), breaks = seq_,xlab_name = "string size", title = "StackOverflow.com Outage"), "last.polygons")
+
+
+```
+
+### Java Classname
+
+```{r}
+
+pattern = "^(([a-z])+.)+[A-Z]([a-z])+$"
+
+times.list <- list()
+index = 1
+seq_ = seq(1,24,by = 1)
+for(N in seq_){
+    # string and pattern
+    string = paste0(paste0(rep("a",N), collapse = ""),"boom!")
+    
+    # pre-compiled RE2
+    regexp = re2(pattern)
+    
+    # run gc
+    invisible(gc())
+    
+    # benchmark
+    N.times <- microbenchmark(
+        ICU = stri_detect_regex(string, pattern = pattern),
+        PCRE = grepl(pattern, string, perl = TRUE),
+        TRE = grepl(pattern, string, perl = FALSE),
+        RE2n = re2_detect(string, pattern),
+        RE2c = re2_detect(string, regexp),
+        times = 4)
+    
+    times.list[[index]] <- data.frame(N, N.times)
+    index= index+1
+}
+
+times <- do.call(rbind, times.list)
+
+direct.label(linear.legend(times, limit=c(0,24), breaks = seq_,xlab_name = "string size", title = "Java Classname Malicious Regex"), "last.polygons")
+
+```
+
+### "a?a"
+
+Derived from Toby Dylan Hocking [tdhock/regex-tutorial
+](https://github.com/tdhock/regex-tutorial)
+
+```{r, echo=TRUE}
+
+times.list <- list()
+
+for(N in c(1:25)){
+    # string and pattern
+    string <- paste(rep("a", N), collapse="")
+    pattern <- paste(rep(c("a?", "a"), each=N), collapse="")
+    
+    # pre-compiled RE2
+    regexp = re2(pattern)
+    
+    # run gc
+    invisible(gc())
+    
+    # benchmark
+    N.times <- microbenchmark(
+        ICU = stri_detect_regex(string, pattern = pattern),
+        PCRE = grepl(pattern, string, perl = TRUE),
+        TRE = grepl(pattern, string, perl = FALSE),
+        RE2n = re2_detect(string, pattern),
+        RE2c = re2_detect(string, regexp),
+        times = 5)
+    
+    times.list[[N]] <- data.frame(N, N.times)
+}
+
+times <- do.call(rbind, times.list)
+
+direct.label(linear.legend(times, xlab_name = "Pattern size", title = "pattern: 'a?a?aa' 'a?a?a?aaa' ..."), "last.polygons")
+direct.label(log.legend(times, xlab_name = "pattern size", title = "Pattern: 'a?a?aa' 'a?a?a?aaa' ... log scale"), "last.polygons")
+
+```
+
+```{r}
+string <- paste(rep("a", 27), collapse="")
+pattern <- paste(rep(c("a?", "a"), each=27), collapse="")
+
+system.time(re2_detect(string,pattern))
+system.time(stri_detect_regex(string,pattern))
+```
+

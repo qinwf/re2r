@@ -1,0 +1,452 @@
+
+## stringi benchmark
+
+Benchmarks from the  [stringi](https://github.com/Rexamine/stringi/blob/master/devel/benchmarks) package.
+
+### CRAN logs
+
+Detect a fixed pattern in ASCII text (144k strings).
+
+```{r}
+
+if (!file.exists('./test1.csv.gz')) {
+    # don't change the URL!
+    download.file('http://cran-logs.rstudio.com/2014/2014-03-18.csv.gz',
+                  './test1.csv.gz')
+}
+
+f <- gzfile('./test1.csv.gz')
+data <- enc2native(readLines(f, encoding="ASCII"))
+close(f)
+regexp = re2(',\\"stringi\\",')
+invisible(gc(reset=TRUE))
+res = microbenchmark(
+    ICU = stri_detect_regex(data, ',\\"stringi\\",'),
+    RE2c = re2_detect(data, ',\\"stringi\\",'),
+    RE2n = re2_detect(data, regexp),
+    TRE = grepl(',\\"stringi\\",', data),
+    PCRE = grepl(',\\"stringi\\",', data, perl=TRUE),
+    times=15L, control=list(order='inorder', warmup=3L)
+)
+autoplot(res) + ggtitle("detect methods: CRAN logs")
+
+pattern = '^\\"(.*)\\",\\"(.*)\\",(.*),\\"(.*)\\",\\"(.*)\\",\\"(.*)\\",\\"(.*)\\",\\"(.*)\\",\\"(.*)\\",(.*)$'
+microbenchmark(
+    ICU = stri_match_first_regex(data,pattern),
+    RE2n = re2_match(data,pattern),
+    times = 1
+)
+```
+
+```{r, include=FALSE}
+try({rm(data);rm(f)})
+```
+
+
+### Pan Tadeusz
+
+```{r}
+
+if (!file.exists('./pan_tadeusz_15.txt')) {
+    # don't change the URL!
+    download.file('https://raw.githubusercontent.com/gagolews/stringi/master/devel/benchmarks/pan_tadeusz_15.txt',
+                  './pan_tadeusz_15.txt')
+}
+pan_tadeusz <- enc2native(readLines('./pan_tadeusz_15.txt', encoding="UTF-8"))
+sie <- enc2native(stri_enc_fromutf32(c(115,105,281)))
+regexp = re2(sie)
+invisible(gc(reset=TRUE))
+
+res = microbenchmark(
+    ICU = stri_detect_regex(pan_tadeusz, sie),
+    RE2c = re2_detect(pan_tadeusz, regexp),
+    RE2n = re2_detect(pan_tadeusz, sie),
+    TRE = grepl(sie, pan_tadeusz),
+    PCRE = grepl(sie, pan_tadeusz, perl=TRUE),
+    times = 20
+)
+plot(autoplot(res) + ggtitle("detect methods: Pan Tadeusz"))
+
+pan_tadeusz <- readLines('./pan_tadeusz_15.txt', encoding="UTF-8")
+invisible(gc(reset=TRUE))
+autoplot(
+    microbenchmark(
+        ICU = stri_count_regex(pan_tadeusz, sie),
+        RE2c = re2_count(pan_tadeusz, regexp),
+        RE2n = re2_count(pan_tadeusz, sie),
+        times = 20 
+    )
+) + ggtitle("count methods: Pan Tadeusz")
+
+regexp = re2("\\P{L}")
+autoplot(microbenchmark(
+    ICU = stri_split_regex(pan_tadeusz, "\\P{L}"),
+    RE2c = re2_split(pan_tadeusz, regexp),
+    RE2n = re2_split(pan_tadeusz, "\\P{L}")
+)) + ggtitle("split methods: Pan Tadeusz")
+
+```
+
+### Detect Methods
+
+```{r}
+s <- c("Lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipisicing",
+       "elit", "Proin", "nibh", "augue", "suscipit", "a", "scelerisque",
+       "sed", "lacinia", "in", "mi", "Cras", "vel", "lorem", "Etiam",
+       "pellentesque", "aliquet", "tellus", "Phasellus", "pharetra",
+       "nulla", "ac", "diam", "Quisque", "semper", "justo", "at", "risus",
+       "Donec", "venenatis", "turpis", "vel", "hendrerit", "interdum",
+       "dui", "ligula", "ultricies", "purus", "sed", "posuere", "libero",
+       "dui", "id", "orci", "Nam", "congue", "pede", "vitae", "dapibus",
+       "aliquet", "elit", "magna", "vulputate", "arcu", "vel", "tempus",
+       "metus", "leo", "non", "est", "Etiam", "sit", "amet", "lectus",
+       "quis", "est", "congue", "mollis", "Phasellus", "congue", "lacus",
+       "eget", "neque")
+
+srep  <- rep(s, 100)
+srep2 <- stri_dup(s, 1000)
+
+pat1 = "^[A-Z]"
+pat2 = "[a-z]$"
+pat3 = "^[a-z]+$"
+
+run_detect = function(s,pat){
+    regexp = re2(pat)
+    autoplot(microbenchmark(
+    ICU = stri_detect_regex(s,pat1),
+    RE2c = re2_detect(s, regexp),
+    RE2n = re2_detect(s, pat),
+    TRE = grepl(pat, s),
+    PCRE = grepl(pat, s, perl = T),
+    times = 20
+    ))
+}
+
+run_detect(s, pat1)
+run_detect(s, pat2)
+run_detect(s, pat3)
+run_detect(srep, pat1)
+run_detect(srep, pat2)
+run_detect(srep, pat3)
+run_detect(srep2, pat1)
+run_detect(srep2, pat2)
+run_detect(srep2, pat3)
+
+p <- c("^[A-Z]", ".{3}", ".{4}", "[^a]+")
+srep2 <- rep(s, 10)
+prep <- rep(p, 60)
+
+run_detect = function(s,pat){
+    regexp = re2(pat)
+    autoplot(microbenchmark(
+    ICU = stri_detect_regex(s,pat1),
+    RE2c = re2_detect(s, regexp),
+    RE2n = re2_detect(s, pat),
+    times = 20
+    ))
+}
+
+run_detect(s, p)
+run_detect(srep2, p)
+run_detect(s, prep)
+
+```
+
+Regex lookup for words with at least 3 consecutive digits [Latin&Polish letters, digits]
+
+```{r}
+
+lettersdigits <- c(0:9, stri_enc_fromutf32(list(97L, 98L, 99L, 100L, 101L, 102L, 103L,
+                                                104L, 105L, 106L, 107L,  108L, 109L, 110L, 111L, 112L, 113L, 114L, 115L,
+                                                116L, 117L, 118L,  119L, 120L, 121L, 122L, 261L, 263L, 281L, 322L, 324L,
+                                                243L, 347L,  378L, 380L)))
+lettersdigits <- enc2native(lettersdigits)
+
+set.seed(123)
+letdig <- replicate(100000, {
+    paste(sample(lettersdigits,
+                 floor(abs(rcauchy(1, 10))+1), replace=TRUE), collapse='')
+})
+
+regexp = re2("[0-9]{3,}")
+invisible(gc(reset=TRUE))
+res = microbenchmark(
+    TRE = grepl("[0-9]{3,}", letdig),
+    PCRE = grepl("[0-9]{3,}", letdig, perl=TRUE),
+    ICU = stri_detect_regex(letdig, "[0-9]{3,}"),
+    RE2n = re2_detect(letdig, "[0-9]{3,}"),
+    RE2c = re2_detect(letdig, regexp),
+    times = 20
+)
+autoplot(res) + ggtitle("detect methods: letters & digits")
+
+```
+
+### Long String
+
+Finds a word at the beginning of a long string (Latin&Polish letters).
+
+```{r}
+str <- enc2native(stri_join(stri_dup("kaw\u0105", 100000), "law\u0105"))
+firstword <- enc2native("kaw\u0105")
+
+invisible(gc(reset=TRUE))
+regexp = re2(firstword)
+autoplot(microbenchmark(
+    ICU = stri_detect_regex(str, firstword),
+    TRE = grepl(firstword, str),
+    PCRE = grepl(firstword, str, perl=TRUE),
+    RE2c = re2_detect(str, regexp),
+    RE2n = re2_detect(str, firstword)
+, times = 20))
+```
+
+Finds a word at the end of a long string (Latin&Polish letters).
+
+```{r}
+str <- enc2native(stri_join(stri_dup("kaw\u0105", 100000), "law\u0105"))
+lastword <- enc2native("law\u0105")
+invisible(gc(reset=TRUE))
+regexp = re2(lastword)
+autoplot(microbenchmark(
+    ICU = stri_detect_regex(str, lastword),
+    TRE = grepl(lastword, str),
+    PCRE = grepl(lastword, str, perl=TRUE),
+    RE2c = re2_detect(str, regexp),
+    RE2n = re2_detect(str, lastword),
+    times = 20
+))
+```
+
+Does not find a long overlapping pattern in a string (Latin&Polish letters)
+
+```{r}
+str <- enc2utf8(stri_dup("ab\u0105", 4000))
+lastword <- enc2utf8(stri_join(stri_dup("ab\u0105", 400), "c"))
+invisible(gc(reset=TRUE))
+regexp = re2(lastword)
+autoplot(microbenchmark(
+    ICU = stri_detect_regex(str, lastword),
+    TRE = grepl(lastword, str),
+    PCRE = grepl(lastword, str, perl=TRUE),
+    RE2c = re2_detect(str, regexp),
+    RE2n = re2_detect(str, lastword),
+    times = 20
+))
+```
+
+### Match Methods
+
+```{r}
+lorem_text <- "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Proin
+   nibh augue, suscipit a, scelerisque sed, lacinia in, mi. Cras vel
+   lorem. Etiam pellentesque aliquet tellus. Phasellus pharetra nulla ac
+   diam. Quisque semper justo at risus. Donec venenatis, turpis vel
+   hendrerit interdum, dui ligula ultricies purus, sed posuere libero dui
+   id orci. Nam congue, pede vitae dapibus aliquet, elit magna vulputate
+   arcu, vel tempus metus leo non est. Etiam sit amet lectus quis est
+   congue mollis. Phasellus congue lacus eget neque. Phasellus ornare,
+   ante vitae consectetuer consequat, purus sapien ultricies dolor, et
+   mollis pede metus eget nisi. Praesent sodales velit quis augue. Cras
+   suscipit, urna at aliquam rhoncus, urna quam viverra nisi, in interdum
+   massa nibh nec erat."
+
+run_match = function(s,pat){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_match(s, regex = pat, cg_missing = ""),
+        re2_match(s,pat),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+        ICU = stri_match(s, regex = pat1, cg_missing = ""),
+        RE2c = re2_match(s, regexp),
+        RE2n = re2_match(s, pat),
+        times = 20
+    ))
+}
+
+run_match_all = function(s,pat){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_match_all_regex(s,pat, cg_missing = ""),
+        re2_match_all(s,pat),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+        ICU = stri_match_all_regex(s,pat1, cg_missing = ""),
+        RE2c = re2_match_all(s, regexp),
+        RE2n = re2_match_all(s, pat),
+        times = 20
+    ))
+}
+s <- lorem_text
+
+run_match(s,"(a+)+")
+run_match(s," ")
+
+run_match_all(s,"(a+)+")
+run_match_all(s," ")
+```
+
+### Count Methods
+
+```{r}
+s <- lorem_text
+srep <- rep(s,100)
+srepdup <- stri_dup(srep,10)
+
+#regex
+pat1 <- " [[a-z]]*\\. Phasellus (ph|or|co)"
+pat2 <- "(s|el|v)it"
+pat3 <- c(pat1, pat2, "ell?(e|u| )", "(L|l)orem .*? nisi .*? nisi","123")
+
+run_count = function(s,pat){
+    regexp = re2(pat)
+    autoplot(microbenchmark(
+    ICU = stri_count_regex(s,pat1),
+    RE2c = re2_count(s, regexp),
+    RE2n = re2_count(s, pat),
+    times = 20
+    ))
+}
+
+run_count(s,pat1)
+run_count(s,pat2)
+run_count(s,pat3)
+
+run_count(srep,pat1)
+run_count(srep,pat2)
+run_count(srep,pat3)
+
+run_count(srepdup,pat1)
+run_count(srepdup,pat2)
+run_count(srepdup,pat3)
+
+```
+
+### Locate Methods
+
+```{r}
+run_locate = function(s,pat){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_locate_first_regex(s,pat),
+        re2_locate(s,pat),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+    ICU = stri_locate_first_regex(s,pat),
+    RE2c = re2_locate(s, regexp),
+    RE2n = re2_locate(s, pat),
+    times = 20
+    ))
+}
+
+run_locate_all = function(s,pat){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_locate_all_regex(s,pat),
+        re2_locate_all(s,pat),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+    ICU = stri_locate_all_regex(s,pat),
+    RE2c = re2_locate_all(s, regexp),
+    RE2n = re2_locate_all(s, pat),
+    times = 20
+    ))
+}
+
+x <- stri_dup('aba', c(100, 1000, 10000))
+run_locate(x,"b")
+run_locate_all(x,"b")
+
+x <- stri_dup('aba', 1:10)
+run_locate(x,"b")
+run_locate_all(x,"b")
+```
+
+## Replace Methods
+
+```{r}
+s <- lorem_text
+run_replace = function(s,pat,reps){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_replace_first_regex(s,pat,reps),
+        re2_replace(s,pat,reps),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+    ICU = stri_replace_first_regex(s,pat, reps),
+    RE2c = re2_replace(s, regexp, reps),
+    RE2n = re2_replace(s, pat, reps),
+    times = 20
+    ))
+}
+
+run_replace_all = function(s,pat,reps){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_replace_all_regex(s,pat,reps),
+        re2_replace_all(s,pat,reps),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+    ICU = stri_replace_all_regex(s, pat, reps),
+    RE2c = re2_replace_all(s, regexp, reps),
+    RE2n = re2_replace_all(s, pat, reps),
+    times = 20
+    ))
+}
+run_replace(s," ",1)
+run_replace_all(s," ",1)
+run_replace(s,' ',1:10)
+run_replace_all(s,' ',1:10)
+
+srep <- rep(s,10)
+run_replace(srep," ",1)
+run_replace_all(srep," ",1)
+
+srepdup <- stri_dup(srep,26)
+run_replace(srepdup," ",1:10)
+run_replace_all(srepdup," ",1:10)
+```
+
+## Split Methods
+
+```{r}
+sorig <- lorem_text
+s <- sorig
+
+run_split = function(s,pat){
+    regexp = re2(pat)
+    
+    stopifnot(all.equal(
+        stri_split_regex(s,pat),
+        re2_split(s,pat),
+        check.attributes = FALSE))
+    
+    autoplot(microbenchmark(
+    ICU = stri_split_regex(s,pat),
+    RE2c = re2_split(s, regexp),
+    RE2n = re2_split(s, pat),
+    times = 20
+    ))
+}
+
+run_split(s, " ")
+run_split(s, "(a+)+")
+
+s <- stri_dup(rep(sorig,10),10)
+
+run_split(s, " ")
+run_split(s, "(a+)+")
+```

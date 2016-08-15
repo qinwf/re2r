@@ -1,0 +1,120 @@
+
+## Fail to Match
+
+These strings will fail to match the pattern, and they test the speed of failed match.
+
+```{r}
+gen_bench = function(range_, pattern) {
+    times.list <- list()
+    index = 1
+    for (N in range_) {
+        # pre-compiled RE2
+        regexp = re2(pattern)
+        string = stringi::stri_rand_strings(1, N,
+                                            pattern = "[a-zA-Z0-9 !@#$%()*Ω≈ç√∫˜µåœ∑†¨ˆ˙©ƒ]")
+        
+        # run gc
+        invisible(gc())
+        
+        # benchmark
+        N.times <- microbenchmark(
+            ICU = stri_detect_regex(string, pattern = pattern),
+            PCRE = grepl(pattern, string, perl = TRUE),
+            TRE = grepl(pattern, string, perl = FALSE),
+            RE2n = re2_detect(string, pattern),
+            RE2c = re2_detect(string, regexp),
+            times = 5
+        )
+        
+        times.list[[index]] <- data.frame(N, N.times)
+        index = index + 1
+    }
+    
+    times <- do.call(rbind, times.list)
+    return(times)
+}
+
+plot_bench = function(pattern) {
+    res = gen_bench(seq(from = 10000, to = 70000, by = 10000), pattern)
+    
+    direct.label(
+        linear.legend(
+            res,
+            limit = c(0, 71000),
+            breaks = seq(from = 10000, to = 70000, by = 10000),
+            xlab_name = "string size"
+        ),
+        "last.polygons"
+    )
+}
+```
+
+These two are easy because they start with an A,
+giving the search loop in something to call `memchr` in C++. These tests are from RE2 library.
+
+```{r}
+EASY0 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ$"
+plot_bench(EASY0)
+
+EASY1 = "A[AB]B[BC]C[CD]D[DE]E[EF]F[FG]G[GH]H[HI]I[IJ]J$"
+plot_bench(EASY1)
+```
+
+This is a little harder, since it starts with a character class
+and thus can't be `memchr`'ed in C++.
+
+```{r}
+MEDIUM = "[XYZ]ABCDEFGHIJKLMNOPQRSTUVWXYZ$"
+plot_bench(MEDIUM)
+```
+
+This is a fair amount harder, because of the leading [ -~]*.
+A bad backtracking implementation will take O(text^2) time to
+figure out there's no match.
+
+```{r}
+HARD = "[ -~]*ABCDEFGHIJKLMNOPQRSTUVWXYZ$"
+plot_bench(HARD)
+```
+
+This stresses engines that are trying to track parentheses.
+
+```{r}
+PARENS = "([ -~])*(A)(B)(C)(D)(E)(F)(G)(H)(I)(J)(K)(L)(M)(N)(O)(P)(Q)(R)(S)(T)(U)(V)(W)(X)(Y)(Z)$"
+plot_bench(PARENS)
+```
+
+This pattern has a high degree of fanout.
+NFA execution will be particularly slow.
+
+```{r}
+FANOUT = "(?:[\\x{80}-\\x{10FFFF}]?){100}[\\x{80}-\\x{10FFFF}]"
+range_ = seq(from = 10000, to = 80000, by = 10000)
+times.list <- list()
+index = 1
+for(N in range_){
+    # pre-compiled RE2
+    regexp = re2(FANOUT)
+    pattern = FANOUT
+    string = stringi::stri_rand_strings(1,N, 
+                                        pattern="[a-zA-Z0-9 !@#$%()*Ω≈ç√∫˜µåœ∑†¨ˆ˙©ƒ]")
+    
+    # run gc
+    invisible(gc())
+    
+    # benchmark
+    N.times <- microbenchmark(
+        ICU = stri_detect_regex(string, pattern = pattern),
+        PCRE = grepl(pattern, string, perl = TRUE),
+        RE2n = re2_detect(string, pattern),
+        RE2c = re2_detect(string, regexp),
+        times = 5)
+    
+    times.list[[index]] <- data.frame(N, N.times)
+    index = index+1
+}
+
+times <- do.call(rbind, times.list)
+
+direct.label(linear.legend(times, limit = c(0,90000), breaks = range_, xlab_name = "string size"), "last.polygons")
+```

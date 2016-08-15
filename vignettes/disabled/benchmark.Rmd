@@ -24,6 +24,49 @@ library(stringi)
 library(microbenchmark)
 library(ggplot2)
 library(directlabels)
+library(knitr)
+
+parallel = T
+fail = T
+others = T
+redos = T
+stringi_bench = T
+
+linear.legend <- function(times, 
+                          ylab_name = "seconds", 
+                          xlab_name = "subject/pattern size",
+                          limit = c(1, 30), 
+                          breaks = c(1, 5, 10, 15, 20, 25),
+                          title = "Timing regular expressions in R, linear scale") 
+{
+  ggplot()+
+  ggtitle(title)+
+  scale_y_continuous(ylab_name)+
+  scale_x_continuous(xlab_name,
+                     limits=limit,
+                     breaks=breaks)+
+  geom_point(aes(N, time/1e9, color=expr),
+             shape=1,
+             data=times)
+}
+
+log.legend <- function(times, ylab_name = "log scale seconds",
+                       xlab_name = "subject/pattern size",
+                       limit = c(1, 30), 
+                       breaks = c(1, 5, 10, 15, 20, 25),
+                       title = "Timing regular expressions in R, log scale") 
+{ 
+  ggplot()+
+  ggtitle(title)+
+  scale_y_log10(ylab_name)+
+  scale_x_log10(xlab_name,
+                limits=limit,
+                breaks=breaks)+
+  geom_point(aes(N, time/1e9, color=expr),
+             shape=1,
+             data=times)
+}
+
 ```
 
 
@@ -33,166 +76,32 @@ library(directlabels)
 + RE2n - RE2 with string pattern
 + RE2c - RE2 with pre-compiled regular expression
 
-## Repetitions
 
-Derived from Toby Dylan Hocking [tdhock/regex-tutorial
-](https://github.com/tdhock/regex-tutorial)
 
-### Part 1
+```{r, include=FALSE}
+all_txt = c()
 
-```{r Repetitions-1, echo=TRUE}
-max.N <- 25
-times.list <- list()
-for(N in 1:max.N){
-  subject <- paste(rep("a", N), collapse="")
-  pattern <- paste(rep(c("a?", "a"), each=N), collapse="")
-  regexp = re2(pattern)
-  invisible(gc())
-  N.times <- microbenchmark(
-    ICU = stri_detect_regex(subject, pattern = pattern),
-    ICU_value = stri_match(subject, regex = pattern),
-    PCRE = regexpr(pattern, subject, perl = TRUE),
-    TRE = regexpr(pattern, subject, perl = FALSE),
-    RE2n_value = re2_match(subject, pattern),
-    RE2c_value = re2_match(subject, regexp),
-    RE2n = re2_detect(subject, pattern),
-    RE2c = re2_detect(subject, regexp),
-    times = 10)
-  times.list[[N]] <- data.frame(N, N.times)
-}
-times <- do.call(rbind, times.list)
-
-```
-
-```{r Repetitions-2}
-linear.legend <- function(times) {
-    ggplot()+
-  ggtitle("Timing regular expressions in R, linear scale")+
-  scale_y_continuous("seconds")+
-  scale_x_continuous("subject/pattern size",
-                     limits=c(1, 27),
-                     breaks=c(1, 5, 10, 15, 20, 25))+
-  geom_point(aes(N, time/1e9, color=expr),
-             shape=1,
-             data=times)
+if(redos==T){
+    all_txt = c(all_txt,knit_expand(file = "./bench/bench-redos.Rmd"))
 }
 
-direct.label(linear.legend(times), "last.polygons")
-
-log.legend <- function(times) { 
-    ggplot()+
-  ggtitle("Timing regular expressions in R, log scale")+
-  scale_y_log10("seconds")+
-  scale_x_log10("subject/pattern size",
-                limits=c(1, 30),
-                breaks=c(1, 5, 10, 15, 20, 25))+
-  geom_point(aes(N, time/1e9, color=expr),
-             shape=1,
-             data=times)
+if(fail==T){
+    all_txt = c(all_txt,knit_expand(file = "./bench/bench-fail.Rmd"))
 }
 
-direct.label(log.legend(times), "last.polygons")
-```
-
-### Part 2
-
-Derived from [stringi](https://github.com/Rexamine/stringi/blob/master/devel/benchmarks/mbmark-regex-detect1.R).
-
-```{r}
-(lettersdigits <- c(0:9, stri_enc_fromutf32(list(97L, 98L, 99L, 100L, 101L, 102L, 103L, 104L, 105L, 106L, 107L,  108L, 109L, 110L, 111L, 112L, 113L, 114L, 115L, 116L, 117L, 118L,  119L, 120L, 121L, 122L, 261L, 263L, 281L, 322L, 324L, 243L, 347L,  378L, 380L))))
-
-(lettersdigits <- enc2native(lettersdigits))
-
-set.seed(123)
-
-letdig <- replicate(100000, {
-  paste(sample(lettersdigits, floor(abs(rcauchy(1, 10)) + 1), replace = TRUE), collapse = '')
-})
-
-
-times.list <- list()
-for(N in c(1,5,10,15,20,25)){
-    pattern = paste0("[0-9]{",N,"}")
-    regexp = re2(pattern)
-    gc(reset=TRUE)
-    times_N <- microbenchmark(
-      TRE = grepl(pattern, letdig),
-      PCRE = grepl(pattern, letdig, perl=TRUE),
-      ICU = stri_detect_regex(letdig, pattern),
-      RE2n =  re2_detect(letdig, pattern),
-      RE2c = re2_detect(letdig, regexp),
-      times = 10
-    )
-  times.list[[N]] <- data.frame(N, times_N)
+if(stringi_bench==T){
+    all_txt = c(all_txt,knit_expand(file = "./bench/bench-stringi.Rmd"))
 }
-times <- do.call(rbind, times.list)
 
-direct.label(linear.legend(times), "last.polygons")
+if(others==T){
+    all_txt = c(all_txt,knit_expand(file = "./bench/bench-others.Rmd"))
+}
 
-identical(grepl("[0-9]{3,}", letdig) , re2_match(letdig, "[0-9]{3,}"))
-identical(grepl("[0-9]{3,}", letdig, perl = TRUE), re2_detect(letdig, "[0-9]{3,}"))
-identical(stri_detect_regex(letdig, "[0-9]{3,}"), re2_detect(letdig, "[0-9]{3,}"))
+if(parallel==T){
+    all_txt = c(all_txt,knit_expand(file = "./bench/bench-parallel.Rmd"))
+}
+
+
 ```
 
-## Parallel
-
-On Travis-CI with 2 cores CPU.
-
-### Quote
-
-```{r}
-dd =stri_rand_strings(1000000,10, pattern = "[a-zA-Z0-9\"\']")
-head(dd)
-
-identical(quote_meta(dd), quote_meta(dd, parallel = T))
-
-microbenchmark(sequential =  quote_meta(dd), parallel =  quote_meta(dd, parallel = T), times = 5)
-```
-
-### Replcae
-
-```{r}
-dd =stri_rand_strings(5000000, 10, pattern = "[a-zA-Z0-9\"\']")
-head(dd)
-regexp = re2("sd2er3")
-
-identical(re2_replace(dd, regexp, ""), re2_replace(dd, regexp, "", parallel = T))
-identical(re2_replace_all(dd, regexp, ""), re2_preplace_all(dd, regexp, ""))
-
-invisible(gc())
-microbenchmark(sequential = re2_replace(dd, regexp, ""), parallel = re2_preplace(dd, regexp, "") , times = 5)
-
-invisible(gc())
-microbenchmark(sequential = re2_replace_all(dd, regexp, ""), parallel = re2_preplace_all(dd, regexp, "") , times = 5)
-```
-
-### Extract
-
-```{r}
-dd =stri_rand_strings(5000000,10, pattern = "[a-zA-Z0-9\"\']")
-head(dd)
-regexp = re2("(sd)")
-
-identical(re2_pextract(dd, regexp), re2_extract(dd, regexp))
-identical(re2_pextract_all(dd, regexp), re2_extract_all(dd, regexp))
-
-invisible(gc())
-microbenchmark(sequential =  re2_extract(dd, regexp), parallel = re2_pextract(dd, regexp) ,times = 5)
-
-
-invisible(gc())
-microbenchmark(sequential =  re2_extract_all(dd, regexp), parallel = re2_pextract_all(dd, regexp) ,times = 5)
-```
-
-### Match
-
-```{r}
-dd =stri_rand_strings(5000000,10, pattern = "[a-zA-Z0-9\"\']")
-head(dd)
-regexp = re2("sd")
-
-identical(re2_match(dd, regexp, parallel = T), re2_match(dd, regexp))
-
-invisible(gc())
-microbenchmark(sequential =  re2_match(dd, regexp), parallel = re2_match(dd, regexp, parallel = T) ,times = 5)
-```
+`r knit(text = all_txt)`
