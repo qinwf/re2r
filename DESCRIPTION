@@ -4,6 +4,8 @@ Title: RE2 Regular Expression
 Version: 0.1.0
 Authors@R: c(
     person("Qin", "Wenfeng", , "mail@qinwenfeng.com", c("aut", "cre")),
+    person("Toby Dylan Hocking", role = "ctb"),
+    person("Marek Gagolewski", role = "ctb"),
     person("RE2 developers", role = "ctb")
     )
 Maintainer: Qin Wenfeng <mail@qinwenfeng.com>
