@@ -17,3 +17,7 @@ GTAGS
 ^TODO\.md$
 ^times\.RData$
 ^email\.png$
+^.*\.csv\.gz$
+^pan_tadeusz_15\.txt$
+\.git/
+.git

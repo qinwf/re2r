@@ -21,3 +21,5 @@ listo.xlsx
 CMakeLists.txt
 src-i386/
 src-x64/
+*.csv.gz
+pan_tadeusz_15.txt
