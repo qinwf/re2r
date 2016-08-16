@@ -222,7 +222,7 @@ test_that("vectorize locate", {
 test_that("stringi tests",{
     expect_is(re2_locate_all(character(0), "a"), "list")
 
-    # not working
+    # differences for empty string
     # expect_equivalent(re2_locate_all(NA, character(0)), list())
     # expect_equivalent(re2_locate_all(LETTERS, character(0)), list())
     # suppressWarnings(expect_equivalent(re2_locate_all("abc", ""), list(matrix(c(NA_integer_,NA_integer_)))))

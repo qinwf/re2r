@@ -203,8 +203,6 @@ test_that("stringi replace tests",{
 
     expect_identical(re2_replace(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*", "\u0108"),
                      c("\u0108\u0105\u0106\u0107", "\u0108\u0105\u0107")) # match of zero length
-    # expect_identical(re2_replace(c("\u0105\u0106\u0107", "\u0105\u0107"), "(?<=\u0106)", "\u0108"),
-    #                 c("\u0105\u0106\u0108\u0107", "\u0105\u0107")) # match of zero length:
     expect_identical(re2_replace("","^.*$","hey!"),"hey!")
     expect_identical(re2_replace("  ","^.*$","hey!"),"hey!")
 
