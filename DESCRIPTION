@@ -3,10 +3,11 @@ Type: Package
 Title: RE2 Regular Expression
 Version: 0.1.0
 Authors@R: c(
-    person("Qin", "Wenfeng", , "mail@qinwenfeng.com", c("aut", "cre")),
-    person("Toby Dylan Hocking", role = "ctb"),
-    person("Marek Gagolewski", role = "ctb"),
-    person("RE2 developers", role = "ctb")
+    person("Qin Wenfeng", email = "mail@qinwenfeng.com", role = c("aut", "cre")),
+    person("Toby Dylan Hocking", role = "ctb", comment = "benchmarks"),
+    person("Marek Gagolewski", role = "ctb", comment = "stringi benchmarks and test cases"),
+    person("RE2 developers", role = "ctb", comment = "RE2 library"),
+    person("Jeffrey Avallone", role = "ctb", comment = "regexper library")
     )
 Maintainer: Qin Wenfeng <mail@qinwenfeng.com>
 Description: RE2 is a primarily DFA based regexp engine from Google that is very fast
