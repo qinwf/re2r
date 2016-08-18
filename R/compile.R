@@ -126,40 +126,6 @@ re2 = function(pattern,
     )
 }
 
-#' The string specification for this RE2.
-#'
-#' @param regexp a pre-compiled regular expression
-#' @examples
-#' regexp = re2("1")
-#' get_pattern(regexp)
-#'
-#' get_pattern(re2("^(?P<abc>abc)a"))
-#' @return a string
-#' @export
-get_pattern = function(regexp) {
-    res = cpp_get_pattern(regexp)
-    res
-}
-
-#' Return capturing names for a pre-compiled regular expression.
-#'
-#' Return capturing names.
-#'
-#' @param regexp a pre-compiled regular expression
-#' @return capturing names
-#' @examples
-#' get_named_groups(re2("(a)(?P<name>b)"))
-#'
-#' regexp = re2("(?P<A>exprA(?P<B>exprB)(?P<C>exprC))((expr5)(?P<D>exprD))")
-#'
-#' print(regexp)
-#' (res = get_named_groups(regexp))
-#' re2_match("exprAexprBexprCexpr5exprD", regexp)
-#' @export
-get_named_groups = function(regexp) {
-    res = cpp_get_named_groups(regexp)
-    res
-}
 
 #' Escapes all potentially meaningful regexp characters in  'unquoted'.
 #'

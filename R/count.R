@@ -29,14 +29,16 @@
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#' Count a pattern in strings.
+#' Count the number of matches in a string.
 #'
-#' @param pattern a pre-compiled regular expression or a string
+#' Count the number of matches in a string. Vectorised over strings and patterns.
+#' @param pattern a character vector or pre-compiled regular expressions
 #' @param string a character vector
-#' @param anchor UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.
+#' @param anchor see \code{\link{UNANCHORED}}
 #' @param parallel use multithread
 #' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
-#' @param ... further arguments passed to or from other methods.
+#' @param ... further arguments passed to \code{\link{re2}}
+#' @return An integer vector.
 #' @examples
 #' re2_count("one", "(o.e)")
 #' re2_count("123-234-2222", "\\d\\d\\d-\\d\\d\\d-\\d\\d\\d\\d")
@@ -47,7 +49,7 @@
 #' re2_count(words, "[abc]")
 #'
 #' # vectorize
-#' (res = re2_count("This", letters))
+#' re2_count("This", letters)
 #'
 #'
 #' @export

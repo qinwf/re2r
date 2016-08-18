@@ -2,7 +2,7 @@
 % Please edit documentation in R/count.R
 \name{re2_count}
 \alias{re2_count}
-\title{Count a pattern in strings.}
+\title{Count the number of matches in a string.}
 \usage{
 re2_count(string, pattern, anchor = UNANCHORED, parallel = FALSE,
   grain_size = 1e+05, ...)
@@ -10,18 +10,21 @@ re2_count(string, pattern, anchor = UNANCHORED, parallel = FALSE,
 \arguments{
 \item{string}{a character vector}
 
-\item{pattern}{a pre-compiled regular expression or a string}
+\item{pattern}{a character vector or pre-compiled regular expressions}
 
-\item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
+\item{anchor}{see \code{\link{UNANCHORED}}}
 
 \item{parallel}{use multithread}
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to \code{\link{re2}}}
+}
+\value{
+An integer vector.
 }
 \description{
-Count a pattern in strings.
+Count the number of matches in a string. Vectorised over strings and patterns.
 }
 \examples{
 re2_count("one", "(o.e)")
@@ -33,7 +36,7 @@ re2_count(words, "^b")
 re2_count(words, "[abc]")
 
 # vectorize
-(res = re2_count("This", letters))
+re2_count("This", letters)
 
 
 }

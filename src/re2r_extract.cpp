@@ -123,7 +123,7 @@ SEXP cpp_extract(CharacterVector input, SEXP regexp, bool all,  size_t anchor, b
   auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
   SEXP inputx = input;
 
-  if (!parallel || input.size() < grain_size) {
+  if (!parallel || nrecycle < grain_size) {
 
     if (!all) {
 

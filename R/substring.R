@@ -45,8 +45,11 @@
 #' x <- "ABC"
 #'
 #' (sub_string(x, 1, 1) <- "A")
+#' x
 #' (sub_string(x, -2, -2) <- "GHIJ")
+#' x
 #' (sub_string(x, 2, -2) <- "")
+#' x
 #' @export
 sub_string <- function(string, from = 1L, to = -1L) {
     if (is.matrix(from)) {

@@ -123,7 +123,7 @@ re2_match_all(
 ### 2. Replace a substring
 
 ```{r, eval=FALSE, include=TRUE}
-re2_replace(input, pattern, rewrite)
+re2_replace(string, pattern, rewrite)
 ```
 
 Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and replaces the found substrings with "rewrite text".
@@ -143,7 +143,7 @@ re2_extract(input, pattern)
 Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and return the found substrings with "rewrite text".
 
 ```{r}
-re2_extract("yabba dabba doo","yabba")
+re2_extract("yabba dabba doo", "yabba")
 re2_extract("test@me.com", "(.*)@([^.]*)")
 ```
 

@@ -339,7 +339,7 @@ SEXP cpp_split(CharacterVector input, SEXP regexp, NumericVector part,
     limit = as<size_t>(part);
   }
 
-  if (!parallel || input.size() < grain_size) {
+  if (!parallel || nrecycle < grain_size) {
     if (!fixed) {
       return cpp_split_not_fixed(input, ptrv, limit, nrecycle);
     } else {

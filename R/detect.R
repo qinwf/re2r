@@ -31,12 +31,8 @@
 
 #' Test a pattern in strings, and return boolean.
 #'
-#' @param pattern a pre-compiled regular expression or a string
-#' @param string a character vector
-#' @param anchor UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.
-#' @param parallel use multithread
-#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
-#' @param ... further arguments passed to or from other methods.
+#' Test a pattern in strings, and return boolean. Vectorised over strings and patterns.
+#' @inheritParams re2_count
 #' @examples
 #' re2_detect("one", "(o.e)")
 #' re2_detect("123-234-2222", "\\d\\d\\d-\\d\\d\\d-\\d\\d\\d\\d")
@@ -50,6 +46,10 @@
 #' (res = re2_detect("This", letters))
 #' letters[res]
 #'
+#' letters[re2_detect("This", letters, case_sensitive = FALSE)]
+#'
+#' letters[re2_detect("This", re2(letters, case_sensitive = FALSE))]
+#'
 #' # In stringi, "" empty search patterns return NA.
 #' # In re2r, empty search patterns will match
 #' # empty string.
@@ -57,6 +57,7 @@
 #' re2_detect("abc", "")
 #' stringi::stri_detect("abc", regex = "")
 #'
+#' @return A logical vector.
 #' @export
 re2_detect = function(string,
                       pattern,

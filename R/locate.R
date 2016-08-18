@@ -28,17 +28,33 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#' Locate a pattern in strings.
+#' Locate the position of patterns in a string.
 #'
-#' If the match is of length 0, (e.g. from a special match like $) end will be one character less than start.
+#' Locate the position of patterns in a string.If the match is of length 0, (e.g. from a special match like $) end will be one character less than start. Vectorised over string and pattern.
 #'
-#' @param pattern a pre-compiled regular expression or a string
+#' @param pattern a character vector or pre-compiled regular expressions
 #' @param string a character vector
 #' @param parallel use multithread
 #' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
-#' @param ... further arguments passed to or from other methods.
+#' @param ... further arguments passed to \code{\link{re2}}
 #' @examples
 #' re2_locate("yabba dabba doo", "d")
+#'
+#' fruit <- c("apple", "banana", "pear", "pineapple")
+#' re2_locate(fruit, "$")
+#' re2_locate(fruit, "a")
+#' re2_locate(fruit, "e")
+#' re2_locate(fruit, c("a", "b", "p", "p"))
+#'
+#' re2_locate_all(fruit, "a")
+#' re2_locate_all(fruit, "e")
+#' re2_locate_all(fruit, c("a", "b", "p", "p"))
+#'
+#' # Find location of every character
+#' re2_locate_all(fruit, "\\P{M}")
+#'
+#' @return For \code{\link{re2_locate}}, an integer matrix. First column gives start postion of match, and second column gives end position. For \code{\link{re2_locate_all}} a list of integer matrices.
+#'
 #' @export
 re2_locate = function(string, pattern,  parallel = FALSE, grain_size= 100000, ...) {
 

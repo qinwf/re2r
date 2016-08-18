@@ -29,25 +29,28 @@
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#' Replace a pattern in strings.
+#' Replace matched patterns in a string.
 #'
-#' Replace the first match of "pattern" in "str" with "rewrite".
-#' Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
+#' Replace the the first match or all matches of \code{pattern} in \code{string} with \code{replacement}.
+#'
+#' Within \code{replacement}, backslash-escaped digits (\\1 to \\9) can be
 #' used to insert text matching corresponding parenthesized group
-#' from the pattern.  \\0 in "rewrite" refers to the entire matching
-#' text. Vectorised over string, pattern and replacement.
+#' from the pattern.  \\0 in \code{replacement} refers to the entire matching
+#' text.
+#'
+#' Vectorised over strings, patterns and replacements.
 #'
 #' @param pattern a pre-compiled regular expression or a string
-#' @param replacement replace the first match or all of the match of "pattern" in "input" with "rewrite"
-#' @param string input character vector
-#' @param parallel use multithread
-#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
-#' @param ... further arguments passed to or from other methods
-#' @return a character vector
+#' @param replacement replace the first match or all of the match of \code{pattern} in \code{string} with "rewrite"
+#' @inheritParams re2_locate
 #' @examples
 #' regexp = re2("b+")
-#' re2_replace_all("yabba dabba doo", regexp,"d") == "yada dada doo"
-#' re2_replace("yabba dabba doo", "b+","d") == "yada dabba doo"
+#' re2_replace_all("yabba dabba doo", regexp,"d")
+#' re2_replace("yabba dabba doo", "b+","d")
+#'
+#' pattern = "^[\\s]+|[\\s]+$"
+#' re2_replace_all(c("  abc  "," this is "), pattern, "")
+#' @return For \code{\link{re2_replace}}, a character vector. For \code{\link{re2_replace_all}}, a character vector with the number of replacements.
 #' @export
 re2_replace = function(string,
                        pattern,

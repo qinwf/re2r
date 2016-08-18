@@ -10,9 +10,9 @@ re2_subset(string, pattern, anchor = 0, omit_na = TRUE, parallel = FALSE,
 \arguments{
 \item{string}{a character vector}
 
-\item{pattern}{a pre-compiled regular expression or a string}
+\item{pattern}{a character vector or pre-compiled regular expressions}
 
-\item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
+\item{anchor}{see \code{\link{UNANCHORED}}}
 
 \item{omit_na}{omit na result}
 
@@ -20,13 +20,13 @@ re2_subset(string, pattern, anchor = 0, omit_na = TRUE, parallel = FALSE,
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to \code{\link{re2}}}
 }
 \value{
 A character vector.
 }
 \description{
-This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
+This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}. Vectorised over strings and patterns.
 }
 \examples{
 fruit <- c("apple", "banana", "pear", "pinapple")

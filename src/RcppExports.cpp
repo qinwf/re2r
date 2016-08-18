@@ -6,6 +6,17 @@
 
 using namespace Rcpp;
 
+// cpp_get_groups
+SEXP cpp_get_groups(SEXP regexp);
+RcppExport SEXP re2r_cpp_get_groups(SEXP regexpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
+    __result = Rcpp::wrap(cpp_get_groups(regexp));
+    return __result;
+END_RCPP
+}
 // cpp_get_program_fanout
 SEXP cpp_get_program_fanout(SEXP regexp);
 RcppExport SEXP re2r_cpp_get_program_fanout(SEXP regexpSEXP) {
@@ -39,17 +50,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// get_number_of_groups
-int get_number_of_groups(SEXP regexp);
-RcppExport SEXP re2r_get_number_of_groups(SEXP regexpSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(get_number_of_groups(regexp));
-    return __result;
-END_RCPP
-}
 // cpp_get_named_groups
 SEXP cpp_get_named_groups(SEXP regexp);
 RcppExport SEXP re2r_cpp_get_named_groups(SEXP regexpSEXP) {
@@ -61,25 +61,25 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// get_expression_size
-int get_expression_size(SEXP regexp);
-RcppExport SEXP re2r_get_expression_size(SEXP regexpSEXP) {
+// cpp_get_expression_size
+int cpp_get_expression_size(SEXP regexp);
+RcppExport SEXP re2r_cpp_get_expression_size(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(get_expression_size(regexp));
+    __result = Rcpp::wrap(cpp_get_expression_size(regexp));
     return __result;
 END_RCPP
 }
-// is_re2c_na
-LogicalVector is_re2c_na(SEXP regexp);
-RcppExport SEXP re2r_is_re2c_na(SEXP regexpSEXP) {
+// cpp_is_re2c_na
+LogicalVector cpp_is_re2c_na(SEXP regexp);
+RcppExport SEXP re2r_cpp_is_re2c_na(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(is_re2c_na(regexp));
+    __result = Rcpp::wrap(cpp_is_re2c_na(regexp));
     return __result;
 END_RCPP
 }
@@ -94,14 +94,14 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// get_options
-SEXP get_options(SEXP regexp);
-RcppExport SEXP re2r_get_options(SEXP regexpSEXP) {
+// cpp_get_options
+SEXP cpp_get_options(SEXP regexp);
+RcppExport SEXP re2r_cpp_get_options(SEXP regexpSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
     Rcpp::traits::input_parameter< SEXP >::type regexp(regexpSEXP);
-    __result = Rcpp::wrap(get_options(regexp));
+    __result = Rcpp::wrap(cpp_get_options(regexp));
     return __result;
 END_RCPP
 }

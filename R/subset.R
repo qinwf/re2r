@@ -30,7 +30,7 @@
 
 #' Keep strings matching a pattern.
 #'
-#' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}.
+#' This is a convenient wrapper around \code{x[re2_detect(x, pattern)]}. Vectorised over strings and patterns.
 #'
 #' @inheritParams re2_detect
 #' @param omit_na omit na result

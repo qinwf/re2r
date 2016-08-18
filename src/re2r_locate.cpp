@@ -327,7 +327,7 @@ SEXP cpp_locate(CharacterVector input, SEXP regexp, bool all, bool parallel,
   SEXP colsname = Shield<SEXP>((Rf_allocVector(VECSXP, 2)));
   SET_VECTOR_ELT(colsname, 1, CharacterVector::create("start", "end"));
 
-  if (!parallel || input.size() < grain_size) {
+  if (!parallel || nrecycle < grain_size) {
     if (!all) {
       return cpp_locate_not_all(input, ptrv, colsname, nrecycle);
     } else { // not parallel ,all

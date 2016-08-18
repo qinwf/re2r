@@ -3,7 +3,7 @@
 \name{re2_replace}
 \alias{re2_replace}
 \alias{re2_replace_all}
-\title{Replace a pattern in strings.}
+\title{Replace matched patterns in a string.}
 \usage{
 re2_replace(string, pattern, replacement, parallel = FALSE,
   grain_size = 1e+05, ...)
@@ -12,31 +12,38 @@ re2_replace_all(string, pattern, replacement, parallel = FALSE,
   grain_size = 1e+05, ...)
 }
 \arguments{
-\item{string}{input character vector}
+\item{string}{a character vector}
 
 \item{pattern}{a pre-compiled regular expression or a string}
 
-\item{replacement}{replace the first match or all of the match of "pattern" in "input" with "rewrite"}
+\item{replacement}{replace the first match or all of the match of \code{pattern} in \code{string} with "rewrite"}
 
 \item{parallel}{use multithread}
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
-\item{...}{further arguments passed to or from other methods}
+\item{...}{further arguments passed to \code{\link{re2}}}
 }
 \value{
-a character vector
+For \code{\link{re2_replace}}, a character vector. For \code{\link{re2_replace_all}}, a character vector with the number of replacements.
 }
 \description{
-Replace the first match of "pattern" in "str" with "rewrite".
-Within "rewrite", backslash-escaped digits (\\1 to \\9) can be
+Replace the the first match or all matches of \code{pattern} in \code{string} with \code{replacement}.
+}
+\details{
+Within \code{replacement}, backslash-escaped digits (\\1 to \\9) can be
 used to insert text matching corresponding parenthesized group
-from the pattern.  \\0 in "rewrite" refers to the entire matching
-text. Vectorised over string, pattern and replacement.
+from the pattern.  \\0 in \code{replacement} refers to the entire matching
+text.
+
+Vectorised over strings, patterns and replacements.
 }
 \examples{
 regexp = re2("b+")
-re2_replace_all("yabba dabba doo", regexp,"d") == "yada dada doo"
-re2_replace("yabba dabba doo", "b+","d") == "yada dabba doo"
+re2_replace_all("yabba dabba doo", regexp,"d")
+re2_replace("yabba dabba doo", "b+","d")
+
+pattern = "^[\\\\s]+|[\\\\s]+$"
+re2_replace_all(c("  abc  "," this is "), pattern, "")
 }
 

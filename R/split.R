@@ -28,18 +28,22 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#' Split strings with a pattern.
-#'
 #' Split up a string into pieces.
 #'
-#' @param pattern a pre-compiled regular expression or a string
-#' @param string a character vector
-#' @param n number of pieces to return. Default (Inf) uses all possible split positions.
-#' @param parallel use multithread
-#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms
-#' @param ... further arguments passed to or from other methods.
+#' Split up a string into pieces. Vectorised over string and pattern.
+#'
+#' @inheritParams re2_locate
+#' @param n number of pieces to return. Default (Inf) for
+#' \code{\link{re2_split}} uses all possible split positions.
+#' For \code{\link{re2_split_fixed}}, if n is greater than
+#'  the number of pieces, the result will be padded with
+#'  empty strings.
 #' @examples
 #' re2_split("yabba dabba doo", " ")
+#' re2_split_fixed(c("yabba dabba doo", "a bc"), " ", 2)
+#' @return For \code{\link{re2_split_fixed}}, a character matrix with n columns.
+#'
+#' For \code{\link{re2_split}}, a list of character vectors.
 #' @export
 re2_split = function(string, pattern, n = Inf, parallel = FALSE, grain_size = 100000, ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {

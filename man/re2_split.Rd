@@ -3,7 +3,7 @@
 \name{re2_split}
 \alias{re2_split}
 \alias{re2_split_fixed}
-\title{Split strings with a pattern.}
+\title{Split up a string into pieces.}
 \usage{
 re2_split(string, pattern, n = Inf, parallel = FALSE, grain_size = 1e+05,
   ...)
@@ -14,20 +14,30 @@ re2_split_fixed(string, pattern, n, parallel = FALSE, grain_size = 1e+05,
 \arguments{
 \item{string}{a character vector}
 
-\item{pattern}{a pre-compiled regular expression or a string}
+\item{pattern}{a character vector or pre-compiled regular expressions}
 
-\item{n}{number of pieces to return. Default (Inf) uses all possible split positions.}
+\item{n}{number of pieces to return. Default (Inf) for
+\code{\link{re2_split}} uses all possible split positions.
+For \code{\link{re2_split_fixed}}, if n is greater than
+ the number of pieces, the result will be padded with
+ empty strings.}
 
 \item{parallel}{use multithread}
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to \code{\link{re2}}}
+}
+\value{
+For \code{\link{re2_split_fixed}}, a character matrix with n columns.
+
+For \code{\link{re2_split}}, a list of character vectors.
 }
 \description{
-Split up a string into pieces.
+Split up a string into pieces. Vectorised over string and pattern.
 }
 \examples{
 re2_split("yabba dabba doo", " ")
+re2_split_fixed(c("yabba dabba doo", "a bc"), " ", 2)
 }
 

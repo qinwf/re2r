@@ -88,7 +88,7 @@ SEXP cpp_count(CharacterVector input, SEXP regexp, size_t anchor, bool parallel,
     auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
     SEXP inputx = input;
 
-    if (!parallel || input.size() < grain_size) {
+    if (!parallel || nrecycle < grain_size) {
 
             Shield<SEXP> xs(Rf_allocVector(INTSXP, nrecycle));
             auto x = INTEGER(xs);

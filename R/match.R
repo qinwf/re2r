@@ -30,30 +30,18 @@
 
 #' Find matched groups from strings.
 #'
-#' @param pattern a pre-compiled regular expression or a string
-#' @param string a character vector
-#' @param anchor UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.
-#' @param parallel multithreading support
-#' @param grain_size a minimum chunk size for tuning the behavior of parallel algorithms.
-#' @param ... further arguments passed to or from other methods.
+#' @inheritParams re2_count
 #' @examples
 #'
-#' test_string = "this is just one test";
-#' re2_match(test_string, "(o.e)")
+#' strings <- c("Gym: 627-112-1433", "Apple x2",
+#'              "888 888 8888", "This is a test.",
+#'              "627-112-1433 223-343-2232")
+#' phone <- "([2-9][0-9]{2})[- .](?P<second>[0-9]{3})[- .]([0-9]{4})"
+#' re2_extract(strings, phone)
+#' re2_match(strings, phone)
 #'
-#' (res = re2_match(test_string, "(o.e)"))
-#' str(res)
-#'
-#' (res = re2_match(test_string, "(?P<testname>this)( is)"))
-#' str(res)
-#'
-#' (res = re2_match_all(test_string, "(is)"))
-#'
-#' test_string = c("this is just one test", "the second test");
-#' (res = re2_match_all(test_string, "(is)"))
-#'
-#' test_string = c("this is just one test", "the second test")
-#' (res = re2_match(test_string, "is"))
+#' re2_extract_all(strings, phone)
+#' re2_match_all(strings, phone)
 #'
 #' regexp = re2("test",case_sensitive = FALSE)
 #' re2_match("TEST", regexp)
@@ -71,6 +59,12 @@
 #' re2_match("abc", "")
 #' stringi::stri_match("abc", regex = "")
 #'
+#' @return For \code{\link{re2_match}}, a character matrix. First column
+#'  is the complete match, followed by one column
+#' for each capture group with names.
+#'
+#' For \code{\link{re2_match_all}}, a list of
+#' character matrices.
 #' @export
 re2_match = function(string,
                      pattern,

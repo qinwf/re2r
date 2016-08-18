@@ -3,7 +3,7 @@
 \name{re2_locate}
 \alias{re2_locate}
 \alias{re2_locate_all}
-\title{Locate a pattern in strings.}
+\title{Locate the position of patterns in a string.}
 \usage{
 re2_locate(string, pattern, parallel = FALSE, grain_size = 1e+05, ...)
 
@@ -12,18 +12,35 @@ re2_locate_all(string, pattern, parallel = FALSE, grain_size = 1e+05, ...)
 \arguments{
 \item{string}{a character vector}
 
-\item{pattern}{a pre-compiled regular expression or a string}
+\item{pattern}{a character vector or pre-compiled regular expressions}
 
 \item{parallel}{use multithread}
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to \code{\link{re2}}}
+}
+\value{
+For \code{\link{re2_locate}}, an integer matrix. First column gives start postion of match, and second column gives end position. For \code{\link{re2_locate_all}} a list of integer matrices.
 }
 \description{
-If the match is of length 0, (e.g. from a special match like $) end will be one character less than start.
+Locate the position of patterns in a string.If the match is of length 0, (e.g. from a special match like $) end will be one character less than start. Vectorised over string and pattern.
 }
 \examples{
 re2_locate("yabba dabba doo", "d")
+
+fruit <- c("apple", "banana", "pear", "pineapple")
+re2_locate(fruit, "$")
+re2_locate(fruit, "a")
+re2_locate(fruit, "e")
+re2_locate(fruit, c("a", "b", "p", "p"))
+
+re2_locate_all(fruit, "a")
+re2_locate_all(fruit, "e")
+re2_locate_all(fruit, c("a", "b", "p", "p"))
+
+# Find location of every character
+re2_locate_all(fruit, "\\\\P{M}")
+
 }
 

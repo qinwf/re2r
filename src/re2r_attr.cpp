@@ -37,6 +37,14 @@ template <typename T> inline string numbertostring(T Number) {
 }
 
 // [[Rcpp::export]]
+SEXP cpp_get_groups(SEXP regexp) {
+    INIT_ptr if (bool(*ptr)) { return wrap(ptr->value()->NumberOfCapturingGroups()); }
+    else {
+       return IntegerVector::create(NA_INTEGER);
+    }
+}
+
+// [[Rcpp::export]]
 SEXP cpp_get_program_fanout(SEXP regexp) {
   INIT_ptr if (bool(*ptr)) {
     map<int, int> res;
@@ -74,30 +82,6 @@ LogicalVector cpp_regex_mimicsPCRE(SEXP regexp) {
   }
 }
 
-//' Return the number of capturing subpatterns
-//'
-//' Return the number of capturing subpatterns, or -1 if the
-//' regexp wasn't valid on construction.  The overall match ($0)
-//' does not count: if the regexp is "(a)(b)", returns 2.
-//'
-//' @param regexp a pre-compiled regular expression
-//' @return a integer
-//' @examples
-//' regexp = re2("1")
-//' get_number_of_groups(regexp)
-//'
-//' get_number_of_groups(re2("((?P<a>123)(12))"))
-//'
-//' # uncaptured groups
-//' get_number_of_groups(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
-//' @export
-// [[Rcpp::export]]
-int get_number_of_groups(SEXP regexp) {
-  INIT_ptr if (bool(*ptr)) { return ptr->value()->NumberOfCapturingGroups(); }
-  else {
-    return NA_INTEGER;
-  }
-}
 
 // [[Rcpp::export]]
 SEXP cpp_get_named_groups(SEXP regexp) {
@@ -106,41 +90,21 @@ SEXP cpp_get_named_groups(SEXP regexp) {
                                 ptr->value()->NumberOfCapturingGroups()+1));
   }
   else {
-    return CharacterVector(NA_STRING);
+    return CharacterVector::create(NA_STRING);
   }
 }
 
-//' Get pre-compiled regular expression program size
-//'
-//' Returns the program size, a very approximate measure of a regexp's "cost".
-//' Larger numbers are more expensive than smaller numbers.
-//'
-//' @param regexp a pre-compiled regular expression
-//' @return a integer
-//' @examples
-//' get_expression_size(re2("1"))
-//' get_expression_size(re2("(1)"))
-//' get_expression_size(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
-//' @export
+
 // [[Rcpp::export]]
-int get_expression_size(SEXP regexp) {
+int cpp_get_expression_size(SEXP regexp) {
   INIT_ptr if (bool(*ptr)) { return ptr->value()->ProgramSize(); }
   else {
     return NA_INTEGER;
   }
 }
 
-//' Check NA pattern
-//'
-//' Returns whether a pre-compiled regular expression is NA.
-//'
-//' @param regexp a pre-compiled regular expression
-//' @return boolean
-//' @examples
-//' is_re2c_na(re2(NA))
-//' @export
 // [[Rcpp::export]]
-LogicalVector is_re2c_na(SEXP regexp) {
+LogicalVector cpp_is_re2c_na(SEXP regexp) {
   INIT_ptr LogicalVector res(1);
   if (bool(*ptr)) {
     res[0] = false;
@@ -165,17 +129,9 @@ SEXP cpp_get_pattern(SEXP regexp) {
   }
 }
 
-//' Get options of a pre-compiled regular expression
-//'
-//' Returns options of a pre-compiled regular expression
-//'
-//' @param regexp a pre-compiled regular expression
-//' @return an R list
-//' @examples
-//' get_options(re2("test"))
-//' @export
+
 // [[Rcpp::export]]
-SEXP get_options(SEXP regexp) {
+SEXP cpp_get_options(SEXP regexp) {
   INIT_ptr if (bool(*ptr)) {
     List res(13);
     CharacterVector name = CharacterVector::create(
@@ -257,3 +213,5 @@ SEXP cpp_quote_meta(CharacterVector input, bool parallel, size_t grain_size) {
     return toprotect_optstring_sexp(res);
   }
 }
+
+

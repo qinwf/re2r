@@ -146,7 +146,7 @@ SEXP cpp_replace(CharacterVector input, SEXP regexp, CharacterVector rewrite_,
     vector<tr2::optional<string>> replace_res;
     replace_res.reserve(nrecycle);
 
-    if (!parallel || input.size() < grain_size) {
+    if (!parallel || nrecycle < grain_size) {
       for (auto i = 0; i != nrecycle; i++) {
         auto optptr = ptrv[i % ptrv.size()];
         auto rewritei = rewrite[i % rewrite.size()];

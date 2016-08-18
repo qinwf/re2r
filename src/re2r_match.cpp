@@ -471,7 +471,7 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
     build_regex_vector(regexp, ptrv);
     auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
 
-    if (!parallel || input.size() < grain_size) {
+    if (!parallel || nrecycle < grain_size) {
       return cpp_detect(input, ptrv, anchor_type, nrecycle);
     } else {
       return cpp_detect_parallel(input, ptrv, anchor_type, grain_size,

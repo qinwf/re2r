@@ -10,18 +10,21 @@ re2_detect(string, pattern, anchor = UNANCHORED, parallel = FALSE,
 \arguments{
 \item{string}{a character vector}
 
-\item{pattern}{a pre-compiled regular expression or a string}
+\item{pattern}{a character vector or pre-compiled regular expressions}
 
-\item{anchor}{UNANCHORED: no anchor. ANCHOR_START: anchor match at the beginning of the string. ANCHOR_BOTH: anchor match at the beginning and the end of the string.}
+\item{anchor}{see \code{\link{UNANCHORED}}}
 
 \item{parallel}{use multithread}
 
 \item{grain_size}{a minimum chunk size for tuning the behavior of parallel algorithms}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{further arguments passed to \code{\link{re2}}}
+}
+\value{
+A logical vector.
 }
 \description{
-Test a pattern in strings, and return boolean.
+Test a pattern in strings, and return boolean. Vectorised over strings and patterns.
 }
 \examples{
 re2_detect("one", "(o.e)")
@@ -35,6 +38,10 @@ re2_detect(words, "[abc]")
 # vectorize
 (res = re2_detect("This", letters))
 letters[res]
+
+letters[re2_detect("This", letters, case_sensitive = FALSE)]
+
+letters[re2_detect("This", re2(letters, case_sensitive = FALSE))]
 
 # In stringi, "" empty search patterns return NA.
 # In re2r, empty search patterns will match

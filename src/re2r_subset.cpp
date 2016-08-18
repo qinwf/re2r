@@ -40,7 +40,7 @@ SEXP cpp_subset(CharacterVector input, SEXP regexp, size_t anchor,
     auto nrecycle = re2r_recycling_rule(true, 2, input.size(), ptrv.size());
     LogicalVector res;
 
-    if (!parallel || input.size() < grain_size) {
+    if (!parallel || nrecycle < grain_size) {
         res = Shield<SEXP>(cpp_detect(input, ptrv, anchor_type, nrecycle));
     } else {
         res =  Shield<SEXP>(cpp_detect_parallel(input, ptrv, anchor_type, grain_size,
