@@ -50,6 +50,13 @@
 #' (res = re2_detect("This", letters))
 #' letters[res]
 #'
+#' # In stringi, "" empty search patterns return NA.
+#' # In re2r, empty search patterns will match
+#' # empty string.
+#'
+#' re2_detect("abc", "")
+#' stringi::stri_detect("abc", regex = "")
+#'
 #' @export
 re2_detect = function(string,
                       pattern,

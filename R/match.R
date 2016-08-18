@@ -58,6 +58,19 @@
 #' regexp = re2("test",case_sensitive = FALSE)
 #' re2_match("TEST", regexp)
 #'
+#' # differences from stringi
+#'
+#' # This kind of repeating capturing group works differently.
+#' re2_match("aasd", "(a*)+")
+#' stringi::stri_match("aasd", regex = "(a*)+")
+#'
+#' # In stringi, "" empty search patterns return NA.
+#' # In re2r, empty search patterns will match
+#' # empty string.
+#'
+#' re2_match("abc", "")
+#' stringi::stri_match("abc", regex = "")
+#'
 #' @export
 re2_match = function(string,
                      pattern,
