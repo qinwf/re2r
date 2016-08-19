@@ -401,7 +401,7 @@ struct MatValue : public Worker {
       StringPiece todo_str(ind->value());
       for (int pn = 0; pn != cap_nums; pn++)
         piece_ptr[pn].clear();
-      size_t cnt = 0;
+
       optstring optinner;
       size_t lastIndex = 0;
       auto str_size = todo_str.size();

@@ -39,7 +39,6 @@ inline size_t utf8_length(const char *s) {
 }
 
 inline void set_colnames(SEXP res, SEXP names) {
-  SEXP dims = Rf_getAttrib(res, R_DimSymbol);
   Rf_setAttrib(res, R_DimNamesSymbol, names);
 }
 
