@@ -50,42 +50,39 @@ Create a pre-compiled regular expression from a string.
 \details{
 The max_mem option controls how much memory can be used
 to hold the compiled form of the regexp (the Prog) and
-its cached DFA graphs.  Code Search placed limits on the number
-of Prog instructions and DFA states: 10,000 for both.
-In RE2, those limits would translate to about 240 KB per Prog
-and perhaps 2.5 MB per DFA (DFA state sizes vary by regexp;
-
-RE2 does a better job of keeping them small than Code Search did).
-Each RE2 has two Progs (one forward, one reverse), and each Prog
-can have two DFAs (one first match, one longest match).
-That makes 4 DFAs:
-
-    forward, first-match    - used for UNANCHORED or ANCHOR_LEFT searches
-if opt.longest_match() == false
-
-forward, longest-match  - used for all ANCHOR_BOTH searches,
-and the other two kinds if
-opt.longest_match() == true
-
-reverse, first-match    - never used
-
-reverse, longest-match  - used as second phase for unanchored searches
-
-The RE2 memory budget is statically divided between the two
-Progs and then the DFAs: two thirds to the forward Prog
-and one third to the reverse Prog.  The forward Prog gives half
-of what it has left over to each of its DFAs.  The reverse Prog
-gives it all to its longest-match DFA.
+its cached DFA graphs.
 
 Once a DFA fills its budget, it flushes its cache and starts over.
 If this happens too often, RE2 falls back on the NFA implementation.
 
 For now, make the default budget something close to Code Search.
 
-DefaultMaxMem = 8<<20;
+Default maxmem = 8<<20 = 8388608;
 }
 \examples{
 regexp = re2("test")
 regexp
+
+re2_match("abc\\ndef","(?s)(.*)")
+re2_match("abc\\ndef", re2("(?s)(.*)", never_nl = TRUE))
+
+re2_detect("\\n", re2(".", dot_nl = TRUE))
+re2_detect("\\n", ".")
+
+get_number_of_groups(re2("(A)(v)",never_capture = TRUE))
+
+re2_match("aaabaaaa",re2("(a|aaa)",longest_match = TRUE))
+re2_match("aaabaaaa",re2("(a|aaa)",longest_match = FALSE))
+
+re2_match("a+b", re2("a+b", literal = TRUE))
+
+re2_detect("abc" , re2("abc", posix_syntax = TRUE))
+re2("(?P<name>re)")
+
+\dontrun{
+
+expect_error(re2("(?P<name>re)", posix_syntax = TRUE))
+}
+
 }
 

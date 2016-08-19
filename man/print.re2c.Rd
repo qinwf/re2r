@@ -4,10 +4,12 @@
 \alias{print.re2c}
 \title{Print information about a pre-compiled regular expression}
 \usage{
-\method{print}{re2c}(x, ...)
+\method{print}{re2c}(x, options = FALSE, ...)
 }
 \arguments{
 \item{x}{a pre-compiled regular expression}
+
+\item{options}{print options}
 
 \item{...}{further arguments passed to or from other methods.}
 }
@@ -17,5 +19,6 @@ Print information about a pre-compiled regular expression
 \examples{
 re2("(.*)@([^.]*)")
 re2("(?P<name>sd)")
+print(re2("sd"), options = TRUE)
 }
 
