@@ -21,3 +21,4 @@ GTAGS
 ^pan_tadeusz_15\.txt$
 \.git/
 .git
+\.DS_store

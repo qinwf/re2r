@@ -6,7 +6,7 @@ RE2 is a primarily DFA based regexp engine from Google that is very fast at matc
 
 ## Installation
 
-To install from GitHub:
+From GitHub:
 
 ```r
 library(devtools)
@@ -23,7 +23,7 @@ To learn how to use, you can check out the [vignettes](https://qinwenfeng.com/re
 
 ### 1. Search a string for a pattern
 
-`re2_detect(string, pattern)` will check a pattern in a string vector.
+`re2_detect(string, pattern)` searches the string expression for a pattern and returns boolean result.
 
 ```r
 test_string = "this is just one test";
@@ -31,10 +31,8 @@ re2_detect(test_string, "(o.e)")
 ```
 
 ```r
-## [1] TRUE
+#> [1] TRUE
 ```
-
-Searches the string expression for the occurence(s) of a substring that matches 'pattern' and returns boolean result.
 
 Here is an example of email pattern.
 
@@ -52,20 +50,13 @@ re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4
 #> [1] TRUE
 ```
 
-`re2_match(string, pattern)` will return the capture groups with `()`.
+`re2_match(string, pattern)` will return the capture groups in `()`.
 
 ```r
 (res = re2_match(test_string, "(o.e)"))
 
-##      .1   
-## [1,] "one"
-
-str(res)
-
-## chr [1, 1] "one"
-## - attr(*, "dimnames")=List of 2
-##  ..$ : NULL
-##  ..$ : chr ".1"
+#>      .match .1   
+#> [1,] "one"  "one"
 ```
 
 The return result is a character matrix. `.1` is the first capture group and it is unnamed group.
@@ -73,16 +64,11 @@ The return result is a character matrix. `.1` is the first capture group and it 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
 ```r
-(res = re2_match(test_string, "(?P<testname>this)( is)")
+(res = re2_match(test_string, "(?P<testname>this)( is)"))
 
-##      testname .2   
-## [1,] "this"   " is"
-
-str(res)
-
-## [1] "matrix"
+#>      .match    testname .2   
+#> [1,] "this is" "this"   " is"
 ```
-
 
 If there is no capture group, the matched origin strings will be returned.
 
@@ -107,23 +93,24 @@ re2_match_all(c("this is test",
 ```
 
 ```r
-## [[1]]
-##      testname .2   
-## [1,] "this"   " is"
-##
-## [[2]]
-##      testname .2   
-## [1,] "this"   " is"
-## [2,] "this"   " is"
-## 
-## [[3]]
-## NULL
+#> [[1]]
+#>      .match    testname .2   
+#> [1,] "this is" "this"   " is"
+#> 
+#> [[2]]
+#>      .match    testname .2   
+#> [1,] "this is" "this"   " is"
+#> [2,] "this is" "this"   " is"
+#> 
+#> [[3]]
+#>      .match testname .2
+#> 
 ```
 
 ### 2. Replace a substring
 
 ```r
-## re2_replace(input, pattern, rewrite)
+re2_replace(string, pattern, rewrite)
 ```
 
 Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and replaces the found substrings with "rewrite text".
@@ -135,23 +122,23 @@ re2_replace(new_string, "(o.e)", input_string)
 ```
 
 ```r
-## [1] "this is just my test"
+#> [1] "this is just my test"
 ```
 
 ### 3. Extract a substring
 
 ```r
-## re2_extract(input, pattern, rewrite = optional)
+re2_extract(string, pattern, replacement)
 ```
 
-Searches the string "input string" for the occurence(s) of a substring that matches 'pattern' and return the found substrings with "rewrite text".
+Extract matching patterns from a string.
 
 ```r
 re2_extract("yabba dabba doo", "(.)")
 ```
 
 ```r
-## [1] "y"
+#> [1] "y"
 ```
 
 ```r
@@ -159,10 +146,8 @@ re2_extract("test@me.com", "(.*)@([^.]*)")
 ```
 
 ```r
-## [1] "test@me"
+#> [1] "test@me"
 ```
-
-`\\1` and `\\2` are the first and second capture groups.
 
 ### 4. `Regular Expression Object` for better performance
 
@@ -173,55 +158,27 @@ And this will also give us more option for the pattern. run `help(re2)` to get m
 ```r
 regexp = re2("test",case_sensitive = FALSE)
 print(regexp)
-## re2 pre-compiled regular expression
-## 
-## pattern: test
-## number of capturing subpatterns: 0
-## capturing names with indices: 
-## named integer(0)
-## expression size: 11
-
-regexp %<~% "(?P<first>1*)"
-regexp
-## re2 pre-compiled regular expression
-## 
-## pattern: (?P<first>1*)
-## number of capturing subpatterns: 1
-## capturing names with indices: 
-## first 
-##     1 
-## expression size: 8
+#> re2 pre-compiled regular expression
+#> 
+#> pattern: test
+#> number of capturing subpatterns: 0
+#> capturing names with indices: 
+#> [1] ".match"
+#> expression size: 11
 ```
-
-`%<~%` is a operator to create a new RE2 object.
 
 ```r
 regexp = re2("test",case_sensitive = FALSE)
 re2_match("TEST", regexp)
-## [1] TRUE
+#> [1] TRUE
 re2_replace("TEST", regexp, "ops")
-## [1] "ops"
-```
-
-If you come from a `Perl` world, you may be insterested in `%=~%`  `%!~%`.
-
-```r
-"TEST" %=~% regexp
-## [1] TRUE
-"TEST" %!~% regexp
-## [1] FALSE
+#> [1] "ops"
 ```
 
 ### 5. Multithread
 
-There are functions that will use multithread to test the strings.
+Use `parallel` option to enable multithread feature. It will improve performance for large inputs with a multi core CPU.
 
 ```r
-re2_pmatch()
-re2_pdetect()
-re2_preplace()
-re2_pextract()
+re2_match(string, pattern, parallel = T)
 ```
-
-See R package help page for more detail. 
-

@@ -61,7 +61,7 @@ Here is a quick overview over the most common methods on how to execute a regula
 re2_detect(string, pattern)
 ```
 
-Searches the string expression for a 'pattern' and returns boolean result.
+Searches the string expression for a pattern and returns boolean result.
 
 ```{r}
 re2_detect("this is just one test", "(o.e)")
@@ -86,14 +86,14 @@ re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4
 re2_match(string, pattern)
 ```
 
-This function will return the capture groups with `()`.
+This function will return the capture groups in `()`.
 
 ```{r}
 (res = re2_match("this is just one test", "(o.e)"))
 str(res)
 ```
 
-The return result is a character matrix. `?1` is the first capture group and it is unnamed group.
+The return result is a character matrix. `.1` is the first capture group and it is unnamed group.
 
 We can create named capture group with `(?P<name>pattern)` syntax.
 
@@ -147,8 +147,6 @@ re2_extract("yabba dabba doo", "yabba")
 re2_extract("test@me.com", "(.*)@([^.]*)")
 ```
 
-`\\1` and `\\2` are the first and second capture groups.
-
 ### 4. Pre-compiled RE
 
 We can create a regular expression object (RE2 object) from a string. It will reduce the time to parse the syntax of the same pattern. 
@@ -163,16 +161,11 @@ print(regexp)
 
 ### 5. Multithread
 
-Use optional parameter `parallel` to enable multithread support.
+Use `parallel` option to enable multithread feature. It will improve performance for large inputs with a multi core CPU.
 
 ```r
-re2_match()
-re2_detect()
-re2_replace()
-re2_extract()
+re2_match(string, pattern, parallel = T)
 ```
-
-See R package help page for more detail. 
 
 ## RE packages in R
 
@@ -195,10 +188,6 @@ RE2 is a primarily DFA based regexp engine from Google that is very fast at matc
 ### Above all
 
 Although being slightly different to use (because of the design of the engines), all are quite similar to **Perl**'s implementation of REs. 
-
-## Want to learn more?
-
-For more examples, you can check out [RE2 Examples](./re2r-examples.html) vignette.
 
 ## Benchmarks
 
