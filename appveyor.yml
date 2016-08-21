@@ -13,7 +13,7 @@ install:
   ps: Bootstrap
 
 environment:
-  
+
   matrix:
   - R_VERSION: release
     GCC_PATH: mingw_32
@@ -24,7 +24,7 @@ environment:
 # Adapt as necessary starting from here
 
 build_script:
-  - Rscript -e "install.packages(c(\"digest\", \"devtools\", \"testthat\", \"directlabels\"), repos=\"https://cran.rstudio.com\")"
+  - Rscript -e "install.packages(c(\"digest\", \"devtools\", \"testthat\", \"directlabels\", \"rmarkdown\", \"microbenchmark\", \"RcppParallel\", \"htmlwidgets\", \"stringi\"), repos=\"https://cran.rstudio.com\")"
   - travis-tool.sh install_deps
 
 test_script:
