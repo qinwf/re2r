@@ -371,7 +371,7 @@ run_locate(x,"b")
 run_locate_all(x,"b")
 ```
 
-## Replace Methods
+### Replace Methods
 
 ```{r}
 s <- lorem_text
@@ -420,7 +420,7 @@ run_replace(srepdup," ",1:10)
 run_replace_all(srepdup," ",1:10)
 ```
 
-## Split Methods
+### Split Methods
 
 ```{r}
 sorig <- lorem_text
