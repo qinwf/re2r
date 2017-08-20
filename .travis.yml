@@ -6,7 +6,8 @@ env:
     - _R_CHECK_CRAN_INCOMING_=FALSE
     - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran" RUN_RE2R_BENCHMARK="TRUE"
 
-sudo: false
+dist: trusty
+sudo: required
 
 language: r
 cache: packages
