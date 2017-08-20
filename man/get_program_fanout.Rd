@@ -25,4 +25,3 @@ get_program_fanout(re10)
 get_program_fanout(re100)
 get_program_fanout(re1000)
 }
-

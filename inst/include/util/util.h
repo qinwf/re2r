@@ -5,102 +5,9 @@
 #ifndef UTIL_UTIL_H_
 #define UTIL_UTIL_H_
 
-// C
-#include <stdio.h>
-#include <string.h>
-#include <stdint.h>
-#include <stddef.h>     // For size_t
-#include <assert.h>
-#include <stdarg.h>
-#include <time.h>       // For clock_gettime, CLOCK_REALTIME
-#include <ctype.h>      // For isdigit, isalpha
-
-#if !defined(_WIN32)
-#include <sys/time.h>   // For gettimeofday
-#endif
-
-// C++
-#include <ctime>
-#include <vector>
+// TODO(junyer): Get rid of this.
 #include <string>
-#include <algorithm>
-#include <iosfwd>
-#include <map>
-#include <stack>
-#include <ostream>
-#include <utility>
-#include <set>
-#include <atomic>
-#include <mutex>        // For std::call_once
-#include <unordered_set>
-#include <initializer_list>
-
-// Use std names.
-using std::set;
-using std::pair;
-using std::vector;
 using std::string;
-using std::min;
-using std::max;
-using std::ostream;
-using std::map;
-using std::stack;
-using std::sort;
-using std::swap;
-using std::make_pair;
-using std::unordered_set;
-
-#ifdef _WIN32
-
-// FIXME: Remove on Windows
-// #define snprintf _snprintf_s
-// #define vsnprintf vsnprintf_s
-
-#define stricmp _stricmp
-#define strtof strtod /* not really correct but best we can do */
-#define strtoll _strtoi64
-#define strtoull _strtoui64
-
-#pragma warning(disable: 4200) // zero-sized array
-
-#endif
-
-namespace re2 {
-
-typedef int8_t int8;
-typedef uint8_t uint8;
-typedef int16_t int16;
-typedef uint16_t uint16;
-typedef int32_t int32;
-typedef uint32_t uint32;
-typedef int64_t int64;
-typedef uint64_t uint64;
-
-typedef unsigned int uint;
-
-// Prevent the compiler from complaining about or optimizing away variables
-// that appear unused.
-#undef ATTRIBUTE_UNUSED
-#if defined(__GNUC__)
-#define ATTRIBUTE_UNUSED __attribute__ ((unused))
-#else
-#define ATTRIBUTE_UNUSED
-#endif
-
-// COMPILE_ASSERT causes a compile error about msg if expr is not true.
-#if __cplusplus >= 201103L
-#define COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
-#else
-template<bool> struct CompileAssert {};
-#define COMPILE_ASSERT(expr, msg) \
-  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1] ATTRIBUTE_UNUSED
-#endif
-
-// DISALLOW_COPY_AND_ASSIGN disallows the copy and operator= functions.
-// It goes in the private: declarations in a class.
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);                 \
-  void operator=(const TypeName&)
 
 #define arraysize(array) (int)(sizeof(array)/sizeof((array)[0]))
 
@@ -111,38 +18,5 @@ template<bool> struct CompileAssert {};
 #ifndef NO_THREAD_SAFETY_ANALYSIS
 #define NO_THREAD_SAFETY_ANALYSIS
 #endif
-
-class StringPiece;
-
-string CEscape(const StringPiece& src);
-int CEscapeString(const char* src, int src_len, char* dest, int dest_len);
-
-extern string StringPrintf(const char* format, ...);
-extern void SStringPrintf(string* dst, const char* format, ...);
-extern void StringAppendF(string* dst, const char* format, ...);
-extern string PrefixSuccessor(const StringPiece& prefix);
-
-uint32 hashword(const uint32*, size_t, uint32);
-void hashword2(const uint32*, size_t, uint32*, uint32*);
-
-static inline uint32 Hash32StringWithSeed(const char* s, int len, uint32 seed) {
-  return hashword((uint32*)s, len/4, seed);
-}
-
-static inline uint64 Hash64StringWithSeed(const char* s, int len, uint32 seed) {
-  uint32 x, y;
-  x = seed;
-  y = 0;
-  hashword2((uint32*)s, len/4, &x, &y);
-  return ((uint64)x << 32) | y;
-}
-
-bool RunningOnValgrind();
-
-}  // namespace re2
-
-#include "util/logging.h"
-#include "util/mutex.h"
-#include "util/utf.h"
 
 #endif  // UTIL_UTIL_H_

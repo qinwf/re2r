@@ -64,4 +64,3 @@ re2_match("abc", "")
 stringi::stri_match("abc", regex = "")
 
 }
-

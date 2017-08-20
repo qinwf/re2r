@@ -42,4 +42,3 @@ show_regex("#?([a-f0-9]{6}|[a-f0-9]{3})")
 \seealso{
 https://regexper.com/documentation.html
 }
-

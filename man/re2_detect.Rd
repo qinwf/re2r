@@ -51,4 +51,3 @@ re2_detect("abc", "")
 stringi::stri_detect("abc", regex = "")
 
 }
-

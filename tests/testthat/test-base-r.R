@@ -1,4 +1,5 @@
 context("base R")
+library(stringi)
 
 test_that("base R examples",{
     "base R example"

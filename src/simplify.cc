@@ -6,7 +6,11 @@
 // to use simple extended regular expression features.
 // Also sort and simplify character classes.
 
+#include <string>
+
 #include "util/util.h"
+#include "util/logging.h"
+#include "util/utf.h"
 #include "re2/regexp.h"
 #include "re2/walker-inl.h"
 
@@ -123,7 +127,8 @@ class CoalesceWalker : public Regexp::Walker<Regexp*> {
   // will be the coalesced op and the remainder of the literal string.
   static void DoCoalesce(Regexp** r1ptr, Regexp** r2ptr);
 
-  DISALLOW_COPY_AND_ASSIGN(CoalesceWalker);
+  CoalesceWalker(const CoalesceWalker&) = delete;
+  CoalesceWalker& operator=(const CoalesceWalker&) = delete;
 };
 
 // Walker subclass used by Simplify.
@@ -158,7 +163,8 @@ class SimplifyWalker : public Regexp::Walker<Regexp*> {
   // Caller must Decref return value when done with it.
   static Regexp* SimplifyCharClass(Regexp* re);
 
-  DISALLOW_COPY_AND_ASSIGN(SimplifyWalker);
+  SimplifyWalker(const SimplifyWalker&) = delete;
+  SimplifyWalker& operator=(const SimplifyWalker&) = delete;
 };
 
 // Simplifies a regular expression, returning a new regexp.
@@ -583,12 +589,12 @@ Regexp* SimplifyWalker::SimplifyRepeat(Regexp* re, int min, int max,
       return Regexp::Plus(re->Incref(), f);
 
     // General case: x{4,} is xxxx+
-    Regexp* nre = new Regexp(kRegexpConcat, f);
-    nre->AllocSub(min);
-    Regexp** nre_subs = nre->sub();
+    Regexp** nre_subs = new Regexp*[min];
     for (int i = 0; i < min-1; i++)
       nre_subs[i] = re->Incref();
     nre_subs[min-1] = Regexp::Plus(re->Incref(), f);
+    Regexp* nre = Regexp::Concat(nre_subs, min, f);
+    delete[] nre_subs;
     return nre;
   }
 
@@ -607,11 +613,11 @@ Regexp* SimplifyWalker::SimplifyRepeat(Regexp* re, int min, int max,
   // Build leading prefix: xx.  Capturing only on the last one.
   Regexp* nre = NULL;
   if (min > 0) {
-    nre = new Regexp(kRegexpConcat, f);
-    nre->AllocSub(min);
-    Regexp** nre_subs = nre->sub();
+    Regexp** nre_subs = new Regexp*[min];
     for (int i = 0; i < min; i++)
       nre_subs[i] = re->Incref();
+    nre = Regexp::Concat(nre_subs, min, f);
+    delete[] nre_subs;
   }
 
   // Build and attach suffix: (x(x(x)?)?)?

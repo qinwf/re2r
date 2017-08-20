@@ -43,4 +43,3 @@ re2_locate_all(fruit, c("a", "b", "p", "p"))
 re2_locate_all(fruit, "\\\\P{M}")
 
 }
-

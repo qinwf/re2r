@@ -23,4 +23,3 @@ get_pattern(regexp)
 
 get_pattern(re2("^(?P<abc>abc)a"))
 }
-

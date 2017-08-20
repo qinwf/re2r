@@ -26,4 +26,3 @@ print(regexp)
 (res = get_named_groups(regexp))
 re2_match("exprAexprBexprCexpr5exprD", regexp)
 }
-

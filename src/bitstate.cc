@@ -17,6 +17,11 @@
 // SearchBitState is a fast replacement for the NFA code on small
 // regexps and texts when SearchOnePass cannot be used.
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "util/logging.h"
 #include "re2/prog.h"
 #include "re2/regexp.h"
 
@@ -60,8 +65,8 @@ class BitState {
   int ncap_;
 
   static const int VisitedBits = 32;
-  uint32 *visited_;         // bitmap: (Inst*, char*) pairs already backtracked
-  int nvisited_;            //   # of words in bitmap
+  uint32_t *visited_;       // bitmap: (Inst*, char*) pairs already backtracked
+  size_t nvisited_;         //   # of words in bitmap
 
   Job *job_;                // stack of text positions to explore
   int njob_;
@@ -103,7 +108,6 @@ bool BitState::ShouldVisit(int id, const char* p) {
 
 // Grow the stack.
 bool BitState::GrowStack() {
-  // VLOG(0) << "Reallocate.";
   maxjob_ *= 2;
   Job* newjob = new Job[maxjob_];
   memmove(newjob, job_, njob_*sizeof job_[0]);
@@ -174,8 +178,6 @@ bool BitState::TrySearch(int id0, const char* p0) {
     }
 
     // Visit ip, p.
-    // VLOG(0) << "Job: " << ip->id() << " "
-    //         << (p - text_.begin()) << " " << arg;
     Prog::Inst* ip = prog_->inst(id);
     switch (ip->opcode()) {
       default:
@@ -269,7 +271,6 @@ bool BitState::TrySearch(int id0, const char* p0) {
         if (endmatch_ && p != text_.end())
           goto Next;
 
-        // VLOG(0) << "Found match.";
         // We found a match.  If the caller doesn't care
         // where the match is, no point going further.
         if (nsubmatch_ == 0)
@@ -283,8 +284,9 @@ bool BitState::TrySearch(int id0, const char* p0) {
         if (submatch_[0].data() == NULL ||
             (longest_ && p > submatch_[0].end())) {
           for (int i = 0; i < nsubmatch_; i++)
-            submatch_[i].set(cap_[2*i],
-                             static_cast<int>(cap_[2*i+1] - cap_[2*i]));
+            submatch_[i] =
+                StringPiece(cap_[2 * i],
+                            static_cast<size_t>(cap_[2 * i + 1] - cap_[2 * i]));
         }
 
         // If going for first match, we're done.
@@ -322,13 +324,12 @@ bool BitState::Search(const StringPiece& text, const StringPiece& context,
   submatch_ = submatch;
   nsubmatch_ = nsubmatch;
   for (int i = 0; i < nsubmatch_; i++)
-    submatch_[i] = NULL;
+    submatch_[i] = StringPiece();
 
   // Allocate scratch space.
   nvisited_ = (prog_->size() * (text.size()+1) + VisitedBits-1) / VisitedBits;
-  visited_ = new uint32[nvisited_];
+  visited_ = new uint32_t[nvisited_];
   memset(visited_, 0, nvisited_*sizeof visited_[0]);
-  // VLOG(0) << "nvisited_ = " << nvisited_;
 
   ncap_ = 2*nsubmatch;
   if (ncap_ < 2)

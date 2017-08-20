@@ -10,7 +10,7 @@ Authors@R: c(
     person("Jeffrey Avallone", role = "ctb", comment = "regexper library")
     )
 Maintainer: Qin Wenfeng <mail@qinwenfeng.com>
-Description: RE2 is a primarily DFA based regexp engine from Google that is very fast
+Description: RE2 is a primarily Deterministic Finite Automaton based regular expression engine from Google that is very fast
     at matching large amounts of text.
 License: BSD_3_clause + file LICENSE
 LazyData: TRUE
@@ -21,13 +21,11 @@ Imports:
 LinkingTo: Rcpp, RcppParallel
 Suggests:
     knitr (>= 1.12.3),testthat,
-    rmarkdown (>= 0.9.5),microbenchmark
-Enhances:
+    rmarkdown (>= 0.9.5),microbenchmark,
     ggplot2, directlabels
 URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr
 NeedsCompilation: yes
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 SystemRequirements: GNU make
-

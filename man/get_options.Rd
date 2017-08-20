@@ -20,4 +20,3 @@ Returns options of a pre-compiled regular expression
 \examples{
 get_options(re2("test"))
 }
-

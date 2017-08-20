@@ -2,9 +2,9 @@
 % Please edit documentation in R/anchor.R
 \docType{data}
 \name{UNANCHORED}
-\alias{ANCHOR_BOTH}
-\alias{ANCHOR_START}
 \alias{UNANCHORED}
+\alias{ANCHOR_START}
+\alias{ANCHOR_BOTH}
 \title{Anchors for pattern}
 \format{An object of class \code{numeric} of length 1.}
 \usage{
@@ -30,4 +30,3 @@ re2_match("This is an apple.", "(This)",anchor = ANCHOR_START)
 re2_match("This is an apple.", "(is)",anchor = UNANCHORED)
 }
 \keyword{datasets}
-

@@ -46,4 +46,3 @@ re2_replace("yabba dabba doo", "b+","d")
 pattern = "^[\\\\s]+|[\\\\s]+$"
 re2_replace_all(c("  abc  "," this is "), pattern, "")
 }
-

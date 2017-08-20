@@ -24,12 +24,23 @@
 // Like Thompson's original machine and like the DFA implementation, this
 // implementation notices a match only once it is one byte past it.
 
+#include <stdio.h>
+#include <string.h>
+#include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "re2/prog.h"
 #include "re2/regexp.h"
+#include "util/logging.h"
 #include "util/sparse_array.h"
 #include "util/sparse_set.h"
+#include "util/strutil.h"
 
 namespace re2 {
+
+static const bool ExtraDebug = false;
 
 class NFA {
  public:
@@ -50,8 +61,6 @@ class NFA {
   bool Search(const StringPiece& text, const StringPiece& context,
               bool anchored, bool longest,
               StringPiece* submatch, int nsubmatch);
-
-  static const int Debug = 0;
 
  private:
   struct Thread {
@@ -93,8 +102,8 @@ class NFA {
 
   // Run runq on byte c, appending new states to nextq.
   // Updates matched_ and match_ as new, better matches are found.
-  // p is the position of the previous byte (the one before c)
-  // in the input string, used when processing Match instructions.
+  // p is the position of byte c in the input string for AddToThreadq;
+  // p-1 will be used when processing Match instructions.
   // flag is the bitwise OR of Bol, Eol, etc., specifying whether
   // ^, $ and \b match the current input position (after c).
   // Frees all the threads on runq.
@@ -121,7 +130,8 @@ class NFA {
 
   Thread* free_threads_;  // free list
 
-  DISALLOW_COPY_AND_ASSIGN(NFA);
+  NFA(const NFA&) = delete;
+  NFA& operator=(const NFA&) = delete;
 };
 
 NFA::NFA(Prog* prog) {
@@ -228,7 +238,7 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, int flag,
     if (id == 0)
       continue;
     if (q->has_index(id)) {
-      if (Debug)
+      if (ExtraDebug)
         fprintf(stderr, "  [%d%s]\n", id, FormatCapture(t0->capture).c_str());
       continue;
     }
@@ -294,7 +304,7 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, int flag,
       // Save state; will pick up at next byte.
       t = Incref(t0);
       *tp = t;
-      if (Debug)
+      if (ExtraDebug)
         fprintf(stderr, " + %d%s\n", id, FormatCapture(t0->capture).c_str());
 
     Next:
@@ -318,8 +328,8 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, int flag,
 
 // Run runq on byte c, appending new states to nextq.
 // Updates matched_ and match_ as new, better matches are found.
-// p is the position of the previous byte (the one before c)
-// in the input string, used when processing Match instructions.
+// p is the position of byte c in the input string for AddToThreadq;
+// p-1 will be used when processing Match instructions.
 // flag is the bitwise OR of Bol, Eol, etc., specifying whether
 // ^, $ and \b match the current input position (after c).
 // Frees all the threads on runq.
@@ -350,7 +360,7 @@ int NFA::Step(Threadq* runq, Threadq* nextq, int c, int flag, const char* p) {
         break;
 
       case kInstByteRange:
-        AddToThreadq(nextq, ip->out(), c, flag, p+1, t);
+        AddToThreadq(nextq, ip->out(), c, flag, p, t);
         break;
 
       case kInstAltMatch:
@@ -371,8 +381,13 @@ int NFA::Step(Threadq* runq, Threadq* nextq, int c, int flag, const char* p) {
         }
         break;
 
-      case kInstMatch:
-        if (endmatch_ && p != etext_)
+      case kInstMatch: {
+        // Avoid invoking undefined behavior when p happens
+        // to be null - and p-1 would be meaningless anyway.
+        if (p == NULL)
+          break;
+
+        if (endmatch_ && p-1 != etext_)
           break;
 
         if (longest_) {
@@ -380,16 +395,16 @@ int NFA::Step(Threadq* runq, Threadq* nextq, int c, int flag, const char* p) {
           // it is either farther to the left or at the same
           // point but longer than an existing match.
           if (!matched_ || t->capture[0] < match_[0] ||
-              (t->capture[0] == match_[0] && p > match_[1])) {
+              (t->capture[0] == match_[0] && p-1 > match_[1])) {
             CopyCapture(match_, t->capture);
-            match_[1] = p;
+            match_[1] = p-1;
             matched_ = true;
           }
         } else {
           // Leftmost-biased mode: this match is by definition
           // better than what we've already found (see next line).
           CopyCapture(match_, t->capture);
-          match_[1] = p;
+          match_[1] = p-1;
           matched_ = true;
 
           // Cut off the threads that can only find matches
@@ -402,6 +417,7 @@ int NFA::Step(Threadq* runq, Threadq* nextq, int c, int flag, const char* p) {
           return 0;
         }
         break;
+      }
     }
     Decref(t);
   }
@@ -425,12 +441,6 @@ string NFA::FormatCapture(const char** capture) {
   return s;
 }
 
-// Returns whether haystack contains needle's memory.
-static bool StringPieceContains(const StringPiece haystack, const StringPiece needle) {
-  return haystack.begin() <= needle.begin() &&
-         haystack.end() >= needle.end();
-}
-
 bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
             bool anchored, bool longest,
             StringPiece* submatch, int nsubmatch) {
@@ -441,12 +451,9 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
   if (context.begin() == NULL)
     context = text;
 
-  if (!StringPieceContains(context, text)) {
-    LOG(FATAL) << "Bad args: context does not contain text "
-                << reinterpret_cast<const void*>(context.begin())
-                << "+" << context.size() << " "
-                << reinterpret_cast<const void*>(text.begin())
-                << "+" << text.size();
+  // Sanity check: make sure that text lies within context.
+  if (text.begin() < context.begin() || text.end() > context.end()) {
+    LOG(DFATAL) << "context does not contain text";
     return false;
   }
 
@@ -483,11 +490,10 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
   // For debugging prints.
   btext_ = context.begin();
 
-  if (Debug) {
+  if (ExtraDebug)
     fprintf(stderr, "NFA::Search %s (context: %s) anchored=%d longest=%d\n",
-            text.as_string().c_str(), context.as_string().c_str(), anchored,
+            text.ToString().c_str(), context.ToString().c_str(), anchored,
             longest);
-  }
 
   // Set up search.
   Threadq* runq = &q0_;
@@ -527,7 +533,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
     else
       flag |= kEmptyNonWordBoundary;
 
-    if (Debug) {
+    if (ExtraDebug) {
       int c = 0;
       if (p == context.begin())
         c = '^';
@@ -546,13 +552,10 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
       fprintf(stderr, "\n");
     }
 
-    // Note that we pass p-1 to Step() because it needs the previous pointer
-    // value in order to handle Match instructions appropriately. It plumbs
-    // c and flag through to AddToThreadq() along with p-1+1, which is p.
-    //
     // This is a no-op the first time around the loop because runq is empty.
-    int id = Step(runq, nextq, p < text.end() ? p[0] & 0xFF : -1, flag, p-1);
+    int id = Step(runq, nextq, p < text.end() ? p[0] & 0xFF : -1, flag, p);
     DCHECK_EQ(runq->size(), 0);
+    using std::swap;
     swap(nextq, runq);
     nextq->clear();
     if (id != 0) {
@@ -618,7 +621,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
     // If all the threads have died, stop early.
     if (runq->size() == 0) {
-      if (Debug)
+      if (ExtraDebug)
         fprintf(stderr, "dead\n");
       break;
     }
@@ -631,15 +634,14 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
   if (matched_) {
     for (int i = 0; i < nsubmatch; i++)
-      submatch[i].set(match_[2*i],
-                      static_cast<int>(match_[2*i+1] - match_[2*i]));
-    if (Debug)
-      fprintf(stderr, "match (%d,%d)\n",
-              static_cast<int>(match_[0] - btext_),
-              static_cast<int>(match_[1] - btext_));
+      submatch[i] =
+          StringPiece(match_[2 * i],
+                      static_cast<size_t>(match_[2 * i + 1] - match_[2 * i]));
+    // if (ExtraDebug)
+    //   fprintf(stderr, "match (%td,%td)\n",
+    //           match_[0] - btext_, match_[1] - btext_);
     return true;
   }
-  VLOG(1) << "No matches found";
   return false;
 }
 
@@ -708,7 +710,7 @@ bool
 Prog::SearchNFA(const StringPiece& text, const StringPiece& context,
                 Anchor anchor, MatchKind kind,
                 StringPiece* match, int nmatch) {
-  if (NFA::Debug)
+  if (ExtraDebug)
     Dump();
 
   NFA nfa(this);

@@ -20,4 +20,3 @@ Returns whether a pre-compiled regular expression is NA.
 \examples{
 is_re2c_na(re2(NA))
 }
-

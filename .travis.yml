@@ -1,53 +1,45 @@
-# Sample .travis.yml for R projects.
-#
-# See the r-travis repo and its wiki
-#   https://github.com/craigcitro/r-travis/wiki
-#   https://github.com/eddelbuettel/r-travis/
+env:
+  global:
+    - secure: b9DfgCLxLdBReSvku0eSExzvip4/gTVjmtEKaV8lsOOZPK4oCrZQU0IYWezAVGOum8i2dW1wqXcEGULPsRGHl3Vci4YI+z5B6W93qVo4GVghxmkO+2nLgb/tS2QvCThBF1XDuhmwvD1lvAEJyEzxVwpt81jM58qQuLDDAL3bMOII0uCWBebGdtVKhev2UuIWzE5kArrAmzp9eHAlcM5Raft3rrOl7wLW9s1zPlfKUKVU5UOOOw+5V7Ordwjc+jCObxfXrLIwq6f1acH8bZlJ22K2MpI8TpogKvSpnNGKWQ8KZXaGnJFtzTJUfePvPinVCWj+qKIWytilqcEYE648hykCe6xFhfqsQemjcdTEEPFdynrNLB1wx2f0fW6lHPjiODYGAmtoDm6TQlkkltHJdLzpjupR9E9T0QVgcL9hGZA2Z3OvlXGeGo+dBkE0b+9aYnwVMxepvbK1z3nHL9VNiO4llKG9Cr4x4H7GcEd47QDezd/6jfSZUttvMfAhxEoXkkzcgSaTZGRPnFIEZbcixs8+oUkTqGbh6UyUKKUXZaRDE84nS9y2G2iSFWk4yd9oppjyjdysrgSMCoKiNEnQSu3c8/5KHOhglH1UsQgfT62Me7wOLSumvM9ptHeo39SBI8o3zs0vBq1VUTqDie7GsmCnliiZvb2xaqJUy8fbBno=
+    - OS=$(uname -s)
+  matrix:
+    - _R_CHECK_CRAN_INCOMING_=FALSE
+    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran" RUN_RE2R_BENCHMARK="TRUE"
 
-language: c
+sudo: false
+
+language: r
+cache: packages
 
 os:
   - linux
   - osx
 
-osx_image: xcode7.1
+r:
+  - release
+  - devel
 
-sudo: required
+r_binary_packages:
+  - Rcpp
+  - RCurl
+  - stringi
+  - ggplot2
+  - dplyr
+  - curl
+  - jsonlite
+  - yaml
+  - tidyr
+  - RcppParallel
+  - markdown
 
-dist: trusty
-
-env:
-  global:
-    - secure: b9DfgCLxLdBReSvku0eSExzvip4/gTVjmtEKaV8lsOOZPK4oCrZQU0IYWezAVGOum8i2dW1wqXcEGULPsRGHl3Vci4YI+z5B6W93qVo4GVghxmkO+2nLgb/tS2QvCThBF1XDuhmwvD1lvAEJyEzxVwpt81jM58qQuLDDAL3bMOII0uCWBebGdtVKhev2UuIWzE5kArrAmzp9eHAlcM5Raft3rrOl7wLW9s1zPlfKUKVU5UOOOw+5V7Ordwjc+jCObxfXrLIwq6f1acH8bZlJ22K2MpI8TpogKvSpnNGKWQ8KZXaGnJFtzTJUfePvPinVCWj+qKIWytilqcEYE648hykCe6xFhfqsQemjcdTEEPFdynrNLB1wx2f0fW6lHPjiODYGAmtoDm6TQlkkltHJdLzpjupR9E9T0QVgcL9hGZA2Z3OvlXGeGo+dBkE0b+9aYnwVMxepvbK1z3nHL9VNiO4llKG9Cr4x4H7GcEd47QDezd/6jfSZUttvMfAhxEoXkkzcgSaTZGRPnFIEZbcixs8+oUkTqGbh6UyUKKUXZaRDE84nS9y2G2iSFWk4yd9oppjyjdysrgSMCoKiNEnQSu3c8/5KHOhglH1UsQgfT62Me7wOLSumvM9ptHeo39SBI8o3zs0vBq1VUTqDie7GsmCnliiZvb2xaqJUy8fbBno=
-    - R_BUILD_ARGS="--no-build-vignettes --no-manual"
-    - R_CHECK_ARGS="--no-vignettes --no-manual"
-    - OS=$(uname -s)
-  matrix:
-    - _R_CHECK_CRAN_INCOMING_=FALSE
-    - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran" RUN_RE2R_BENCHMARK="TRUE" PANDOC_VERSION="1.15.2" BOOTSTRAP_PANDOC="1"
+r_packages:
+  - directlabels
+  - covr
 
 before_install:
-  - echo "options(repos = c(CRAN='http://cran.r-project.org'))" >> ~/.Rprofile
-  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
-
-install:
-  - ./travis-tool.sh install_r_binary Rcpp RCurl stringi ggplot2 dplyr curl jsonlite yaml tidyr RcppParallel markdown
-  - ./travis-tool.sh install_r directlabels covr
-  - ./travis-tool.sh install_deps
-
-before_script:
-  - ./travis-tool.sh dump_sysinfo
-
-script:
-  - ./travis-tool.sh run_tests
-
-after_failure:
-  - ./travis-tool.sh dump_logs
+  - if [[ "$TRAVIS_R_VERSION_STRING" = 'devel' ]]; then mkdir ~/.R && echo 'CXX1X=g++ -std=c++0x -g -O2 -fPIC' > ~/.R/Makevars; fi
 
 after_success:
-  - ./travis-tool.sh dump_logs
   - mkdir ./vignettes/bench
   - cp -r ./vignettes/disabled/bench/* ./vignettes/bench
   - cp ./vignettes/disabled/benchmark.Rmd ./vignettes/benchmark.Rmd

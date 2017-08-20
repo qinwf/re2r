@@ -48,4 +48,3 @@ re2_extract_all(str, "\\\\d")
 \seealso{
 \code{\link{re2_match}} to extract matched groups.
 }
-

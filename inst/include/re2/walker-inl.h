@@ -13,6 +13,9 @@
 // Not quite the Visitor pattern, because (among other things)
 // the Visitor pattern is recursive.
 
+#include <stack>
+
+#include "util/logging.h"
 #include "re2/regexp.h"
 
 namespace re2 {
@@ -86,13 +89,14 @@ template<typename T> class Regexp::Walker {
 
  private:
   // Walk state for the entire traversal.
-  stack<WalkState<T> >* stack_;
+  std::stack<WalkState<T> >* stack_;
   bool stopped_early_;
   int max_visits_;
 
   T WalkInternal(Regexp* re, T top_arg, bool use_copy);
 
-  DISALLOW_COPY_AND_ASSIGN(Walker);
+  Walker(const Walker&) = delete;
+  Walker& operator=(const Walker&) = delete;
 };
 
 template<typename T> T Regexp::Walker<T>::PreVisit(Regexp* re,
@@ -130,7 +134,7 @@ template<typename T> struct WalkState {
 };
 
 template<typename T> Regexp::Walker<T>::Walker() {
-  stack_ = new stack<WalkState<T> >;
+  stack_ = new std::stack<WalkState<T> >;
   stopped_early_ = false;
 }
 

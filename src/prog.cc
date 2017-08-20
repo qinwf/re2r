@@ -5,22 +5,31 @@
 // Compiled regular expression representation.
 // Tested by compile_test.cc
 
-#include "util/util.h"
-#include "util/bitmap.h"
 #include "re2/prog.h"
+
+#include <stdint.h>
+#include <string.h>
+#include <algorithm>
+#include <memory>
+#include <utility>
+
+#include "util/util.h"
+#include "util/logging.h"
+#include "util/strutil.h"
+#include "re2/bitmap256.h"
 #include "re2/stringpiece.h"
 
 namespace re2 {
 
 // Constructors per Inst opcode
 
-void Prog::Inst::InitAlt(uint32 out, uint32 out1) {
+void Prog::Inst::InitAlt(uint32_t out, uint32_t out1) {
   DCHECK_EQ(out_opcode_, 0);
   set_out_opcode(out, kInstAlt);
   out1_ = out1;
 }
 
-void Prog::Inst::InitByteRange(int lo, int hi, int foldcase, uint32 out) {
+void Prog::Inst::InitByteRange(int lo, int hi, int foldcase, uint32_t out) {
   DCHECK_EQ(out_opcode_, 0);
   set_out_opcode(out, kInstByteRange);
   lo_ = lo & 0xFF;
@@ -28,25 +37,25 @@ void Prog::Inst::InitByteRange(int lo, int hi, int foldcase, uint32 out) {
   foldcase_ = foldcase & 0xFF;
 }
 
-void Prog::Inst::InitCapture(int cap, uint32 out) {
+void Prog::Inst::InitCapture(int cap, uint32_t out) {
   DCHECK_EQ(out_opcode_, 0);
   set_out_opcode(out, kInstCapture);
   cap_ = cap;
 }
 
-void Prog::Inst::InitEmptyWidth(EmptyOp empty, uint32 out) {
+void Prog::Inst::InitEmptyWidth(EmptyOp empty, uint32_t out) {
   DCHECK_EQ(out_opcode_, 0);
   set_out_opcode(out, kInstEmptyWidth);
   empty_ = empty;
 }
 
-void Prog::Inst::InitMatch(int32 id) {
+void Prog::Inst::InitMatch(int32_t id) {
   DCHECK_EQ(out_opcode_, 0);
   set_opcode(kInstMatch);
   match_id_ = id;
 }
 
-void Prog::Inst::InitNop(uint32 out) {
+void Prog::Inst::InitNop(uint32_t out) {
   DCHECK_EQ(out_opcode_, 0);
   set_opcode(kInstNop);
 }
@@ -105,14 +114,14 @@ Prog::Prog()
     list_count_(0),
     inst_(NULL),
     onepass_nodes_(NULL),
+    dfa_mem_(0),
     dfa_first_(NULL),
-    dfa_longest_(NULL),
-    dfa_mem_(0) {
+    dfa_longest_(NULL) {
 }
 
 Prog::~Prog() {
-  DeleteDFA(&dfa_first_);
-  DeleteDFA(&dfa_longest_);
+  DeleteDFA(dfa_longest_);
+  DeleteDFA(dfa_first_);
   delete[] onepass_nodes_;
   delete[] inst_;
 }
@@ -181,9 +190,9 @@ string Prog::DumpByteMap() {
 }
 
 int Prog::first_byte() {
-  std::call_once(first_byte_once_, [this]() {
-    first_byte_ = ComputeFirstByte();
-  });
+  std::call_once(first_byte_once_, [](Prog* prog) {
+    prog->first_byte_ = prog->ComputeFirstByte();
+  }, this);
   return first_byte_;
 }
 
@@ -279,7 +288,7 @@ static bool IsMatch(Prog* prog, Prog::Inst* ip) {
   }
 }
 
-uint32 Prog::EmptyFlags(const StringPiece& text, const char* p) {
+uint32_t Prog::EmptyFlags(const StringPiece& text, const char* p) {
   int flags = 0;
 
   // ^ and \A
@@ -343,18 +352,19 @@ class ByteMapBuilder {
 
   void Mark(int lo, int hi);
   void Merge();
-  void Build(uint8* bytemap, int* bytemap_range);
+  void Build(uint8_t* bytemap, int* bytemap_range);
 
  private:
   int Recolor(int oldcolor);
 
   Bitmap256 splits_;
-  vector<int> colors_;
+  std::vector<int> colors_;
   int nextcolor_;
-  vector<pair<int, int>> colormap_;
-  vector<pair<int, int>> ranges_;
+  std::vector<std::pair<int, int>> colormap_;
+  std::vector<std::pair<int, int>> ranges_;
 
-  DISALLOW_COPY_AND_ASSIGN(ByteMapBuilder);
+  ByteMapBuilder(const ByteMapBuilder&) = delete;
+  ByteMapBuilder& operator=(const ByteMapBuilder&) = delete;
 };
 
 void ByteMapBuilder::Mark(int lo, int hi) {
@@ -373,7 +383,7 @@ void ByteMapBuilder::Mark(int lo, int hi) {
 }
 
 void ByteMapBuilder::Merge() {
-  for (vector<pair<int, int>>::const_iterator it = ranges_.begin();
+  for (std::vector<std::pair<int, int>>::const_iterator it = ranges_.begin();
        it != ranges_.end();
        ++it) {
     int lo = it->first-1;
@@ -403,14 +413,14 @@ void ByteMapBuilder::Merge() {
   ranges_.clear();
 }
 
-void ByteMapBuilder::Build(uint8* bytemap, int* bytemap_range) {
+void ByteMapBuilder::Build(uint8_t* bytemap, int* bytemap_range) {
   // Assign byte classes numbered from 0.
   nextcolor_ = 0;
 
   int c = 0;
   while (c < 256) {
     int next = splits_.FindNextSetBit(c);
-    uint8 b = static_cast<uint8>(Recolor(colors_[next]));
+    uint8_t b = static_cast<uint8_t>(Recolor(colors_[next]));
     while (c <= next) {
       bytemap[c] = b;
       c++;
@@ -425,9 +435,9 @@ int ByteMapBuilder::Recolor(int oldcolor) {
   // colors and there will typically be far fewer than that.
   // Also, we need to consider keys *and* values in order to
   // avoid recoloring a given range more than once per batch.
-  vector<pair<int, int>>::const_iterator it =
+  std::vector<std::pair<int, int>>::const_iterator it =
       std::find_if(colormap_.begin(), colormap_.end(),
-                   [&](const pair<int, int>& kv) -> bool {
+                   [=](const std::pair<int, int>& kv) -> bool {
                      return kv.first == oldcolor || kv.second == oldcolor;
                    });
   if (it != colormap_.end())
@@ -449,7 +459,7 @@ void Prog::ComputeByteMap() {
   // Don't repeat the work for \b and \B.
   bool marked_word_boundaries = false;
 
-  for (int id = 0; id < static_cast<int>(size()); id++) {
+  for (int id = 0; id < size(); id++) {
     Inst* ip = inst(id);
     if (ip->opcode() == kInstByteRange) {
       int lo = ip->lo();
@@ -487,11 +497,11 @@ void Prog::ComputeByteMap() {
           int j;
           for (int i = 0; i < 256; i = j) {
             for (j = i + 1; j < 256 &&
-                            Prog::IsWordChar(static_cast<uint8>(i)) ==
-                                Prog::IsWordChar(static_cast<uint8>(j));
+                            Prog::IsWordChar(static_cast<uint8_t>(i)) ==
+                                Prog::IsWordChar(static_cast<uint8_t>(j));
                  j++)
               ;
-            if (Prog::IsWordChar(static_cast<uint8>(i)) == isword)
+            if (Prog::IsWordChar(static_cast<uint8_t>(i)) == isword)
               builder.Mark(i, j - 1);
           }
           builder.Merge();
@@ -503,40 +513,87 @@ void Prog::ComputeByteMap() {
 
   builder.Build(bytemap_, &bytemap_range_);
 
-  if (0) {  // For debugging: use trivial bytemap.
+  if (0) {  // For debugging, use trivial bytemap.
+    LOG(ERROR) << "Using trivial bytemap.";
     for (int i = 0; i < 256; i++)
-      bytemap_[i] = static_cast<uint8>(i);
+      bytemap_[i] = static_cast<uint8_t>(i);
     bytemap_range_ = 256;
-    LOG(INFO) << "Using trivial bytemap.";
   }
 }
 
+// Prog::Flatten() implements a graph rewriting algorithm.
+//
+// The overall process is similar to epsilon removal, but retains some epsilon
+// transitions: those from Capture and EmptyWidth instructions; and those from
+// nullable subexpressions. (The latter avoids quadratic blowup in transitions
+// in the worst case.) It might be best thought of as Alt instruction elision.
+//
+// In conceptual terms, it divides the Prog into "trees" of instructions, then
+// traverses the "trees" in order to produce "lists" of instructions. A "tree"
+// is one or more instructions that grow from one "root" instruction to one or
+// more "leaf" instructions; if a "tree" has exactly one instruction, then the
+// "root" is also the "leaf". In most cases, a "root" is the successor of some
+// "leaf" (i.e. the "leaf" instruction's out() returns the "root" instruction)
+// and is considered a "successor root". A "leaf" can be a ByteRange, Capture,
+// EmptyWidth or Match instruction. However, this is insufficient for handling
+// nested nullable subexpressions correctly, so in some cases, a "root" is the
+// dominator of the instructions reachable from some "successor root" (i.e. it
+// has an unreachable predecessor) and is considered a "dominator root". Since
+// only Alt instructions can be "dominator roots" (other instructions would be
+// "leaves"), only Alt instructions are required to be marked as predecessors.
+//
+// Dividing the Prog into "trees" comprises two passes: marking the "successor
+// roots" and the predecessors; and marking the "dominator roots". Sorting the
+// "successor roots" by their bytecode offsets enables iteration in order from
+// greatest to least during the second pass; by working backwards in this case
+// and flooding the graph no further than "leaves" and already marked "roots",
+// it becomes possible to mark "dominator roots" without doing excessive work.
+//
+// Traversing the "trees" is just iterating over the "roots" in order of their
+// marking and flooding the graph no further than "leaves" and "roots". When a
+// "leaf" is reached, the instruction is copied with its successor remapped to
+// its "root" number. When a "root" is reached, a Nop instruction is generated
+// with its successor remapped similarly. As each "list" is produced, its last
+// instruction is marked as such. After all of the "lists" have been produced,
+// a pass over their instructions remaps their successors to bytecode offsets.
 void Prog::Flatten() {
   if (did_flatten_)
     return;
   did_flatten_ = true;
 
-  // Scratch structures. It's important that these are reused by EmitList()
-  // because we call it in a loop and it would thrash the heap otherwise.
-  SparseSet q(size());
-  vector<int> stk;
+  // Scratch structures. It's important that these are reused by functions
+  // that we call in loops because they would thrash the heap otherwise.
+  SparseSet reachable(size());
+  std::vector<int> stk;
   stk.reserve(size());
 
-  // First pass: Marks "roots".
+  // First pass: Marks "successor roots" and predecessors.
   // Builds the mapping from inst-ids to root-ids.
   SparseArray<int> rootmap(size());
-  MarkRoots(&rootmap, &q, &stk);
+  SparseArray<int> predmap(size());
+  std::vector<std::vector<int>> predvec;
+  MarkSuccessors(&rootmap, &predmap, &predvec, &reachable, &stk);
 
-  // Second pass: Emits "lists". Remaps outs to root-ids.
+  // Second pass: Marks "dominator roots".
+  SparseArray<int> sorted(rootmap);
+  std::sort(sorted.begin(), sorted.end(), sorted.less);
+  for (SparseArray<int>::const_iterator i = sorted.end() - 1;
+       i != sorted.begin();
+       --i) {
+    if (i->index() != start_unanchored() && i->index() != start())
+      MarkDominator(i->index(), &rootmap, &predmap, &predvec, &reachable, &stk);
+  }
+
+  // Third pass: Emits "lists". Remaps outs to root-ids.
   // Builds the mapping from root-ids to flat-ids.
-  vector<int> flatmap(rootmap.size());
-  vector<Inst> flat;
+  std::vector<int> flatmap(rootmap.size());
+  std::vector<Inst> flat;
   flat.reserve(size());
   for (SparseArray<int>::const_iterator i = rootmap.begin();
        i != rootmap.end();
        ++i) {
     flatmap[i->value()] = static_cast<int>(flat.size());
-    EmitList(i->index(), &rootmap, &flat, &q, &stk);
+    EmitList(i->index(), &rootmap, &flat, &reachable, &stk);
     flat.back().set_last();
   }
 
@@ -544,7 +601,7 @@ void Prog::Flatten() {
   for (int i = 0; i < kNumInst; i++)
     inst_count_[i] = 0;
 
-  // Third pass: Remaps outs to flat-ids.
+  // Fourth pass: Remaps outs to flat-ids.
   // Counts instructions by opcode.
   for (int id = 0; id < static_cast<int>(flat.size()); id++) {
     Inst* ip = &flat[id];
@@ -576,8 +633,10 @@ void Prog::Flatten() {
   memmove(inst_, flat.data(), size_ * sizeof *inst_);
 }
 
-void Prog::MarkRoots(SparseArray<int>* rootmap,
-                     SparseSet* q, vector<int>* stk) {
+void Prog::MarkSuccessors(SparseArray<int>* rootmap,
+                          SparseArray<int>* predmap,
+                          std::vector<std::vector<int>>* predvec,
+                          SparseSet* reachable, std::vector<int>* stk) {
   // Mark the kInstFail instruction.
   rootmap->set_new(0, rootmap->size());
 
@@ -587,16 +646,16 @@ void Prog::MarkRoots(SparseArray<int>* rootmap,
   if (!rootmap->has_index(start()))
     rootmap->set_new(start(), rootmap->size());
 
-  q->clear();
+  reachable->clear();
   stk->clear();
   stk->push_back(start_unanchored());
   while (!stk->empty()) {
     int id = stk->back();
     stk->pop_back();
   Loop:
-    if (q->contains(id))
+    if (reachable->contains(id))
       continue;
-    q->insert_new(id);
+    reachable->insert_new(id);
 
     Inst* ip = inst(id);
     switch (ip->opcode()) {
@@ -606,6 +665,14 @@ void Prog::MarkRoots(SparseArray<int>* rootmap,
 
       case kInstAltMatch:
       case kInstAlt:
+        // Mark this instruction as a predecessor of each out.
+        for (int out : {ip->out(), ip->out1()}) {
+          if (!predmap->has_index(out)) {
+            predmap->set_new(out, static_cast<int>(predvec->size()));
+            predvec->emplace_back();
+          }
+          (*predvec)[predmap->get_existing(out)].emplace_back(id);
+        }
         stk->push_back(ip->out1());
         id = ip->out();
         goto Loop;
@@ -613,7 +680,7 @@ void Prog::MarkRoots(SparseArray<int>* rootmap,
       case kInstByteRange:
       case kInstCapture:
       case kInstEmptyWidth:
-        // Mark the out of this instruction.
+        // Mark the out of this instruction as a "root".
         if (!rootmap->has_index(ip->out()))
           rootmap->set_new(ip->out(), rootmap->size());
         id = ip->out();
@@ -630,18 +697,83 @@ void Prog::MarkRoots(SparseArray<int>* rootmap,
   }
 }
 
-void Prog::EmitList(int root, SparseArray<int>* rootmap, vector<Inst>* flat,
-                    SparseSet* q, vector<int>* stk) {
-  q->clear();
+void Prog::MarkDominator(int root, SparseArray<int>* rootmap,
+                         SparseArray<int>* predmap,
+                         std::vector<std::vector<int>>* predvec,
+                         SparseSet* reachable, std::vector<int>* stk) {
+  reachable->clear();
   stk->clear();
   stk->push_back(root);
   while (!stk->empty()) {
     int id = stk->back();
     stk->pop_back();
   Loop:
-    if (q->contains(id))
+    if (reachable->contains(id))
       continue;
-    q->insert_new(id);
+    reachable->insert_new(id);
+
+    if (id != root && rootmap->has_index(id)) {
+      // We reached another "tree" via epsilon transition.
+      continue;
+    }
+
+    Inst* ip = inst(id);
+    switch (ip->opcode()) {
+      default:
+        LOG(DFATAL) << "unhandled opcode: " << ip->opcode();
+        break;
+
+      case kInstAltMatch:
+      case kInstAlt:
+        stk->push_back(ip->out1());
+        id = ip->out();
+        goto Loop;
+
+      case kInstByteRange:
+      case kInstCapture:
+      case kInstEmptyWidth:
+        break;
+
+      case kInstNop:
+        id = ip->out();
+        goto Loop;
+
+      case kInstMatch:
+      case kInstFail:
+        break;
+    }
+  }
+
+  for (SparseSet::const_iterator i = reachable->begin();
+       i != reachable->end();
+       ++i) {
+    int id = *i;
+    if (predmap->has_index(id)) {
+      for (int pred : (*predvec)[predmap->get_existing(id)]) {
+        if (!reachable->contains(pred)) {
+          // id has a predecessor that cannot be reached from root!
+          // Therefore, id must be a "root" too - mark it as such.
+          if (!rootmap->has_index(id))
+            rootmap->set_new(id, rootmap->size());
+        }
+      }
+    }
+  }
+}
+
+void Prog::EmitList(int root, SparseArray<int>* rootmap,
+                    std::vector<Inst>* flat,
+                    SparseSet* reachable, std::vector<int>* stk) {
+  reachable->clear();
+  stk->clear();
+  stk->push_back(root);
+  while (!stk->empty()) {
+    int id = stk->back();
+    stk->pop_back();
+  Loop:
+    if (reachable->contains(id))
+      continue;
+    reachable->insert_new(id);
 
     if (id != root && rootmap->has_index(id)) {
       // We reached another "tree" via epsilon transition. Emit a kInstNop
@@ -662,7 +794,7 @@ void Prog::EmitList(int root, SparseArray<int>* rootmap, vector<Inst>* flat,
         flat->emplace_back();
         flat->back().set_opcode(kInstAltMatch);
         flat->back().set_out(static_cast<int>(flat->size()));
-        flat->back().out1_ = static_cast<uint32>(flat->size())+1;
+        flat->back().out1_ = static_cast<uint32_t>(flat->size())+1;
         FALLTHROUGH_INTENDED;
 
       case kInstAlt:

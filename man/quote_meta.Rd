@@ -25,4 +25,3 @@ re2_detect("1+2", "1+2")
 re2_detect("1+2", quote_meta("1+2"))
 re2_detect("1+2", re2("1+2",literal = TRUE))
 }
-

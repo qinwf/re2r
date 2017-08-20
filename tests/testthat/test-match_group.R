@@ -388,7 +388,7 @@ test_that("big group", {
     bigregex = re2(big)
     expect_true(re2_detect(bigchar, bigregex))
     bigres = re2_match(bigchar, bigregex)
-    expect_warning(expect_true(unique(re2_match(bigchar, bigregex)[1,2:1000]) == "a"))
+    expect_true(unique(re2_match(bigchar, bigregex)[1,2:1000]) == "a")
 })
 
 library(stringi)

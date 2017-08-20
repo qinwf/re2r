@@ -38,4 +38,3 @@ re2_subset(fruit, "[aeiou]")
 
 re2_subset(c("a", NA, "b"), ".")
 }
-

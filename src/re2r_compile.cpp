@@ -86,7 +86,7 @@ XPtr<OptRE2> cpp_re2_compile_one(string pattern, bool log_errors_value,
 
       new OptRE2(tr2::in_place,
                  RE2p(new RE2(
-                     StringPiece(pattern.c_str(), (int)strlen(pattern.c_str())),
+                     StringPiece(pattern.c_str(), (size_t) strlen(pattern.c_str())),
                      options))));
 
   RE2p &ptrx = (*ptr).value();

@@ -5,7 +5,13 @@
 // Format a regular expression structure as a string.
 // Tested by parse_test.cc
 
+#include <string.h>
+#include <string>
+
 #include "util/util.h"
+#include "util/logging.h"
+#include "util/strutil.h"
+#include "util/utf.h"
 #include "re2/regexp.h"
 #include "re2/walker-inl.h"
 
@@ -42,7 +48,8 @@ class ToStringWalker : public Regexp::Walker<int> {
  private:
   string* t_;  // The string the walker appends to.
 
-  DISALLOW_COPY_AND_ASSIGN(ToStringWalker);
+  ToStringWalker(const ToStringWalker&) = delete;
+  ToStringWalker& operator=(const ToStringWalker&) = delete;
 };
 
 string Regexp::ToString() {
@@ -124,8 +131,7 @@ static void AppendLiteral(string *t, Rune r, bool foldcase) {
     t->append(1, '\\');
     t->append(1, static_cast<char>(r));
   } else if (foldcase && 'a' <= r && r <= 'z') {
-    if ('a' <= r && r <= 'z')
-      r += 'A' - 'a';
+    r -= 'a' - 'A';
     t->append(1, '[');
     t->append(1, static_cast<char>(r));
     t->append(1, static_cast<char>(r) + 'a' - 'A');

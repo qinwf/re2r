@@ -85,4 +85,3 @@ expect_error(re2("(?P<name>re)", posix_syntax = TRUE))
 }
 
 }
-

@@ -9,7 +9,14 @@
 // See regexp.h for the Regexp class, which represents a regular
 // expression symbolically.
 
+#include <stdint.h>
+#include <functional>
+#include <mutex>
+#include <string>
+#include <vector>
+
 #include "util/util.h"
+#include "util/logging.h"
 #include "util/sparse_array.h"
 #include "util/sparse_set.h"
 #include "re2/re2.h"
@@ -40,10 +47,8 @@ enum EmptyOp {
   kEmptyAllFlags         = (1<<6)-1,
 };
 
-class Regexp;
-
 class DFA;
-struct OneState;
+class Regexp;
 
 // Compiled form of regexp program.
 class Prog {
@@ -61,12 +66,12 @@ class Prog {
     Inst& operator=(const Inst&) = default;
 
     // Constructors per opcode
-    void InitAlt(uint32 out, uint32 out1);
-    void InitByteRange(int lo, int hi, int foldcase, uint32 out);
-    void InitCapture(int cap, uint32 out);
-    void InitEmptyWidth(EmptyOp empty, uint32 out);
+    void InitAlt(uint32_t out, uint32_t out1);
+    void InitByteRange(int lo, int hi, int foldcase, uint32_t out);
+    void InitCapture(int cap, uint32_t out);
+    void InitEmptyWidth(EmptyOp empty, uint32_t out);
     void InitMatch(int id);
-    void InitNop(uint32 out);
+    void InitNop(uint32_t out);
     void InitFail();
 
     // Getters
@@ -121,29 +126,29 @@ class Prog {
       out_opcode_ = (out<<4) | (last()<<3) | opcode;
     }
 
-    uint32 out_opcode_;  // 28 bits of out, 1 bit for last, 3 (low) bits opcode
-    union {              // additional instruction arguments:
-      uint32 out1_;      // opcode == kInstAlt
-                         //   alternate next instruction
+    uint32_t out_opcode_;   // 28 bits: out, 1 bit: last, 3 (low) bits: opcode
+    union {                 // additional instruction arguments:
+      uint32_t out1_;       // opcode == kInstAlt
+                            //   alternate next instruction
 
-      int32 cap_;        // opcode == kInstCapture
-                         //   Index of capture register (holds text
-                         //   position recorded by capturing parentheses).
-                         //   For \n (the submatch for the nth parentheses),
-                         //   the left parenthesis captures into register 2*n
-                         //   and the right one captures into register 2*n+1.
+      int32_t cap_;         // opcode == kInstCapture
+                            //   Index of capture register (holds text
+                            //   position recorded by capturing parentheses).
+                            //   For \n (the submatch for the nth parentheses),
+                            //   the left parenthesis captures into register 2*n
+                            //   and the right one captures into register 2*n+1.
 
-      int32 match_id_;   // opcode == kInstMatch
-                         //   Match ID to identify this match (for re2::Set).
+      int32_t match_id_;    // opcode == kInstMatch
+                            //   Match ID to identify this match (for re2::Set).
 
-      struct {           // opcode == kInstByteRange
-        uint8 lo_;       //   byte range is lo_-hi_ inclusive
-        uint8 hi_;       //
-        uint8 foldcase_; //   convert A-Z to a-z before checking range.
+      struct {              // opcode == kInstByteRange
+        uint8_t lo_;        //   byte range is lo_-hi_ inclusive
+        uint8_t hi_;        //
+        uint8_t foldcase_;  //   convert A-Z to a-z before checking range.
       };
 
-      EmptyOp empty_;    // opcode == kInstEmptyWidth
-                         //   empty_ is bitwise OR of kEmpty* flags above.
+      EmptyOp empty_;       // opcode == kInstEmptyWidth
+                            //   empty_ is bitwise OR of kEmpty* flags above.
     };
 
     friend class Compiler;
@@ -186,8 +191,8 @@ class Prog {
   void set_reversed(bool reversed) { reversed_ = reversed; }
   int list_count() { return list_count_; }
   int inst_count(InstOp op) { return inst_count_[op]; }
-  void set_dfa_mem(int64 dfa_mem) { dfa_mem_ = dfa_mem; }
-  int64 dfa_mem() { return dfa_mem_; }
+  void set_dfa_mem(int64_t dfa_mem) { dfa_mem_ = dfa_mem; }
+  int64_t dfa_mem() { return dfa_mem_; }
   int flags() { return flags_; }
   void set_flags(int flags) { flags_ = flags; }
   bool anchor_start() { return anchor_start_; }
@@ -195,7 +200,7 @@ class Prog {
   bool anchor_end() { return anchor_end_; }
   void set_anchor_end(bool b) { anchor_end_ = b; }
   int bytemap_range() { return bytemap_range_; }
-  const uint8* bytemap() { return bytemap_; }
+  const uint8_t* bytemap() { return bytemap_; }
 
   // Lazily computed.
   int first_byte();
@@ -207,7 +212,7 @@ class Prog {
 
   // Returns the set of kEmpty flags that are in effect at
   // position p within context.
-  static uint32 EmptyFlags(const StringPiece& context, const char* p);
+  static uint32_t EmptyFlags(const StringPiece& context, const char* p);
 
   // Returns whether byte c is a word character: ASCII only.
   // Used by the implementation of \b and \B.
@@ -216,7 +221,7 @@ class Prog {
   //     (the DFA has only one-byte lookahead).
   //   - even if the lookahead were possible, the Progs would be huge.
   // This crude approximation is the same one PCRE uses.
-  static bool IsWordChar(uint8 c) {
+  static bool IsWordChar(uint8_t c) {
     return ('A' <= c && c <= 'Z') ||
            ('a' <= c && c <= 'z') ||
            ('0' <= c && c <= '9') ||
@@ -249,15 +254,29 @@ class Prog {
   // If matches != NULL and kind == kManyMatch and there is a match,
   // SearchDFA fills matches with the match IDs of the final matching state.
   bool SearchDFA(const StringPiece& text, const StringPiece& context,
-                 Anchor anchor, MatchKind kind,
-                 StringPiece* match0, bool* failed,
-                 vector<int>* matches);
+                 Anchor anchor, MatchKind kind, StringPiece* match0,
+                 bool* failed, std::vector<int>* matches);
 
-  // Build the entire DFA for the given match kind.  FOR TESTING ONLY.
+  // The callback issued after building each DFA state with BuildEntireDFA().
+  // If next is null, then the memory budget has been exhausted and building
+  // will halt. Otherwise, the state has been built and next points to an array
+  // of bytemap_range()+1 slots holding the next states as per the bytemap and
+  // kByteEndText. The number of the state is implied by the callback sequence:
+  // the first callback is for state 0, the second callback is for state 1, ...
+  // match indicates whether the state is a matching state.
+  using DFAStateCallback = std::function<void(const int* next, bool match)>;
+
+  // Build the entire DFA for the given match kind.
   // Usually the DFA is built out incrementally, as needed, which
-  // avoids lots of unnecessary work.  This function is useful only
-  // for testing purposes.  Returns number of states.
-  int BuildEntireDFA(MatchKind kind);
+  // avoids lots of unnecessary work.
+  // If cb is not empty, it receives one callback per state built.
+  // Returns the number of states built.
+  // FOR TESTING OR EXPERIMENTAL PURPOSES ONLY.
+  int BuildEntireDFA(MatchKind kind, const DFAStateCallback& cb);
+
+  // Controls whether the DFA should bail out early if the NFA would be faster.
+  // FOR TESTING ONLY.
+  static void TEST_dfa_should_bail_when_slow(bool b);
 
   // Compute bytemap.
   void ComputeByteMap();
@@ -325,21 +344,34 @@ class Prog {
   // operation in the sense that the old instructions are lost.
   void Flatten();
 
-  // Marks the "roots" in the Prog: the outs of kInstByteRange, kInstCapture
-  // and kInstEmptyWidth instructions.
-  void MarkRoots(SparseArray<int>* rootmap,
-                 SparseSet* q, vector<int>* stk);
+  // Walks the Prog; the "successor roots" or predecessors of the reachable
+  // instructions are marked in rootmap or predmap/predvec, respectively.
+  // reachable and stk are preallocated scratch structures.
+  void MarkSuccessors(SparseArray<int>* rootmap,
+                      SparseArray<int>* predmap,
+                      std::vector<std::vector<int>>* predvec,
+                      SparseSet* reachable, std::vector<int>* stk);
 
-  // Emits one "list" via "tree" traversal from the given "root" instruction.
-  // The new instructions are appended to the given vector.
-  void EmitList(int root, SparseArray<int>* rootmap, vector<Inst>* flat,
-                SparseSet* q, vector<int>* stk);
+  // Walks the Prog from the given "root" instruction; the "dominator root"
+  // of the reachable instructions (if such exists) is marked in rootmap.
+  // reachable and stk are preallocated scratch structures.
+  void MarkDominator(int root, SparseArray<int>* rootmap,
+                     SparseArray<int>* predmap,
+                     std::vector<std::vector<int>>* predvec,
+                     SparseSet* reachable, std::vector<int>* stk);
+
+  // Walks the Prog from the given "root" instruction; the reachable
+  // instructions are emitted in "list" form and appended to flat.
+  // reachable and stk are preallocated scratch structures.
+  void EmitList(int root, SparseArray<int>* rootmap,
+                std::vector<Inst>* flat,
+                SparseSet* reachable, std::vector<int>* stk);
 
  private:
   friend class Compiler;
 
   DFA* GetDFA(MatchKind kind);
-  void DeleteDFA(std::atomic<DFA*>* pdfa);
+  void DeleteDFA(DFA* dfa);
 
   bool anchor_start_;       // regexp has explicit start anchor
   bool anchor_end_;         // regexp has explicit end anchor
@@ -358,18 +390,20 @@ class Prog {
   int inst_count_[kNumInst];  // count of instructions by opcode
 
   Inst* inst_;              // pointer to instruction array
-  uint8* onepass_nodes_;    // data for OnePass nodes
+  uint8_t* onepass_nodes_;  // data for OnePass nodes
 
-  Mutex dfa_mutex_;    // Protects dfa_first_, dfa_longest_
-  std::atomic<DFA*> dfa_first_;     // DFA cached for kFirstMatch
-  std::atomic<DFA*> dfa_longest_;   // DFA cached for kLongestMatch and kFullMatch
-  int64 dfa_mem_;      // Maximum memory for DFAs.
+  int64_t dfa_mem_;         // Maximum memory for DFAs.
+  DFA* dfa_first_;          // DFA cached for kFirstMatch/kManyMatch
+  DFA* dfa_longest_;        // DFA cached for kLongestMatch/kFullMatch
 
-  uint8 bytemap_[256];      // map from input bytes to byte classes
+  uint8_t bytemap_[256];    // map from input bytes to byte classes
 
   std::once_flag first_byte_once_;
+  std::once_flag dfa_first_once_;
+  std::once_flag dfa_longest_once_;
 
-  DISALLOW_COPY_AND_ASSIGN(Prog);
+  Prog(const Prog&) = delete;
+  Prog& operator=(const Prog&) = delete;
 };
 
 }  // namespace re2

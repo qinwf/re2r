@@ -40,4 +40,3 @@ Split up a string into pieces. Vectorised over string and pattern.
 re2_split("yabba dabba doo", " ")
 re2_split_fixed(c("yabba dabba doo", "a bc"), " ", 2)
 }
-

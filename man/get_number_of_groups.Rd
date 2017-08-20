@@ -28,4 +28,3 @@ get_number_of_groups(re2("((?P<a>123)(12))"))
 # uncaptured groups
 get_number_of_groups(re2("(?:(?:(?:(?:(?:.)?){100})*)+)"))
 }
-

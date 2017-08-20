@@ -40,4 +40,3 @@ re2_count("This", letters)
 
 
 }
-
