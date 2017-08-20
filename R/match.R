@@ -28,6 +28,32 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#' Get a match group
+#' @export
+#' @param self re2_matrix
+#' @param group group name
+#' @examples
+#' text = c("this is test",
+#'     "this is test, and this is not test",
+#'     "they are tests")
+#' res = re2_match(
+#'     string = text,
+#'     pattern = "(?P<testname>this)( is)"
+#' )
+#' class(res)
+#' is.matrix(res)
+#' is.character(res)
+#' print(res)
+#' res$testname
+#' res$.match
+#' res$`.2`
+#' res[, ".2"]
+#' res[, ".match"]
+#' res[, "testname"]
+`$.re2_matrix` = function (self, group) {
+    return(self[, group])
+}
+
 #' Find matched groups from strings.
 #'
 #' @inheritParams re2_count

@@ -210,6 +210,7 @@ SEXP cpp_match_not_all(CharacterVector &input, RE2 *pattern,
   SET_VECTOR_ELT(new_dimnames, 1,
                  Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
   Rf_setAttrib(res, R_DimNamesSymbol, new_dimnames);
+  Rf_setAttrib(res, R_ClassSymbol, Rf_mkString("re2_matrix"));
   return res;
 }
 
@@ -284,6 +285,7 @@ SEXP cpp_match_not_all_parallel(CharacterVector &input, RE2 *pattern,
   SET_VECTOR_ELT(new_dimnames, 1,
                  Shield<SEXP>(toprotect_vec_string_sexp(groups_name)));
   Rf_setAttrib(res, R_DimNamesSymbol, new_dimnames);
+  Rf_setAttrib(res, R_ClassSymbol, Rf_mkString("re2_matrix"));
   return res;
 }
 
@@ -512,13 +514,16 @@ SEXP cpp_match(CharacterVector input, SEXP regexp, bool value, size_t anchor,
       if (all) {
           List res(input.size());
           CharacterMatrix resi(1,1);
+          colnames(resi) = CharacterVector::create(".match");
           resi(0,0) = NA_STRING;
+          Rf_setAttrib(resi, R_ClassSymbol, Rf_mkString("re2_matrix"));
           std::fill(res.begin(), res.end(), resi);
-        return res;
+          return res;
       } else {
         CharacterMatrix res(input.size(), 1);
         colnames(res) = CharacterVector::create(".match");
         std::fill(res.begin(), res.end(), NA_STRING);
+        Rf_setAttrib(res, R_ClassSymbol, Rf_mkString("re2_matrix"));
         return (res);
       }
     }

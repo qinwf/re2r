@@ -11,7 +11,7 @@ test_that("get_named_groups",{
     expect_identical(get_named_groups(re2("(?P<sd>sd)(?P<sd>abcd)(abc)")), c(".match","sd", "sd", ".3"))
 
     # two named group with the same name matched result
-    expect_identical(re2_match("sdabcdabc",re2("(?P<sd>sd)(?P<sd>abcd)(abc)")),structure(c("sdabcdabc","sd", "abcd", "abc"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match","sd", "sd", ".3"))))
+    eq_with_class(re2_match("sdabcdabc",re2("(?P<sd>sd)(?P<sd>abcd)(abc)")),structure(c("sdabcdabc","sd", "abcd", "abc"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match","sd", "sd", ".3"))))
 
 }
 )

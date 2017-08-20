@@ -1,4 +1,5 @@
 context("swirl tests")
+source('helper.R')
 
 test_that("swirl cases",{
     tt = function(string, pattern, replacement = NULL,
@@ -15,10 +16,10 @@ test_that("swirl cases",{
             expect_equal(re2_detect(string = string, pattern = pattern), detect)
         }
         if(!is.null(match)){
-            expect_equivalent(re2_match(string, pattern), match)
+            eq_with_class(re2_match(string, pattern), match)
         }
         if(!is.null(match_all)){
-            expect_equivalent(re2_match_all(string,pattern),match_all)
+            eq_with_class(re2_match_all(string,pattern),match_all)
         }
         if(!is.null(replace) && !is.null(replacement)){
             expect_equivalent(re2_replace(string,pattern,replacement),replace)
@@ -39,10 +40,10 @@ test_that("swirl cases",{
             expect_equivalent(re2_extract_all(string,pattern),extract_all)
         }
         if(!is.null(locate)){
-            expect_equivalent(re2_locate(string,pattern),locate)
+            eq_with_class(re2_locate(string,pattern),locate)
         }
         if(!is.null(locate_all)){
-            expect_equivalent(re2_locate_all(string,pattern),locate_all)
+            eq_with_class(re2_locate_all(string,pattern),locate_all)
         }
         if(!is.null(count)){
             expect_equivalent(re2_count(string,pattern),count)

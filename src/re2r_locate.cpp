@@ -40,6 +40,7 @@ inline size_t utf8_length(const char *s) {
 
 inline void set_colnames(SEXP res, SEXP names) {
   Rf_setAttrib(res, R_DimNamesSymbol, names);
+  Rf_setAttrib(res, R_ClassSymbol, Rf_mkString("re2_matrix"));
 }
 
 SEXP toprotect_loc_matrix(vector<tuple<size_t, size_t>> &input) {

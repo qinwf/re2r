@@ -128,6 +128,7 @@ SEXP toprotect_optstring_to_charmat(const optstring &res) {
     SEXP new_dimnames = Shield<SEXP>((Rf_allocVector(VECSXP, Rf_length(dims))));
     SET_VECTOR_ELT(new_dimnames, 1, CharacterVector::create(".match"));
     Rf_setAttrib(resv, R_DimNamesSymbol, new_dimnames);
+    Rf_setAttrib(resv, R_ClassSymbol, Rf_mkString("re2_matrix"));
 
     SEXP x = resv;
 
@@ -154,6 +155,7 @@ SEXP toprotect_na_charmat(SEXP groups_name, size_t cols) {
         SET_STRING_ELT(resx, i, NA_STRING);
     }
     Rf_setAttrib(resx, R_DimNamesSymbol, groups_name);
+    Rf_setAttrib(resx, R_ClassSymbol, Rf_mkString("re2_matrix"));
     return resx;
 }
 
@@ -165,6 +167,7 @@ SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
 
     if(optinner.size() == 0){
         Rf_setAttrib(res, R_DimNamesSymbol, groups_name);
+        Rf_setAttrib(res, R_ClassSymbol, Rf_mkString("re2_matrix"));
         return res;
     }
 
@@ -184,7 +187,7 @@ SEXP toprotect_optstring_to_list_charmat(const optstring &optinner, size_t cols,
     }
 
     Rf_setAttrib(res, R_DimNamesSymbol, groups_name);
-
+    Rf_setAttrib(res, R_ClassSymbol, Rf_mkString("re2_matrix"));
     return res;
 }
 

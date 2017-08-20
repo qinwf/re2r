@@ -52,7 +52,7 @@ test_that("Chinese",{
 
     tan = stri_enc_fromutf32(c(65L, 66L, 67L, 68L, 69L, 70L, 71L, 72L, 73L, 35674L, 27704L, 37586L))
 
-    expect_identical(structure(c("ABC","A", "B", "C"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match",".1", ".2", ".3"))),re2_match(tan,"(.).*?(.).*?(.)"))
-    expect_identical(structure(c("ABC","A", "B", "C"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match",".1", ".2", ".3"))),re2_match(tan,"(.).*?([\\p{L}]).*?(.)"))
-    expect_identical(structure(c(tan,stri_enc_fromutf32(list( 35674L, 27704L, 37586L))), .Dim = c(1L, 4L), .Dimnames = list( NULL, c(".match",".1", ".2", ".3"))),re2_match(tan,".*(.).*?([\\p{Lu}\\p{Lo}]).*?(.)"))
+    eq_with_class(re2_match(tan,"(.).*?(.).*?(.)"), structure(c("ABC","A", "B", "C"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match",".1", ".2", ".3"))))
+    eq_with_class(re2_match(tan,"(.).*?([\\p{L}]).*?(.)"), structure(c("ABC","A", "B", "C"), .Dim = c(1L, 4L), .Dimnames = list(NULL, c(".match",".1", ".2", ".3"))))
+    eq_with_class(re2_match(tan,".*(.).*?([\\p{Lu}\\p{Lo}]).*?(.)"), structure(c(tan,stri_enc_fromutf32(list( 35674L, 27704L, 37586L))), .Dim = c(1L, 4L), .Dimnames = list( NULL, c(".match",".1", ".2", ".3"))))
 })

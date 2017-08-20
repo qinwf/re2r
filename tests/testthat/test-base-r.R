@@ -1,10 +1,11 @@
 context("base R")
 library(stringi)
+source('helper.R')
 
 test_that("base R examples",{
     "base R example"
-    expect_equivalent(re2_match(letters, "[a-z]"),
-                      grep("[a-z]", letters, value = T))
+    eq_with_class(re2_match(letters, "[a-z]"),
+                  grep("[a-z]", letters, value = T))
 
     txt <- c("arm","foot","lefroo", "bafoobar")
     expect_equivalent(grepl("foo", txt), re2_detect(txt, "foo"))
@@ -28,8 +29,8 @@ test_that("base R examples",{
     expect_equivalent( gsub("[b-e]",".", txt), re2_replace_all(txt, "[b-e]", "."))
 
     expect_equivalent(
-    gsub("g","#", txt, ignore.case = TRUE),
-    re2_replace_all(txt, re2("g", case_sensitive = F), "#")
+        gsub("g","#", txt, ignore.case = TRUE),
+        re2_replace_all(txt, re2("g", case_sensitive = F), "#")
     )
 
     re2_match(txt, "en")
@@ -38,16 +39,16 @@ test_that("base R examples",{
     ## trim trailing white space
     str <- "Now is the time      "
     expect_equivalent(
-    sub(" +$", "", str),  ## spaces only
-    re2_replace(str, " +$", "")
+        sub(" +$", "", str),  ## spaces only
+        re2_replace(str, " +$", "")
     )
 
     ## what is considered 'white space' depends on the locale.
     sub("[[:space:]]+$", "", str) ## white space, POSIX-style
     expect_equivalent(
-    re2_replace(str, "[[:space:]]+$", ""),
-    ## what PCRE considered white space changed in version 8.34: see ?regex
-    sub("\\s+$", "", str, perl = TRUE) ## PCRE-style white space
+        re2_replace(str, "[[:space:]]+$", ""),
+        ## what PCRE considered white space changed in version 8.34: see ?regex
+        sub("\\s+$", "", str, perl = TRUE) ## PCRE-style white space
     )
 
     ## capitalizing
@@ -63,13 +64,35 @@ test_that("base R examples",{
                   "\tMillard Fillmore")
     # name groups 'first' and 'last'
     name.rex <- "(?P<first>[[:upper:]][[:lower:]]+) (?P<last>[[:upper:]][[:lower:]]+)"
-    re2_match_all(notables, name.rex)
+    res = re2_match_all(notables, name.rex)
+    tmp = list(
+        structure(c("Ben Franklin", "Jefferson Davis", "Ben", "Jefferson", "Franklin", "Davis"),
+        .Dim = 2:3,
+        .Dimnames = list(NULL, c(".match", "first", "last")), class = "re2_matrix"),
+        structure(c("Millard Fillmore", "Millard", "Fillmore"),
+        .Dim = c(1L, 3L),
+        .Dimnames = list(NULL, c(".match", "first", "last")), class = "re2_matrix"))
+    expect_equivalent(res, tmp)
 
     pattern <- "([[:alpha:]]+)([[:digit:]]+)"
     s <- "Test: A1 BC23 DEF456"
-    re2_match_all(s,pattern)
+    res = re2_match_all(s, pattern)
+    tmp = list(structure(
+        c("A1", "BC23", "DEF456", "A", "BC", "DEF", "1",
+                           "23", "456"),
+        .Dim = c(3L, 3L),
+        .Dimnames = list(NULL, c(".match", ".1", ".2")),
+        class = "re2_matrix"))
+    expect_equivalent(res, tmp)
 
     x <- "http://stat.umn.edu:80/xyz"
-    re2_match(x, "^(([^:]+)://)?([^:/]+)(:([0-9]+))?(/.*)")
+    res = re2_match(x, "^(([^:]+)://)?([^:/]+)(:([0-9]+))?(/.*)")
 
+    tmp = structure(c("http://stat.umn.edu:80/xyz", "http://", "http",
+                "stat.umn.edu", ":80", "80", "/xyz"),
+              .Dim = c(1L, 7L),
+              .Dimnames = list(NULL,
+                  c(".match", ".1", ".2", ".3", ".4", ".5", ".6")),
+              class = "re2_matrix")
+    expect_equivalent(res, tmp)
 })

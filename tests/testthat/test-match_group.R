@@ -1,4 +1,5 @@
 context("check match group")
+source('helper.R')
 
 test_that("check match group 1", {
     # from re2_test.cc
@@ -11,15 +12,15 @@ test_that("check match group 1", {
                   pmatch = match,
                   rep_match = rep(pmatch, 1000),
                   parallel_rep = TRUE) {
-        expect_equal(re2_match_all(string, pattern, anchor = anchor), match)
-        expect_equal(re2_match_all(
+        eq_with_class(re2_match_all(string, pattern, anchor = anchor), match)
+        eq_with_class(re2_match_all(
             pstring,
             ppattern,
             anchor = anchor,
             parallel = T
         ),
         pmatch)
-        expect_equal(
+        eq_with_class(
             re2_match_all(
                 pstring,
                 ppattern,
@@ -30,7 +31,7 @@ test_that("check match group 1", {
             pmatch
         )
         if (parallel_rep) {
-            expect_equal(
+            eq_with_class(
                 re2_match_all(
                     rep(pstring, 1000),
                     ppattern,
@@ -187,15 +188,15 @@ test_that("Test Match Number Peculiarity", {
                   pmatch = match,
                   rep_match = rep(match, 1000),
                   parallel_rep = TRUE) {
-        expect_equal(re2_match(string, pattern, anchor = anchor), match)
-        expect_equal(re2_match(
+        eq_with_class(re2_match(string, pattern, anchor = anchor), match)
+        eq_with_class(re2_match(
             pstring,
             ppattern,
             anchor = anchor,
             parallel = T
         ),
         pmatch)
-        expect_equal(
+        eq_with_class(
             re2_match(
                 pstring,
                 ppattern,
@@ -206,7 +207,7 @@ test_that("Test Match Number Peculiarity", {
             pmatch
         )
         if (parallel_rep) {
-            expect_equal(
+            eq_with_class(
                 re2_match(
                     rep(pstring, 1000),
                     ppattern,
@@ -250,7 +251,7 @@ test_that("Test Match Number Peculiarity", {
 
     tt("baz", p, res, rep_match = resp)
 
-    expect_identical(
+    eq_with_class(
         re2_match("hello", "(foo)|hello", anchor = 1),
         structure(
             c("hello",NA_character_),
@@ -265,7 +266,7 @@ test_that("simple match", {
     p = re2("((\\w+):([0-9]+))")
     expect_false(re2_detect("zyzzyva", p))
 
-    expect_identical(re2_match("a chrisr:9000 here", p),
+    eq_with_class(re2_match("a chrisr:9000 here", p),
                      structure(
                          c("chrisr:9000","chrisr:9000", "chrisr", "9000"),
                          .Dim = c(1L, 4L),
@@ -276,15 +277,15 @@ test_that("simple match", {
 test_that("no capture with value", {
     s = c("this is just one test", "the second test", NA)
 
-    expect_identical(re2_match(s, "is"),
+    eq_with_class(re2_match(s, "is"),
                      structure(
                          c("is", NA, NA),
                          .Dim = c(3L, 1L),
                          .Dimnames = list(NULL, ".match")
                      ))
 
-    expect_identical(re2_match(s, "is", parallel = T), re2_match(s, "is"))
-    expect_identical(re2_match(s, "is", parallel = T, grain_size = 1),
+    eq_with_class(re2_match(s, "is", parallel = T), re2_match(s, "is"))
+    eq_with_class(re2_match(s, "is", parallel = T, grain_size = 1),
                      re2_match(s, "is"))
 
 })
@@ -300,15 +301,15 @@ test_that("anchor start value not all", {
                   pmatch = match,
                   rep_match = rep(match, 1000),
                   parallel_rep = TRUE) {
-        expect_equal(re2_match(string, pattern, anchor = anchor), match)
-        expect_equal(re2_match(
+        eq_with_class(re2_match(string, pattern, anchor = anchor), match)
+        eq_with_class(re2_match(
             pstring,
             ppattern,
             anchor = anchor,
             parallel = T
         ),
         pmatch)
-        expect_equal(
+        eq_with_class(
             re2_match(
                 pstring,
                 ppattern,
@@ -319,7 +320,7 @@ test_that("anchor start value not all", {
             pmatch
         )
         if (parallel_rep) {
-            expect_equal(
+            eq_with_class(
                 re2_match(
                     rep(pstring, 1000),
                     ppattern,
@@ -394,12 +395,12 @@ test_that("big group", {
 library(stringi)
 
 test_that("match NA", {
-    expect_identical(structure(
+    eq_with_class(re2_match(c(NA, "sd"), "sd"),
+    structure(
         c(NA, "sd"),
         .Dim = c(2L, 1L),
         .Dimnames = list(NULL, ".match")
-    ),
-    re2_match(c(NA, "sd"), "sd"))
+    ))
     expect_identical(re2_match(c(NA, "sd"), "sd"),
                      re2_match(
                          c(NA, "sd"),
@@ -437,27 +438,27 @@ test_that("match NA", {
 })
 
 test_that("Stringi test",{
-    expect_equivalent(re2_match_all(NA, "test"), list(matrix(NA_character_,1,1)))
-    expect_equivalent(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
+    eq_with_class(re2_match_all(NA, "test"), list(matrix(NA_character_,1,1)))
+    eq_with_class(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
 
-    expect_equivalent(re2_match_all("abcd", "^(:)?([^:]*)(:)?$")[[1]],
+    eq_with_class(re2_match_all("abcd", "^(:)?([^:]*)(:)?$")[[1]],
                      matrix(c("abcd", NA, "abcd", NA) ,1,4))
 
-    expect_equivalent(re2_match_all("abcd", "^(:)?([^:]*)(:)?$")[[1]],
+    eq_with_class(re2_match_all("abcd", "^(:)?([^:]*)(:)?$")[[1]],
                      matrix(c("abcd", NA, "abcd", NA) ,1,4))
 
-    expect_equivalent(re2_match_all(":abcd", "^(:)?([^:]*)(:)?$")[[1]],
+    eq_with_class(re2_match_all(":abcd", "^(:)?([^:]*)(:)?$")[[1]],
                      matrix(c(":abcd", ":", "abcd", NA) ,1,4))
 
-    expect_equivalent(re2_match_all(c("", " "), "^.*$"), list(matrix(c("")), matrix(c(" "))))
-    expect_equivalent(re2_match_all(c("", " "), "^(.*)$"), list(matrix(c("",""),ncol=2), matrix(c(" ", " "),ncol=2)))
+    eq_with_class(re2_match_all(c("", " "), "^.*$"), list(matrix(c("")), matrix(c(" "))))
+    eq_with_class(re2_match_all(c("", " "), "^(.*)$"), list(matrix(c("",""),ncol=2), matrix(c(" ", " "),ncol=2)))
 
-    expect_equivalent(re2_match_all(NA, "(test)(rest)"), list(matrix(NA_character_,1,3)))
-    expect_equivalent(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
-    expect_equivalent(re2_match_all("test", NA), list(matrix(NA_character_,1,1)))
+    eq_with_class(re2_match_all(NA, "(test)(rest)"), list(matrix(NA_character_,1,3)))
+    eq_with_class(re2_match_all("", "(test)(rest)"), list(matrix(NA_character_,0,3)))
+    eq_with_class(re2_match_all("test", NA), list(matrix(NA_character_,1,1)))
     # suppressWarnings(expect_identical(re2_match_all("test", ""), list(matrix(NA_character_,1,1))))
     #
-    expect_equivalent(re2_match_all(c("bacab", "bacaba\u0105a", "aa"), "a.a"),
+    eq_with_class(re2_match_all(c("bacab", "bacaba\u0105a", "aa"), "a.a"),
                       list(structure("aca", .Dim = c(1L, 1L), .Dimnames = list(NULL, ".match")),
                            structure(enc2utf8(c("aca", "a\u0105a")), .Dim = c(2L, 1L), .Dimnames = list(NULL, ".match")),
                            structure(character(0), .Dim = 0:1, .Dimnames = list(NULL, ".match"))))
@@ -465,35 +466,35 @@ test_that("Stringi test",{
         structure(c("a=b", "c=d", "a", "c", "b", "d"), .Dim = 2:3, .Dimnames = list(NULL, c(".match", ".1", ".2"))),
         structure(character(0), .Dim = c(0L,3L), .Dimnames = list(NULL, c(".match", ".1", ".2"))),
         structure(c("e=f", "e", "f"), .Dim = c(1L, 3L), .Dimnames = list(NULL, c(".match", ".1", ".2"))))
-    expect_equivalent(re2_match_all(c("a=b;c=d", "", "e=f"), "([a-z])=([a-z])"), res)
+    eq_with_class(re2_match_all(c("a=b;c=d", "", "e=f"), "([a-z])=([a-z])"), res)
 
-    expect_equivalent(re2_match_all(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+    eq_with_class(re2_match_all(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
                       list(matrix(ncol=1, c("", "\u0106", "", "")), matrix(ncol=1, c("", "", "")))) # match of zero length
 
 
     # re2_match
 
-    expect_equivalent(re2_match(NA, "test"), matrix(NA_character_,1,1))
-    expect_equivalent(re2_match("", "(test)(rest)"), matrix(NA_character_,1,3))
+    eq_with_class(re2_match(NA, "test"), matrix(NA_character_,1,1))
+    eq_with_class(re2_match("", "(test)(rest)"), matrix(NA_character_,1,3))
 
-    expect_equivalent(re2_match("abcd", "^(:)?([^:]*)(:)?$"),
+    eq_with_class(re2_match("abcd", "^(:)?([^:]*)(:)?$"),
                      matrix(c("abcd", NA, "abcd", NA) ,1,4))
 
-    expect_equivalent(re2_match(c("", " "), "^.*$"), matrix(c("", " "),nrow=2))
-    expect_equivalent(re2_match(c("", " "), "^(.*)$"), matrix(c("", " "),nrow=2,ncol=2))
+    eq_with_class(re2_match(c("", " "), "^.*$"), matrix(c("", " "),nrow=2))
+    eq_with_class(re2_match(c("", " "), "^(.*)$"), matrix(c("", " "),nrow=2,ncol=2))
 
-    expect_equivalent(re2_match(":abcd", "^(:)?([^:]*)(:)?$"),
+    eq_with_class(re2_match(":abcd", "^(:)?([^:]*)(:)?$"),
                      matrix(c(":abcd", ":", "abcd", NA) ,1,4))
 
-    expect_equivalent(re2_match("test", NA), matrix(NA_character_,1,1))
+    eq_with_class(re2_match("test", NA), matrix(NA_character_,1,1))
     # suppressWarnings(expect_equivalent(re2_match("test", ""), matrix(NA_character_,1,1)))
-    expect_equivalent(re2_match(c("bacab", "ba\u0105aacaba\u0105a", "aa"), "a.a"),
+    eq_with_class(re2_match(c("bacab", "ba\u0105aacaba\u0105a", "aa"), "a.a"),
                       matrix(c("aca", "a\u0105a", NA_character_), 3, 1))
-    expect_equivalent(re2_match(c("a=b;c=d", "", "e=f"), "([a-z])=([a-z])"),
+    eq_with_class(re2_match(c("a=b;c=d", "", "e=f"), "([a-z])=([a-z])"),
                       matrix(c("a=b", NA, "e=f", "a", NA, "e", "b", NA, "f"), 3, 3))
 
 
-    expect_equivalent(re2_match(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
+    eq_with_class(re2_match(c("\u0105\u0106\u0107", "\u0105\u0107"), "\u0106*"),
                      matrix(ncol=1, c("", ""))) # match of zero length
 
 })

@@ -14,6 +14,10 @@ at matching large amounts of text.
 Installation
 ------------
 
+From CRAN:
+
+    install.packages("re2r")
+
 From GitHub:
 
     library(devtools)
@@ -59,6 +63,8 @@ pattern](https://raw.githubusercontent.com/qinwf/re2r/master/inst/img/email.png)
 
     ##      .match .1   
     ## [1,] "one"  "one"
+    ## attr(,"class")
+    ## [1] "re2_matrix"
 
 The return result is a character matrix. `.1` is the first capture group
 and it is unnamed group.
@@ -69,6 +75,21 @@ Create named capture group with `(?P<name>pattern)` syntax.
 
     ##      .match    testname .2   
     ## [1,] "this is" "this"   " is"
+    ## attr(,"class")
+    ## [1] "re2_matrix"
+
+    is.matrix(res)
+
+    ## [1] TRUE
+
+    is.character(res)
+
+    ## [1] TRUE
+
+    res$testname
+
+    ## testname 
+    ##   "this"
 
 If there is no capture group, the matched origin strings will be
 returned.
@@ -78,27 +99,40 @@ returned.
 
     ##      .match
     ## [1,] "is"  
-    ## [2,] NA
+    ## [2,] NA    
+    ## attr(,"class")
+    ## [1] "re2_matrix"
 
 `re2_match_all()` will return the all of patterns in a string instead of
 just the first one.
 
-    re2_match_all(c("this is test", 
+    res = re2_match_all(c("this is test", 
                 "this is test, and this is not test", 
                 "they are tests"), 
               pattern = "(?P<testname>this)( is)")
+    print(res)
 
     ## [[1]]
     ##      .match    testname .2   
     ## [1,] "this is" "this"   " is"
+    ## attr(,"class")
+    ## [1] "re2_matrix"
     ## 
     ## [[2]]
     ##      .match    testname .2   
     ## [1,] "this is" "this"   " is"
     ## [2,] "this is" "this"   " is"
+    ## attr(,"class")
+    ## [1] "re2_matrix"
     ## 
     ## [[3]]
     ##      .match testname .2
+    ## attr(,"class")
+    ## [1] "re2_matrix"
+
+    is.list(res)
+
+    ## [1] TRUE
 
 ### 2. Replace a substring
 
@@ -152,6 +186,8 @@ to get more detials.
 
     ##      .match
     ## [1,] "TEST"
+    ## attr(,"class")
+    ## [1] "re2_matrix"
 
     re2_replace("TEST", regexp, "ops")
 
