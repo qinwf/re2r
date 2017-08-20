@@ -16,6 +16,8 @@ GTAGS
 .Rprofile
 ^TODO\.md$
 ^README\.md$
+^README\.html$
+^README\.rmd$
 ^times\.RData$
 ^email\.png$
 ^.*\.csv\.gz$
