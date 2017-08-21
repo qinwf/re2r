@@ -9,8 +9,10 @@
 #' ANCHOR_BOTH - Anchor at start and end
 #' @examples
 #' re2_match("This is an apple.", "(is)",anchor = ANCHOR_BOTH)
-#' re2_match("This is an apple.", "(This)",anchor = ANCHOR_START)
 #' re2_match("This is an apple.", "(is)",anchor = UNANCHORED)
+#' re2_match("This is an apple.", "(is)",anchor = ANCHOR_START)
+#' re2_match("This is an apple.", "(This)",anchor = ANCHOR_START)
+#' re2_match("This is an apple.", "(This)",anchor = ANCHOR_BOTH)
 #' @export
 UNANCHORED = 0
 
