@@ -556,7 +556,10 @@ class Regexp {
 
   // Extra space for parse and teardown stacks.
   Regexp* down_;
-
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
   // Arguments to operator.  See description of operators above.
   union {
     struct {  // Repeat
@@ -582,6 +585,9 @@ class Regexp {
     int match_id_;  // HaveMatch
     void *the_union_[2];  // as big as any other element, for memset
   };
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
   Regexp(const Regexp&) = delete;
   Regexp& operator=(const Regexp&) = delete;

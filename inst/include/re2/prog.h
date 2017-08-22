@@ -140,12 +140,18 @@ class Prog {
 
       int32_t match_id_;    // opcode == kInstMatch
                             //   Match ID to identify this match (for re2::Set).
-
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
       struct {              // opcode == kInstByteRange
         uint8_t lo_;        //   byte range is lo_-hi_ inclusive
         uint8_t hi_;        //
         uint8_t foldcase_;  //   convert A-Z to a-z before checking range.
       };
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
       EmptyOp empty_;       // opcode == kInstEmptyWidth
                             //   empty_ is bitwise OR of kEmpty* flags above.
