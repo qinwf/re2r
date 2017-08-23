@@ -85,6 +85,26 @@
 #' re2_match("abc", "")
 #' stringi::stri_match("abc", regex = "")
 #'
+#' dates <- c("2008-08-08", "2020", "a string",
+#'            "12-12-72", "1989-06-30", "2115-11-21 09:21")
+#' pattern <- "([0-9]{4})-([0-1][0-9])-([0-3][0-9])"
+#' re2_match(dates, pattern)
+#'
+#' pattern <- "(?P<y>[0-9]{4})-(?P<m>[0-1][0-9])-(?P<d>[0-3][0-9])"
+#' (res = re2_match(dates, pattern))
+#' res$y
+#' res$m
+#' res$d
+#'
+#' pattern <- paste0(
+#' "(?P<first>[A-Z][a-z]+) ",
+#' "(?P<last>[A-Z][a-z]+)"
+#' )
+#' texts <- c(
+#'     "  Taylor Swift and Lady Gaga",
+#'     "One Direction hit the road agains"
+#' )
+#' re2_match_all(texts, pattern)
 #' @return For \code{\link{re2_match}}, a character matrix. First column
 #'  is the complete match, followed by one column
 #' for each capture group with names.

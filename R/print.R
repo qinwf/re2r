@@ -34,6 +34,17 @@ cat_lines = function(des, res){
     cat("\n")
 }
 
+#' Print information about a re2_matrix
+#' @param x an re2_matrix
+#' @param ... further arguments passed to or from other methods.
+#' @examples
+#' print(re2_match(".*", "abc"))
+#' @export
+print.re2_matrix = function(x, ...) {
+    prmatrix(x)
+    invisible(x)
+}
+
 #' Print information about a pre-compiled regular expression
 #' @param x a pre-compiled regular expression
 #' @param options print options
