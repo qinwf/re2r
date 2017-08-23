@@ -3,12 +3,12 @@
 \name{re2_split}
 \alias{re2_split}
 \alias{re2_split_fixed}
-\title{Split up a string into pieces.}
+\title{Split a string into pieces.}
 \usage{
-re2_split(string, pattern, n = Inf, parallel = FALSE, grain_size = 1e+05,
+re2_split(string, pattern, n = Inf, parallel = FALSE, grain_size = 10000,
   ...)
 
-re2_split_fixed(string, pattern, n, parallel = FALSE, grain_size = 1e+05,
+re2_split_fixed(string, pattern, n, parallel = FALSE, grain_size = 10000,
   ...)
 }
 \arguments{
@@ -34,7 +34,7 @@ For \code{\link{re2_split_fixed}}, a character matrix with n columns.
 For \code{\link{re2_split}}, a list of character vectors.
 }
 \description{
-Split up a string into pieces. Vectorised over string and pattern.
+Split a string into pieces. Vectorised over string and pattern.
 }
 \examples{
 re2_split("yabba dabba doo", " ")

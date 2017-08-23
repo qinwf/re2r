@@ -28,9 +28,9 @@
 ## OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 ## EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#' Split up a string into pieces.
+#' Split a string into pieces.
 #'
-#' Split up a string into pieces. Vectorised over string and pattern.
+#' Split a string into pieces. Vectorised over string and pattern.
 #'
 #' @inheritParams re2_locate
 #' @param n number of pieces to return. Default (Inf) for
@@ -45,7 +45,7 @@
 #'
 #' For \code{\link{re2_split}}, a list of character vectors.
 #' @export
-re2_split = function(string, pattern, n = Inf, parallel = FALSE, grain_size = 100000, ...) {
+re2_split = function(string, pattern, n = Inf, parallel = FALSE, grain_size = 10000, ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
@@ -54,7 +54,7 @@ re2_split = function(string, pattern, n = Inf, parallel = FALSE, grain_size = 10
 
 #' @rdname re2_split
 #' @export
-re2_split_fixed = function(string, pattern, n, parallel = FALSE, grain_size = 100000,  ...) {
+re2_split_fixed = function(string, pattern, n, parallel = FALSE, grain_size = 10000,  ...) {
     if (is.character(pattern) || mode(pattern) == "logical") {
         pattern = re2(pattern, ...)
     }
