@@ -25,3 +25,4 @@ GTAGS
 \.git/
 .git
 \.DS_store
+^cran-comments\.md$

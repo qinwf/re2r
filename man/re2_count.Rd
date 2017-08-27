@@ -37,6 +37,4 @@ re2_count(words, "[abc]")
 
 # vectorize
 re2_count("This", letters)
-
-
 }

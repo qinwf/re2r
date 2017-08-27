@@ -44,11 +44,13 @@
 #' @param replacement replace the first match or all of the match of \code{pattern} in \code{string} with "rewrite"
 #' @inheritParams re2_locate
 #' @examples
+#' # replace one or more b, prefer more
 #' regexp = re2("b+")
 #' re2_replace_all("yabba dabba doo", regexp,"d")
 #' re2_replace("yabba dabba doo", "b+","d")
 #'
-#' pattern = "^[\\s]+|[\\s]+$"
+#' # trim string
+#' pattern = "^\\s+|\\s+$"
 #' re2_replace_all(c("  abc  "," this is "), pattern, "")
 #' @return For \code{\link{re2_replace}}, a character vector. For \code{\link{re2_replace_all}}, a character vector with the number of replacements.
 #' @export

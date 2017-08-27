@@ -50,8 +50,6 @@
 #'
 #' # vectorize
 #' re2_count("This", letters)
-#'
-#'
 #' @export
 re2_count = function(string,
                       pattern,
