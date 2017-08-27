@@ -144,7 +144,14 @@ static const bool ExtraDebug = false;
 // the memory footprint.)
 struct OneState {
   uint32_t matchcond;   // conditions to match right now.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
   uint32_t action[];
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 };
 
 // The uint32_t conditions in the action are a combination of
