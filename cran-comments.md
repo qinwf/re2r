@@ -12,7 +12,13 @@ Test environments
 
 R CMD check results:
 
-0 errors | 0 warnings | 2 notes
+0 errors | 0 warnings | 3 notes
+
+* checking installed package size ... NOTE
+  installed size is  5.1Mb
+  sub-directories of 1Mb or more:
+    doc    1.5Mb
+    libs   2.6Mb
 
 * checking for GNU extensions in Makefiles
   GNU make is a SystemRequirements.
