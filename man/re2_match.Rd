@@ -83,4 +83,17 @@ texts <- c(
     "One Direction hit the road agains"
 )
 re2_match_all(texts, pattern)
+
+texts = c("pi is 3.14529..",
+          "-15.34 °F",
+          "128 days",
+          "1.9e10",
+          "123,340.00$",
+          "only texts")
+(number_pattern = re2(".*?(?P<number>-?\\\\d+(,\\\\d+)*(\\\\.\\\\d+(e\\\\d+)?)?).*?"))
+
+(res = re2_match(texts, number_pattern))
+res$number
+
+# show_regex(number_pattern)
 }

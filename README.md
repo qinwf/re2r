@@ -64,8 +64,6 @@ re2_detect("test@gmail.com", "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4
 
     ##      .match .1   
     ## [1,] "one"  "one"
-    ## attr(,"class")
-    ## [1] "re2_matrix"
 
 The return result is a character matrix. `.1` is the first capture group and it is unnamed group.
 
@@ -77,8 +75,6 @@ Create named capture group with `(?P<name>pattern)` syntax.
 
     ##      .match    testname .2   
     ## [1,] "this is" "this"   " is"
-    ## attr(,"class")
-    ## [1] "re2_matrix"
 
 ``` r
 is.matrix(res)
@@ -108,9 +104,7 @@ test_string = c("this is just one test", "the second test");
 
     ##      .match
     ## [1,] "is"  
-    ## [2,] NA    
-    ## attr(,"class")
-    ## [1] "re2_matrix"
+    ## [2,] NA
 
 `re2_match_all()` will return the all of patterns in a string instead of just the first one.
 
@@ -125,26 +119,65 @@ print(res)
     ## [[1]]
     ##      .match    testname .2   
     ## [1,] "this is" "this"   " is"
-    ## attr(,"class")
-    ## [1] "re2_matrix"
     ## 
     ## [[2]]
     ##      .match    testname .2   
     ## [1,] "this is" "this"   " is"
     ## [2,] "this is" "this"   " is"
-    ## attr(,"class")
-    ## [1] "re2_matrix"
     ## 
     ## [[3]]
     ##      .match testname .2
-    ## attr(,"class")
-    ## [1] "re2_matrix"
 
 ``` r
 is.list(res)
 ```
 
     ## [1] TRUE
+
+match all numbers
+
+``` r
+texts = c("pi is 3.14529..",
+          "-15.34 °F",
+          "128 days",
+          "1.9e10",
+          "123,340.00$",
+          "only texts")
+(number_pattern = re2(".*?(?P<number>-?\\d+(,\\d+)*(\\.\\d+(e\\d+)?)?).*?"))
+```
+
+    ## re2 pre-compiled regular expression
+    ## 
+    ## pattern: .*?(?P<number>-?\d+(,\d+)*(\.\d+(e\d+)?)?).*?
+    ## number of capturing subpatterns: 4
+    ## capturing names with indices: 
+    ## .match number .2 .3 .4
+    ## expression size: 56
+
+``` r
+(res = re2_match(texts, number_pattern))
+```
+
+    ##      .match          number       .2     .3       .4   
+    ## [1,] "pi is 3.14529" "3.14529"    NA     ".14529" NA   
+    ## [2,] "-15.34"        "-15.34"     NA     ".34"    NA   
+    ## [3,] "128"           "128"        NA     NA       NA   
+    ## [4,] "1.9e10"        "1.9e10"     NA     ".9e10"  "e10"
+    ## [5,] "123,340.00"    "123,340.00" ",340" ".00"    NA   
+    ## [6,] NA              NA           NA     NA       NA
+
+``` r
+res$number
+```
+
+    ## [1] "3.14529"    "-15.34"     "128"        "1.9e10"     "123,340.00"
+    ## [6] NA
+
+``` r
+show_regex(number_pattern)
+```
+
+![number pattern](https://raw.githubusercontent.com/qinwf/re2r/master/inst/img/number.png)
 
 ### 2. Replace a substring
 
@@ -161,6 +194,24 @@ re2_replace(new_string, "(o.e)", input_string)
 ```
 
     ## [1] "my"
+
+mask the middle three digits of a US phone number
+
+``` r
+texts = c("415-555-1234",
+          "650-555-2345",
+          "(416)555-3456",
+          "202 555 4567",
+          "4035555678",
+          "1 416 555 9292")
+
+us_phone_pattern = re2("(1?[\\s-]?\\(?\\d{3}\\)?[\\s-]?)(\\d{3})([\\s-]?\\d{4})")
+
+re2_replace(texts, us_phone_pattern, "\\1***\\3")
+```
+
+    ## [1] "415-***-1234"   "650-***-2345"   "(416)***-3456"  "202 *** 4567"  
+    ## [5] "403***5678"     "1 416 *** 9292"
 
 ### 3. Extract a substring
 
@@ -208,8 +259,6 @@ re2_match("TEST", regexp)
 
     ##      .match
     ## [1,] "TEST"
-    ## attr(,"class")
-    ## [1] "re2_matrix"
 
 ``` r
 re2_replace("TEST", regexp, "ops")

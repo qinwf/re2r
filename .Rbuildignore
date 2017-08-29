@@ -26,3 +26,5 @@ GTAGS
 .git
 \.DS_store
 ^cran-comments\.md$
+^inst/img/number\.png$
+^number\.png$
