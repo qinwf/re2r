@@ -1,3 +1,9 @@
+Changes from the last submission:
+
+1. Update authors with copyright holders.
+
+Thanks!
+
 Test environments
 
 1. local OS X install, release and devel
@@ -25,16 +31,9 @@ R CMD check results:
 
 * checking CRAN incoming feasibility
   Maintainer: ‘Qin Wenfeng <mail@qinwenfeng.com>’
-  License components with restrictions and base license 
-  permitting such:
-  BSD_3_clause + file LICENSE
-  File 'LICENSE':
-  YEAR: 2016-2017
-  COPYRIGHT HOLDER: Qin Wenfeng
-  
+
   Possibly mis-spelled words in DESCRIPTION:
      RE2 (3:8, 13:14)
-
 
 Ubuntu with Valgrind Result:
 
@@ -64,4 +63,4 @@ Ubuntu with UBSAN Result:
    dfa.cc:1385:36: runtime error: index 1 out of bounds for type 'atomic [0x10000000000000000]'
    dfa.cc:1471:41: runtime error: index 2 out of bounds for type 'atomic [0x10000000000000000]'
 
-This is expected. More discussion on  https://github.com/google/re2/issues/102#issuecomment-268752821
+This result is expected. More discussion on  https://github.com/google/re2/issues/102#issuecomment-268752821

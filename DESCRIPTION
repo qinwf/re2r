@@ -1,17 +1,23 @@
 Package: re2r
 Type: Package
 Title: RE2 Regular Expression
-Version: 0.1.9999
+Version: 0.2.0
 Authors@R: c(
     person("Qin Wenfeng", email = "mail@qinwenfeng.com", role = c("aut", "cre")),
     person("Toby Dylan Hocking", role = "ctb", comment = "benchmarks"),
     person("Marek Gagolewski", role = "ctb", comment = "stringi benchmarks and test cases"),
     person("RE2 developers", role = "ctb", comment = "RE2 library"),
+    person("Google Inc.", role = c("ctb", "cph"), comment = "RE2 library"),
+    person("Lucent Technologies", role = c("ctb", "cph"), comment = "RE2 library"),
+    person("Rob Pike", role = "ctb", comment = "RE2 library"),
+    person("Ken Thompson", role = "ctb", comment = "RE2 library"),
+    person("Julian Seward", role = c("ctb", "cph"), comment = "valgrind.h"),
+    person("Andrzej Krzemienski", role = "ctb", comment = "optional.hpp"),
     person("Jeffrey Avallone", role = "ctb", comment = "regexper library")
     )
 Maintainer: Qin Wenfeng <mail@qinwenfeng.com>
-Description: RE2 is a primarily Deterministic Finite Automaton based regular expression engine from Google that is very fast
-    at matching large amounts of text.
+Description: RE2 <https://github.com/google/re2> is a primarily deterministic finite automaton based regular expression engine from Google that is very fast
+    at matching large amounts of text. 
 License: BSD_3_clause + file LICENSE
 LazyData: TRUE
 Depends: R (>= 3.3)
