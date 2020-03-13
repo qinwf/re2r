@@ -1,7 +1,7 @@
 Package: re2r
 Type: Package
 Title: RE2 Regular Expression
-Version: 0.3.0
+Version: 1.0.0
 Authors@R: c(
     person("Qin Wenfeng", email = "mail@qinwenfeng.com", role = c("aut", "cre")),
     person("Toby Dylan Hocking", role = "ctb", comment = "benchmarks"),
