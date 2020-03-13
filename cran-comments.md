@@ -8,17 +8,18 @@ Test environments
 
 1. local OS X install, release and devel
 
-2. Ubuntu 14.04, release and devel
+2. Ubuntu 16.04, release and devel
 
 3. win-builder, release and devel
 
-4. Ubuntu with Valgrind, R 3.4.1
+4. rhub.io Debian Linux, R-devel, GCC ASAN/UBSAN
 
-5. Ubuntu with UBSAN, R 3.4.1
+5. Ubuntu with Valgrind
+
 
 R CMD check results:
 
-0 errors | 0 warnings | 3 notes
+0 errors | 0 warnings | 2 notes
 
 * checking installed package size ... NOTE
   installed size is  5.1Mb
@@ -31,9 +32,6 @@ R CMD check results:
 
 * checking CRAN incoming feasibility
   Maintainer: ‘Qin Wenfeng <mail@qinwenfeng.com>’
-
-  Possibly mis-spelled words in DESCRIPTION:
-     RE2 (3:8, 13:14)
 
 Ubuntu with Valgrind Result:
 
