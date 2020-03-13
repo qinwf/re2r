@@ -109,7 +109,7 @@ test_that("get compile string",{
         # explicit (?:) in place of non-parenthesized empty strings,
         # to make them easier to spot for other parsers.
         list( "(a|b|)", "([a-b]|(?:))" ),
-        list( "(|)", "()" ),
+        list( "(|)", "((?:)|(?:))" ),
         list( "a()", "a()" ),
         list( "(()|())", "(()|())" ),
         list( "(a|)", "(a|(?:))" ),
