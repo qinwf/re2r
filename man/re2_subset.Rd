@@ -4,8 +4,8 @@
 \alias{re2_subset}
 \title{Keep strings matching a pattern.}
 \usage{
-re2_subset(string, pattern, anchor = 0, omit_na = TRUE, parallel = FALSE,
-  grain_size = 1e+05, ...)
+re2_subset(string, pattern, anchor = 0, omit_na = TRUE,
+  parallel = FALSE, grain_size = 1e+05, ...)
 }
 \arguments{
 \item{string}{a character vector}

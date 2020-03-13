@@ -17,6 +17,10 @@ The files in inst/include and inst/include/re2, inst/include/util, and src/ subd
     regexp.h
     unicode_casefold.h
     walker-inl.h
+    set.h
+    sparse_array.h
+    pod_array.h
+    walker-inl.h
 
     inst/include/util:
 
@@ -39,6 +43,7 @@ The files in inst/include and inst/include/re2, inst/include/util, and src/ subd
 
     bitstate.cc
     nfa.cc
+    set.cc
     stringpiece.cc
     compile.cc
     onepass.cc
@@ -67,14 +72,14 @@ The files in inst/include and inst/include/re2, inst/include/util, and src/ subd
 are derived and modified from the RE2 project (https://github.com/google/RE2) under BSD-like lisence.
 
 The files in inst/include ,
-    
+
     optional.hpp
 
 are derived and modified from the Andrzej Krzemienski under Boost Software License.
 
 
 The files in inst/htmlwidgets/lib ,
-    
+
     main.js
     main.css
 

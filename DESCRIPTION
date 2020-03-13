@@ -1,7 +1,7 @@
 Package: re2r
 Type: Package
 Title: RE2 Regular Expression
-Version: 0.2.0
+Version: 1.0.0
 Authors@R: c(
     person("Qin Wenfeng", email = "mail@qinwenfeng.com", role = c("aut", "cre")),
     person("Toby Dylan Hocking", role = "ctb", comment = "benchmarks"),
@@ -17,7 +17,7 @@ Authors@R: c(
     )
 Maintainer: Qin Wenfeng <mail@qinwenfeng.com>
 Description: RE2 <https://github.com/google/re2> is a primarily deterministic finite automaton based regular expression engine from Google that is very fast
-    at matching large amounts of text. 
+    at matching large amounts of text.
 License: BSD_3_clause + file LICENSE
 LazyData: TRUE
 Depends: R (>= 3.3)
@@ -33,5 +33,6 @@ URL: https://github.com/qinwf/re2r/
 BugReports: https://github.com/qinwf/re2r/issues
 VignetteBuilder: knitr
 NeedsCompilation: yes
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 SystemRequirements: GNU make
+Encoding: UTF-8

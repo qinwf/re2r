@@ -59,7 +59,6 @@
 #define RE2R_LOG
 
 #ifndef RE2R_LOG
-
 class LogMessage {
  public:
   LogMessage(const char* file, int line)
@@ -68,7 +67,7 @@ class LogMessage {
   }
   void Flush() {
     stream() << "\n";
-    string s = str_.str();
+    std::string s = str_.str();
     size_t n = s.size();
     if (fwrite(s.data(), 1, n, stderr) < n) {}  // shut up gcc
     flushed_ = true;
@@ -90,17 +89,15 @@ class LogMessage {
 
 // Silence "destructor never returns" warning for ~LogMessageFatal().
 // Since this is a header file, push and then pop to limit the scope.
-#ifdef _WIN32
-// REMOVED: Rtools Windows
-// #pragma warning(push)
-// #pragma warning(disable: 4722) // destructor never returns
+#ifdef _MSC_VER
+
 #endif
 
 class LogMessageFatal : public LogMessage {
  public:
   LogMessageFatal(const char* file, int line)
       : LogMessage(file, line) {}
-  ~LogMessageFatal() {
+  ATTRIBUTE_NORETURN ~LogMessageFatal() {
     Flush();
     abort();
   }
@@ -111,7 +108,6 @@ class LogMessageFatal : public LogMessage {
 
 // #ifndef RE2R_LOG
 #else
-
 
 class LogMessage {
 public:
@@ -143,8 +139,7 @@ private:
 // Since this is a header file, push and then pop to limit the scope.
 #ifdef _WIN32
 // REMOVED: Rtools Windows
-// #pragma warning(push)
-// #pragma warning(disable: 4722) // destructor never returns
+
 #endif
 
 class LogMessageFatal : public LogMessage {
@@ -163,9 +158,8 @@ private:
 // #ifndef RE2R_LOG
 #endif
 
-#ifdef _WIN32
-// REMOVED: Rtools Windows
-// #pragma warning(pop)
+#ifdef _MSC_VER
+
 #endif
 
-#endif  // RE2_UTIL_LOGGING_H__
+#endif  // UTIL_LOGGING_H_
