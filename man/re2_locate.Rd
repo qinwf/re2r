@@ -7,7 +7,8 @@
 \usage{
 re2_locate(string, pattern, parallel = FALSE, grain_size = 1e+05, ...)
 
-re2_locate_all(string, pattern, parallel = FALSE, grain_size = 1e+05, ...)
+re2_locate_all(string, pattern, parallel = FALSE, grain_size = 1e+05,
+  ...)
 }
 \arguments{
 \item{string}{a character vector}

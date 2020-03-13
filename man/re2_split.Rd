@@ -5,11 +5,11 @@
 \alias{re2_split_fixed}
 \title{Split a string into pieces.}
 \usage{
-re2_split(string, pattern, n = Inf, parallel = FALSE, grain_size = 10000,
-  ...)
+re2_split(string, pattern, n = Inf, parallel = FALSE,
+  grain_size = 10000, ...)
 
-re2_split_fixed(string, pattern, n, parallel = FALSE, grain_size = 10000,
-  ...)
+re2_split_fixed(string, pattern, n, parallel = FALSE,
+  grain_size = 10000, ...)
 }
 \arguments{
 \item{string}{a character vector}

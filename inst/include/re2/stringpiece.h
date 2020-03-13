@@ -19,17 +19,26 @@
 //
 // Arghh!  I wish C++ literals were "string".
 
+// Doing this simplifies the logic below.
+#ifndef __has_include
+#define __has_include(x) 0
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <algorithm>
 #include <iosfwd>
 #include <iterator>
 #include <string>
+#if __has_include(<string_view>) && __cplusplus >= 201703L
+#include <string_view>
+#endif
 
 namespace re2 {
 
 class StringPiece {
  public:
+  typedef std::char_traits<char> traits_type;
   typedef char value_type;
   typedef char* pointer;
   typedef const char* const_pointer;
@@ -48,6 +57,10 @@ class StringPiece {
   // expected.
   StringPiece()
       : data_(NULL), size_(0) {}
+#if __has_include(<string_view>) && __cplusplus >= 201703L
+  StringPiece(const std::string_view& str)
+      : data_(str.data()), size_(str.size()) {}
+#endif
   StringPiece(const std::string& str)
       : data_(str.data()), size_(str.size()) {}
   StringPiece(const char* str)
@@ -68,7 +81,7 @@ class StringPiece {
   size_type length() const { return size_; }
   bool empty() const { return size_ == 0; }
   void clear() { data_ = NULL; size_ = 0; }
-  
+
   const_reference operator[](size_type i) const { return data_[i]; }
   const_pointer data() const { return data_; }
 
@@ -89,6 +102,13 @@ class StringPiece {
   void set(const char* str, size_type len) {
     data_ = str;
     size_ = len;
+  }
+
+  // Converts to `std::basic_string`.
+  template <typename A>
+  explicit operator std::basic_string<char, traits_type, A>() const {
+    if (!data_) return {};
+    return std::basic_string<char, traits_type, A>(data_, size_);
   }
 
   std::string as_string() const {
