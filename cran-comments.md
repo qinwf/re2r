@@ -1,8 +1,8 @@
 Changes from the last submission:
 
-1. Update authors with copyright holders.
-
-Thanks!
+1. Fixed CMD Check warning on Solaris
+2. Fixed pragma(s) suppressing diagnostics
+3. Fixed GCC warnings
 
 Test environments
 
@@ -10,7 +10,7 @@ Test environments
 
 2. Ubuntu 16.04, release and devel
 
-3. win-builder, release and devel
+3. win-builder, release, devel and R-devel ATC
 
 R CMD check results:
 
