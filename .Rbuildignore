@@ -29,4 +29,4 @@ GTAGS
 ^inst/img/number\.png$
 ^number\.png$
 
-^test-unicode\.R$
+test-unicode.R

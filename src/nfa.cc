@@ -229,8 +229,8 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, const StringPiece& context,
     if (id == 0)
       continue;
     if (q->has_index(id)) {
-      if (ExtraDebug)
-        fprintf(stderr, "  [%d%s]\n", id, FormatCapture(t0->capture).c_str());
+      // if (ExtraDebug)
+      //   fprintf(stderr, "  [%d%s]\n", id, FormatCapture(t0->capture).c_str());
       continue;
     }
 
@@ -292,8 +292,8 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, const StringPiece& context,
       // Save state; will pick up at next byte.
       t = Incref(t0);
       *tp = t;
-      if (ExtraDebug)
-        fprintf(stderr, " + %d%s\n", id, FormatCapture(t0->capture).c_str());
+      // if (ExtraDebug)
+      //   fprintf(stderr, " + %d%s\n", id, FormatCapture(t0->capture).c_str());
 
       if (ip->hint() == 0)
         break;
@@ -304,8 +304,8 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, const StringPiece& context,
       // Save state; will pick up at next byte.
       t = Incref(t0);
       *tp = t;
-      if (ExtraDebug)
-        fprintf(stderr, " ! %d%s\n", id, FormatCapture(t0->capture).c_str());
+      // if (ExtraDebug)
+      //   fprintf(stderr, " ! %d%s\n", id, FormatCapture(t0->capture).c_str());
 
     Next:
       if (ip->last())
@@ -496,9 +496,9 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
   // For convenience.
   etext_ = text.data() + text.size();
 
-  if (ExtraDebug)
-    fprintf(stderr, "NFA::Search %s (context: %s) anchored=%d longest=%d\n",
-            std::string(text).c_str(), std::string(context).c_str(), anchored, longest);
+  // if (ExtraDebug)
+  //   fprintf(stderr, "NFA::Search %s (context: %s) anchored=%d longest=%d\n",
+  //           std::string(text).c_str(), std::string(context).c_str(), anchored, longest);
 
   // Set up search.
   Threadq* runq = &q0_;
@@ -509,24 +509,24 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
   // Loop over the text, stepping the machine.
   for (const char* p = text.data();; p++) {
-    if (ExtraDebug) {
-      int c = 0;
-      if (p == btext_)
-        c = '^';
-      else if (p > etext_)
-        c = '$';
-      else if (p < etext_)
-        c = p[0] & 0xFF;
+    // if (ExtraDebug) {
+    //   int c = 0;
+    //   if (p == btext_)
+    //     c = '^';
+    //   else if (p > etext_)
+    //     c = '$';
+    //   else if (p < etext_)
+    //     c = p[0] & 0xFF;
 
-      fprintf(stderr, "%c:", c);
-      for (Threadq::iterator i = runq->begin(); i != runq->end(); ++i) {
-        Thread* t = i->value();
-        if (t == NULL)
-          continue;
-        fprintf(stderr, " %d%s", i->index(), FormatCapture(t->capture).c_str());
-      }
-      fprintf(stderr, "\n");
-    }
+    //   fprintf(stderr, "%c:", c);
+    //   for (Threadq::iterator i = runq->begin(); i != runq->end(); ++i) {
+    //     Thread* t = i->value();
+    //     if (t == NULL)
+    //       continue;
+    //     fprintf(stderr, " %d%s", i->index(), FormatCapture(t->capture).c_str());
+    //   }
+    //   fprintf(stderr, "\n");
+    // }
 
     // This is a no-op the first time around the loop because runq is empty.
     int id = Step(runq, nextq, p < etext_ ? p[0] & 0xFF : -1, context, p);
@@ -594,8 +594,8 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
     // If all the threads have died, stop early.
     if (runq->size() == 0) {
-      if (ExtraDebug)
-        fprintf(stderr, "dead\n");
+      // if (ExtraDebug)
+      //   fprintf(stderr, "dead\n");
       break;
     }
 
@@ -620,10 +620,10 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
       submatch[i] =
           StringPiece(match_[2 * i],
                       static_cast<size_t>(match_[2 * i + 1] - match_[2 * i]));
-    if (ExtraDebug)
-      fprintf(stderr, "match (%td,%td)\n",
-              match_[0] - btext_,
-              match_[1] - btext_);
+    // if (ExtraDebug)
+    //   fprintf(stderr, "match (%td,%td)\n",
+    //           match_[0] - btext_,
+    //           match_[1] - btext_);
     return true;
   }
   return false;
@@ -694,8 +694,8 @@ bool
 Prog::SearchNFA(const StringPiece& text, const StringPiece& context,
                 Anchor anchor, MatchKind kind,
                 StringPiece* match, int nmatch) {
-  if (ExtraDebug)
-    Dump();
+  // if (ExtraDebug)
+  //   Dump();
 
   NFA nfa(this);
   StringPiece sp;
