@@ -30,3 +30,11 @@ GTAGS
 ^number\.png$
 
 test-unicode.R
+test-count.R
+test-detect.R
+test-extract.R
+test-locate.R
+test-match_group.R
+test-replace.R
+test-split.R
+test-subset.R
