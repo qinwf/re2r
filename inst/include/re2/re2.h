@@ -900,7 +900,6 @@ MAKE_INTEGER_PARSER(unsigned long long, ulonglong)
 // Silence warnings about missing initializers for members of LazyRE2.
 #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 6
 // RE2R CMD CHECK
-// #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
 // Helper for writing global or static RE2s safely.

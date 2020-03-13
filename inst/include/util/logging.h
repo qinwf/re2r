@@ -90,8 +90,7 @@ class LogMessage {
 // Silence "destructor never returns" warning for ~LogMessageFatal().
 // Since this is a header file, push and then pop to limit the scope.
 #ifdef _MSC_VER
-// #pragma warning(push)
-// #pragma warning(disable: 4722)
+
 #endif
 
 class LogMessageFatal : public LogMessage {
@@ -140,8 +139,7 @@ private:
 // Since this is a header file, push and then pop to limit the scope.
 #ifdef _WIN32
 // REMOVED: Rtools Windows
-// #pragma warning(push)
-// #pragma warning(disable: 4722) // destructor never returns
+
 #endif
 
 class LogMessageFatal : public LogMessage {
@@ -161,7 +159,7 @@ private:
 #endif
 
 #ifdef _MSC_VER
-// #pragma warning(pop)
+
 #endif
 
 #endif  // UTIL_LOGGING_H_
